@@ -30,6 +30,12 @@ mediaAluno matrAluno tuplasMatriculaNotas =
   where
     notas = findNotasAluno matrAluno tuplasMatriculaNotas
 
+alunosMatriculados :: Disciplina -> [String]
+alunosMatriculados disciplina = [x | x <- matriculas (notas disciplina)]
+
+matriculas :: [(String, [Double])] -> [String]
+matriculas = map fst
+
 -- / Acha as notas de um aluno
 findNotasAluno :: String -> [(String, [Double])] -> [Double]
 findNotasAluno _ [] = []
