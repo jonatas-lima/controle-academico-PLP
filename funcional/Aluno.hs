@@ -5,5 +5,5 @@ import Disciplina (Disciplina)
 data Aluno = Aluno
   { matricula :: Int,
     nome :: String,
-    disciplinasMatriculadas :: (Disciplina, Disciplina, Disciplina, Disciplina)
+    disciplinasMatriculadas :: (Int, Int, Int, Int)
   }
