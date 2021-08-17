@@ -55,7 +55,7 @@ parseAluno linha =
   where
     dados = splitOn "," linha
 
-parseDisciplinasMatriculadas :: String -> (Int, Int, Int, Int)
+parseDisciplinasMatriculadas :: String -> [Disciplina]
 parseDisciplinasMatriculadas = read
 
 parseDisciplina :: String -> Disciplina
