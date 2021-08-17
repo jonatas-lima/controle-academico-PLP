@@ -1,6 +1,9 @@
 module Aluno where
 
+import Disciplina (Disciplina)
+
 data Aluno = Aluno
-  { matricula :: String,
-    nome :: String
+  { matricula :: Int,
+    nome :: String,
+    disciplinasMatriculadas :: (Int, Int, Int, Int)
   }
