@@ -1,5 +1,6 @@
 module Main where
 
+-- import DataLoader (DataLoader, carregaUsuarios, leArquivo)
 import DataLoader (carregaUsuarios, leArquivo)
 import Usuario (Usuario, autentica)
 
@@ -26,56 +27,42 @@ opcoes = do
 fazerLogin :: IO ()
 fazerLogin = do
   putStrLn "Digite seu nome de usuário: "
-
   nomeDeUsuario <- getLine
 
-  putStrLn
-    "Digite sua senha: "
-
+  putStrLn "Digite sua senha: "
   senha <- getLine
 
   arquivoUsuarios <- DataLoader.leArquivo "./data/usuarios.csv"
   let usuariosDisponiveis = DataLoader.carregaUsuarios arquivoUsuarios
 
   let autenticacao = Usuario.autentica nomeDeUsuario senha usuariosDisponiveis
+  let autenticado = fst autenticacao
+  let role = snd autenticacao
 
-  putStrLn (if fst autenticacao then "sim" else "nao")
-  putStrLn ("role: " ++ snd autenticacao)
-
-fazerCadastro :: IO ()
-fazerCadastro =
-  putStrLn ("nada")
-
-
-if autenticado then
-    tela role
-  else
-    putStrLn "Usuario ou senha invalido"
-
-  putStrLn (if fst autenticacao then "sim" else "nao")
-  putStrLn ("role: " ++ snd autenticacao)
+  if autenticado
+    then tela role
+    else
+      putStrLn
+        "Usuario ou senha invalido"
 
 fazerCadastro :: IO ()
-fazerCadastro =
-  putStrLn ("nada")
+fazerCadastro = putStrLn "nada"
 
-tela :: String -> IO()
-tela = do
-    role =
-        | role == "prof"  telaProf
-        | role == "admin" = telaAdmin
-        | role == "aluno" = telaAluno
-        | otherwise = putStrLn "Role invalido"
+tela :: String -> IO ()
+tela role
+  | role == "prof" = telaProf
+  | role == "admin" = telaAdmin
+  | role == "aluno" = telaAluno
+  | otherwise = putStrLn "Role invalido"
 
+telaProf :: IO ()
+telaProf =
+  putStrLn "Tela de Professor"
 
-telaProf :: IO()
-telaProf = do
-    putStrLn("Tela de Professor")
+telaAdmin :: IO ()
+telaAdmin =
+  putStrLn "Tela de admin"
 
-telaAdmin :: IO()
-telaAdmin = do
-    putStrLn("Tela de admin")
-
-telaAluno :: IO()
-telaAluno = do
-    putStrLn("Tela de aluno")
+telaAluno :: IO ()
+telaAluno =
+  putStrLn "Tela de aluno"

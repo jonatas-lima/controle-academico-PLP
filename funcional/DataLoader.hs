@@ -39,8 +39,8 @@ parseProfessor linha =
   where
     dados = splitOn "," linha
 
-parseDisciplinasLecionadas :: String -> (Int, Int)
-parseDisciplinasLecionadas = read
+parseDisciplinasLecionadas :: String -> [Disciplina]
+parseDisciplinasLecionadas l = []
 
 carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
@@ -55,8 +55,8 @@ parseAluno linha =
   where
     dados = splitOn "," linha
 
-parseDisciplinasMatriculadas :: String -> (Int, Int, Int, Int)
-parseDisciplinasMatriculadas = read
+parseDisciplinasMatriculadas :: String -> [Disciplina]
+parseDisciplinasMatriculadas linha = []
 
 parseDisciplina :: String -> Disciplina
 parseDisciplina linha =
