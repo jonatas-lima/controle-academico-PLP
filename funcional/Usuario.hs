@@ -6,6 +6,14 @@ data Usuario = Usuario
     role :: String
   }
 
+newUsuario :: String -> String -> String -> Usuario
+newUsuario nickname' senha' role' =
+  Usuario
+    { nickname = nickname',
+      senha = senha',
+      role = role'
+    }
+
 -- / Verifica se um usuário e senha está cadastrado no sistema e retorna (Se está autenticado, seu 'role')
 autentica :: String -> String -> [Usuario] -> (Bool, String)
 autentica usuario senha usuariosDisponiveis =
@@ -21,3 +29,11 @@ usuariosSenhas = map (\u -> (nickname u, senha u))
 findRole :: String -> String -> [Usuario] -> String
 findRole _ _ [] = ""
 findRole nick password (u : us) = if nick == nickname u && password == senha u then role u else findRole nick password us
+
+toString :: Usuario -> String
+toString usuario =
+  nickname' ++ "," ++ senha' ++ "," ++ role'
+  where
+    nickname' = nickname usuario
+    senha' = senha usuario
+    role' = role usuario

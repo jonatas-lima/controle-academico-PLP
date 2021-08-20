@@ -1,7 +1,6 @@
-matricula,nome,(disciplina1, disciplina2, disciplina3)
-1,elmar,(1,0,0)
-2,joao arthur,(2,3,0)
-3,fubica,(5,0,0)
-4,massoni,(4,0,0)
-5,joseana,(1,0,0)
-6,patricia,(9,0,0)
+1,elmar,[1]
+2,joao arthur,[2,3]
+3,fubica,[5]
+4,massoni,[4]
+5,joseana,[1]
+6,patricia,[9]
