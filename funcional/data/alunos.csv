@@ -1,8 +1,7 @@
-matricula,nome,(disciplina1,disciplina2,disciplina3,disciplina4)
-1,jonatas,(1,0,0,4)
-2,kleber,(2,3,0,0)
-3,vitin,(0,0,0,0)
-4,vinicius,(0,0,0,0)
-5,bernard,(1,2,0)
-6,elmar,(1,2,3,4)
-7,marcos,(1,2,3,0)
+1,jonatas,[1,0,0,4]
+2,kleber,[2,3,0,0]
+3,vitin,[0,0,0,0]
+4,vinicius,[0,0,0,0]
+5,bernard,[1,2,0]
+6,elmar,[1,2,3,4]
+7,marcos,[1,2,3,0]

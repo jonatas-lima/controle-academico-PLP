@@ -1,7 +1,9 @@
 module Main where
 
--- import DataLoader (DataLoader, carregaUsuarios, leArquivo)
-import DataLoader (carregaUsuarios, leArquivo)
+import Aluno (matriculas, newAluno)
+import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo)
+import DataSaver (salvaAluno, salvaProfessor)
+import Professor (Professor, matriculas, newProfessor)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
@@ -26,14 +28,14 @@ opcoes = do
 
 fazerLogin :: IO ()
 fazerLogin = do
-  putStrLn "Digite seu nome de usuário: "
+  putStr "Digite seu nome de usuário: "
   nomeDeUsuario <- getLine
 
-  putStrLn "Digite sua senha: "
+  putStr "Digite sua senha: "
   senha <- getLine
 
-  arquivoUsuarios <- DataLoader.leArquivo "./data/usuarios.csv"
-  let usuariosDisponiveis = DataLoader.carregaUsuarios arquivoUsuarios
+  arquivoUsuarios <- leArquivo "./data/usuarios.csv"
+  let usuariosDisponiveis = carregaUsuarios arquivoUsuarios
 
   let autenticacao = Usuario.autentica nomeDeUsuario senha usuariosDisponiveis
   let autenticado = fst autenticacao
@@ -46,7 +48,49 @@ fazerLogin = do
         "Usuario ou senha invalido"
 
 fazerCadastro :: IO ()
-fazerCadastro = putStrLn "nada"
+fazerCadastro = do
+  putStr "(P)rofessor ou (A)luno > "
+  opcao <- getLine
+
+  putStr "\nDigite a matrícula: "
+  matricula <- getLine
+
+  putStr "Digite o nickname: "
+  nick <- getLine
+
+  putStr "Digite seu nome: "
+  nome <- getLine
+
+  putStr "Digite sua senha: "
+  senha <- getLine
+
+  if opcao == "P"
+    then cadastraProfessor matricula nick nome senha
+    else cadastraAluno matricula nick nome senha
+
+cadastraProfessor :: String -> String -> String -> String -> IO ()
+cadastraProfessor matricula nickname nome senha = do
+  arquivoProfessores <- leArquivo "./data/professores.csv"
+  let professoresCadastrados = carregaProfessores arquivoProfessores
+  let matriculasCadastradas = Professor.matriculas professoresCadastrados
+
+  if read matricula `elem` matriculasCadastradas
+    then putStrLn "Professor já cadastrado!"
+    else salvaProfessor professor
+  where
+    professor = newProfessor (read matricula) nome []
+
+cadastraAluno :: String -> String -> String -> String -> IO ()
+cadastraAluno matricula nickname nome senha = do
+  arquivoAlunos <- leArquivo "./data/alunos.csv"
+  let alunosCadastrados = carregaAlunos arquivoAlunos
+  let matriculasCadastradas = Aluno.matriculas alunosCadastrados
+
+  if read matricula `elem` matriculasCadastradas
+    then putStrLn "Aluno já cadastrado!"
+    else salvaAluno aluno
+  where
+    aluno = newAluno (read matricula) nome []
 
 tela :: String -> IO ()
 tela role

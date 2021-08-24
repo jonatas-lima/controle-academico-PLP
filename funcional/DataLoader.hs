@@ -34,13 +34,10 @@ parseProfessor linha =
   Professor
     { Professor.matricula = read (head dados) :: Int,
       Professor.nome = dados !! 1,
-      Professor.disciplinasLecionadas = parseDisciplinasLecionadas (dados !! 2)
+      Professor.disciplinasLecionadas = read (dados !! 2) :: [Int]
     }
   where
     dados = splitOn "," linha
-
-parseDisciplinasLecionadas :: String -> [Disciplina]
-parseDisciplinasLecionadas l = []
 
 carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
@@ -50,13 +47,10 @@ parseAluno linha =
   Aluno
     { Aluno.matricula = read (head dados) :: Int,
       Aluno.nome = dados !! 1,
-      Aluno.disciplinasMatriculadas = parseDisciplinasMatriculadas (dados !! 2)
+      Aluno.disciplinasMatriculadas = read (dados !! 2) :: [Int]
     }
   where
     dados = splitOn "," linha
-
-parseDisciplinasMatriculadas :: String -> [Disciplina]
-parseDisciplinasMatriculadas linha = []
 
 parseDisciplina :: String -> Disciplina
 parseDisciplina linha =
