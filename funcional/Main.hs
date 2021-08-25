@@ -1,9 +1,9 @@
 module Main where
 
 import Aluno (Aluno, nome, matricula, matriculas, newAluno)
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno)
+import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor)
 import DataSaver (salvaAluno, salvaProfessor)
-import Professor (Professor, matriculas, newProfessor)
+import Professor (Professor, nome, matricula, matriculas, newProfessor)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
@@ -94,7 +94,7 @@ cadastraAluno matricula nickname nome senha = do
 
 tela :: String -> String -> IO ()
 tela matricula role
-  | role == "prof" = telaProf
+  | role == "prof" = telaProf matricula
   | role == "admin" = telaAdmin
   | role == "aluno" = telaAluno matricula
   | otherwise = putStrLn "Role invalido"
@@ -110,12 +110,23 @@ telaAluno matricula' = do
     ++ "Usuário: "
     ++ show (Aluno.matricula aluno)
     ++ " - "
-    ++ nome aluno
+    ++ Aluno.nome aluno
     ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral")
 
-telaProf :: IO ()
-telaProf =
-  putStrLn "Tela de Professor"
+telaProf :: String -> IO ()
+telaProf matricula' = do
+  arquivoProfessores <- leArquivo "./data/professores.csv"
+  let professores =  DataLoader.carregaProfessores arquivoProfessores
+  let professor = DataLoader.carregaProfessor (read matricula') professores
+
+  putStrLn(
+    "\n--------------------------\n"
+    ++ "Usuário: "
+    ++ show(Professor.matricula professor)
+    ++ " - "
+    ++ Professor.nome professor
+    ++ "\n\n1) Visualizar disciplinas\n2) Registrar aula\n3) Cadastrar prova")
+
 
 telaAdmin :: IO ()
 telaAdmin =
