@@ -41,9 +41,12 @@ findNotasAluno matrAluno (x : xs) =
     matr = fst x
     notas = snd x
 
+exibeDisciplina :: Disciplina -> String
+exibeDisciplina disciplina = show (codigo disciplina) ++ " - " ++ nome disciplina
+
 toString :: Disciplina -> String
 toString disciplina =
-  show codigo' ++ "," ++ nome' ++ "," ++ show numMaxAlunos' ++ "," ++ show descartaNotaMaisBaixa' ++ "," ++ show notas'
+  show codigo' ++ ";" ++ nome' ++ ";" ++ show numMaxAlunos' ++ ";" ++ show descartaNotaMaisBaixa' ++ ";" ++ show notas'
   where
     codigo' = codigo disciplina
     nome' = nome disciplina

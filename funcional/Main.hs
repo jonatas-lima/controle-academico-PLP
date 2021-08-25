@@ -1,9 +1,12 @@
 module Main where
 
-import Aluno (Aluno, matricula, matriculas, newAluno, nome, opcoesDisponiveis)
-import DataLoader (carregaAluno, carregaAlunos, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
+import Aluno (Aluno, disciplinasMatriculadas, matricula, matriculas, mediaTotal, newAluno, nome, opcoesDisponiveis, toString, toStringDisciplinas)
+import Control.Monad.Trans.State.Strict (put)
+import DataLoader (carregaAluno, carregaAlunos, carregaDisciplina, carregaDisciplinas, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
 import DataSaver (salvaAluno, salvaProfessor)
-import Professor (Professor, matricula, matriculas, newProfessor, nome, opcoesDisponiveis)
+import Disciplina (Disciplina)
+import qualified Disciplina
+import Professor (Professor (disciplinasLecionadas), matricula, matriculas, newProfessor, nome, opcoesDisponiveis, toString)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
@@ -18,6 +21,8 @@ opcoes = do
     )
 
   opcao <- getLine
+
+  putStrLn ""
 
   if opcao == "1"
     then fazerLogin
@@ -108,6 +113,9 @@ telaAdmin = putStrLn "tela admin"
 telaAluno :: String -> IO ()
 telaAluno matricula' = do
   arquivoAlunos <- leArquivo "./data/alunos.csv"
+
+  putStrLn (arquivoAlunos !! 1)
+
   let alunos = DataLoader.carregaAlunos arquivoAlunos
   let aluno = DataLoader.carregaAluno (read matricula') alunos
 
@@ -126,15 +134,38 @@ opcoesAluno aluno =
   header (Aluno.matricula aluno) (Aluno.nome aluno)
     ++ Aluno.opcoesDisponiveis
 
+opcoesProf :: Professor -> String
+opcoesProf professor =
+  header (Professor.matricula professor) (Professor.nome professor)
+    ++ Professor.opcoesDisponiveis
+
 telaProf :: String -> IO ()
 telaProf matricula' = do
   arquivoProfessores <- leArquivo "./data/professores.csv"
   let professores = DataLoader.carregaProfessores arquivoProfessores
   let professor = DataLoader.carregaProfessor (read matricula') professores
 
+  arquivoDisciplinas <- leArquivo "./data/disciplinas.csv"
+  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+
   putStrLn (opcoesProf professor)
 
-opcoesProf :: Professor -> String
-opcoesProf professor =
-  header (Professor.matricula professor) (Professor.nome professor)
-    ++ Professor.opcoesDisponiveis
+  putStr "Qual a opcao selecionada? "
+  opcao <- getLine
+
+  if opcao == "1"
+    then putStrLn (exibeDisciplinas (Professor.disciplinasLecionadas professor) disciplinas)
+    else putStrLn "Opcao inválida"
+
+getDisciplina :: Int -> [Disciplina] -> String
+getDisciplina codigoDisciplina disciplinas = do
+  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
+  Disciplina.exibeDisciplina disciplina ++ "\n"
+
+exibeDisciplinas :: [Int] -> [Disciplina] -> String
+exibeDisciplinas _ [] = ""
+exibeDisciplinas [] _ = ""
+exibeDisciplinas (c : cs) (d : ds) =
+  if c == Disciplina.codigo d
+    then getDisciplina c (d : ds) ++ exibeDisciplinas cs ds
+    else exibeDisciplinas (c : cs) ds

@@ -59,9 +59,12 @@ opcoesDisponiveis =
     ++ "3) Visualizar média geral\n"
     ++ "4) Sair"
 
+toStringDisciplinas :: Aluno -> String
+toStringDisciplinas aluno = show (disciplinasMatriculadas aluno)
+
 toString :: Aluno -> String
 toString aluno =
-  show matricula' ++ "," ++ nome' ++ "," ++ show disciplinasMatriculadas'
+  show matricula' ++ ";" ++ nome' ++ ";" ++ show disciplinasMatriculadas'
   where
     matricula' = matricula aluno
     nome' = nome aluno

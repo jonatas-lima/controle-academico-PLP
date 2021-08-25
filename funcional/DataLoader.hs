@@ -54,7 +54,7 @@ parseProfessor linha =
       Professor.disciplinasLecionadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
@@ -77,7 +77,16 @@ parseAluno linha =
       Aluno.disciplinasMatriculadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
+
+carregaDisciplinas :: [String] -> [Disciplina]
+carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]
+
+carregaDisciplina :: Int -> [Disciplina] -> Disciplina
+carregaDisciplina codigo' (d : ds) =
+  if Disciplina.codigo d == codigo'
+    then d
+    else carregaDisciplina codigo' ds
 
 parseDisciplina :: String -> Disciplina
 parseDisciplina linha =
@@ -86,10 +95,7 @@ parseDisciplina linha =
       Disciplina.nome = dados !! 1,
       Disciplina.descartaNotaMaisBaixa = read (dados !! 2) :: Bool,
       Disciplina.numMaxAlunos = read (dados !! 3) :: Int,
-      Disciplina.notas = parseAlunosMatriculados (dados !! 4)
+      Disciplina.notas = read (dados !! 4) :: [(Int, [Double])]
     }
   where
-    dados = splitOn "," linha
-
-parseAlunosMatriculados :: String -> [(Int, [Double])]
-parseAlunosMatriculados = read
+    dados = splitOn ";" linha
