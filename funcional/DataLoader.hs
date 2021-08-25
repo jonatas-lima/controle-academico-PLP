@@ -30,6 +30,11 @@ parseUsuario linha =
 carregaProfessores :: [String] -> [Professor]
 carregaProfessores linhas = [parseProfessor linha | linha <- linhas]
 
+carregaProfessor :: Int -> [Professor] -> Professor
+carregaProfessor matricula' (p:ps) =
+  if Professor.matricula p == matricula' then p
+  else carregaProfessor matricula' ps
+
 parseProfessor :: String -> Professor
 parseProfessor linha =
   Professor
@@ -38,7 +43,7 @@ parseProfessor linha =
       Professor.disciplinasLecionadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
@@ -56,7 +61,7 @@ parseAluno linha =
       Aluno.disciplinasMatriculadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 parseDisciplina :: String -> Disciplina
 parseDisciplina linha =
@@ -68,7 +73,7 @@ parseDisciplina linha =
       Disciplina.notas = parseAlunosMatriculados (dados !! 4)
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 parseAlunosMatriculados :: String -> [(Int, [Double])]
 parseAlunosMatriculados = read

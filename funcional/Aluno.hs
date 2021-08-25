@@ -60,7 +60,7 @@ toStringDisciplinas aluno =
 
 toString :: Aluno -> String
 toString aluno =
-  show matricula' ++ "," ++ nome' ++ "," ++ show disciplinasMatriculadas'
+  show matricula' ++ ";" ++ nome' ++ ";" ++ show disciplinasMatriculadas'
   where
     matricula' = matricula aluno
     nome' = nome aluno
