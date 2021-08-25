@@ -30,6 +30,11 @@ parseUsuario linha =
 carregaProfessores :: [String] -> [Professor]
 carregaProfessores linhas = [parseProfessor linha | linha <- linhas]
 
+carregaProfessor :: Int -> [Professor] -> Professor
+carregaProfessor matricula' (p:ps) =
+  if Professor.matricula p == matricula' then p
+  else carregaProfessor matricula' ps
+
 parseProfessor :: String -> Professor
 parseProfessor linha =
   Professor
