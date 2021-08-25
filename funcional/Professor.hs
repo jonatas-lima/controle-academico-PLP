@@ -20,6 +20,13 @@ matriculas professores = [matricula prof | prof <- professores]
 numDisciplinasLecionadas :: Professor -> Int
 numDisciplinasLecionadas professor = length (disciplinasLecionadas professor)
 
+opcoesDisponiveis :: String
+opcoesDisponiveis =
+  "\n\n1) Visualizar disciplinas\n"
+    ++ "2) Registrar aula\n"
+    ++ "3) Cadastrar prova\n"
+    ++ "4) Sair\n"
+
 toString :: Professor -> String
 toString professor =
   show matricula' ++ "," ++ nome' ++ "," ++ show disciplinasLecionadas'

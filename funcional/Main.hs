@@ -1,9 +1,9 @@
 module Main where
 
-import Aluno (Aluno, nome, matricula, matriculas, newAluno)
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor)
+import Aluno (Aluno, matricula, matriculas, newAluno, nome, opcoesDisponiveis)
+import DataLoader (carregaAluno, carregaAlunos, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
 import DataSaver (salvaAluno, salvaProfessor)
-import Professor (Professor, nome, matricula, matriculas, newProfessor)
+import Professor (Professor, matricula, matriculas, newProfessor, nome, opcoesDisponiveis)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
@@ -37,7 +37,7 @@ fazerLogin = do
   arquivoUsuarios <- leArquivo "./data/usuarios.csv"
   let usuariosDisponiveis = carregaUsuarios arquivoUsuarios
 
-  let autenticacao = Usuario.autentica  matriculaUsuario senha usuariosDisponiveis
+  let autenticacao = Usuario.autentica matriculaUsuario senha usuariosDisponiveis
   let autenticado = fst autenticacao
   let role = snd autenticacao
 
@@ -66,7 +66,10 @@ fazerCadastro = do
 
   if opcao == "P"
     then cadastraProfessor matricula nick nome senha
-    else cadastraAluno matricula nick nome senha
+    else
+      if opcao == "A"
+        then cadastraAluno matricula nick nome senha
+        else putStrLn "Opção inválida!"
 
 cadastraProfessor :: String -> String -> String -> String -> IO ()
 cadastraProfessor matricula nickname nome senha = do
@@ -99,35 +102,39 @@ tela matricula role
   | role == "aluno" = telaAluno matricula
   | otherwise = putStrLn "Role invalido"
 
+telaAdmin :: IO ()
+telaAdmin = putStrLn "tela admin"
+
 telaAluno :: String -> IO ()
 telaAluno matricula' = do
   arquivoAlunos <- leArquivo "./data/alunos.csv"
   let alunos = DataLoader.carregaAlunos arquivoAlunos
   let aluno = DataLoader.carregaAluno (read matricula') alunos
 
-  putStrLn (
-    "\n--------------------------\n"
+  putStrLn (opcoesAluno aluno)
+
+header :: Int -> String -> String
+header matricula nome =
+  "\n--------------------------\n"
     ++ "Usuário: "
-    ++ show (Aluno.matricula aluno)
+    ++ show matricula
     ++ " - "
-    ++ Aluno.nome aluno
-    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral")
+    ++ nome
+
+opcoesAluno :: Aluno -> String
+opcoesAluno aluno =
+  header (Aluno.matricula aluno) (Aluno.nome aluno)
+    ++ Aluno.opcoesDisponiveis
 
 telaProf :: String -> IO ()
 telaProf matricula' = do
   arquivoProfessores <- leArquivo "./data/professores.csv"
-  let professores =  DataLoader.carregaProfessores arquivoProfessores
+  let professores = DataLoader.carregaProfessores arquivoProfessores
   let professor = DataLoader.carregaProfessor (read matricula') professores
 
-  putStrLn(
-    "\n--------------------------\n"
-    ++ "Usuário: "
-    ++ show(Professor.matricula professor)
-    ++ " - "
-    ++ Professor.nome professor
-    ++ "\n\n1) Visualizar disciplinas\n2) Registrar aula\n3) Cadastrar prova")
+  putStrLn (opcoesProf professor)
 
-
-telaAdmin :: IO ()
-telaAdmin =
-  putStrLn "Tela de admin"
+opcoesProf :: Professor -> String
+opcoesProf professor =
+  header (Professor.matricula professor) (Professor.nome professor)
+    ++ Professor.opcoesDisponiveis

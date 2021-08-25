@@ -3,7 +3,7 @@ module Disciplina where
 data Disciplina = Disciplina
   { codigo :: Int,
     nome :: String,
-    creditos :: Int,
+    numMaxAlunos :: Int,
     notas :: [(Int, [Double])],
     descartaNotaMaisBaixa :: Bool
   }
@@ -43,10 +43,10 @@ findNotasAluno matrAluno (x : xs) =
 
 toString :: Disciplina -> String
 toString disciplina =
-  show codigo' ++ "," ++ nome' ++ "," ++ show creditos' ++ "," ++ show descartaNotaMaisBaixa' ++ "," ++ show notas'
+  show codigo' ++ "," ++ nome' ++ "," ++ show numMaxAlunos' ++ "," ++ show descartaNotaMaisBaixa' ++ "," ++ show notas'
   where
     codigo' = codigo disciplina
     nome' = nome disciplina
-    creditos' = creditos disciplina
+    numMaxAlunos' = numMaxAlunos disciplina
     descartaNotaMaisBaixa' = descartaNotaMaisBaixa disciplina
     notas' = notas disciplina
