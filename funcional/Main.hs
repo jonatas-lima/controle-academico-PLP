@@ -6,7 +6,6 @@ import Disciplina (Disciplina, exibeDisciplina, codigo)
 import Aluno (Aluno, nome, matricula, disciplinasMatriculadas, matriculas, newAluno, toStringDisciplinas, mediaTotal, toString)
 import DataSaver (salvaAluno, salvaProfessor)
 import Usuario (Usuario, autentica)
-import Control.Monad.Trans.State.Strict (put)
 
 main :: IO ()
 main =
