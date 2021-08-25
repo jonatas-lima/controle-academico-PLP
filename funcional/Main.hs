@@ -1,6 +1,6 @@
 module Main where
 
-import Aluno (Aluno, nome, matricula, matriculas, newAluno)
+import Aluno (Aluno, nome, matricula, disciplinasMatriculadas, matriculas, newAluno, toStringDisciplinas, mediaTotal, toString)
 import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno)
 import DataSaver (salvaAluno, salvaProfessor)
 import Professor (Professor, matriculas, newProfessor)
@@ -14,10 +14,12 @@ opcoes :: IO ()
 opcoes = do
   putStrLn
     ( "1) Fazer login\n"
-        ++ "2) Novo usuário? Fazer cadastro\n"
+      ++ "2) Novo usuário? Fazer cadastro\n"
     )
 
   opcao <- getLine
+
+  putStrLn ""
 
   if opcao == "1"
     then fazerLogin
@@ -111,7 +113,40 @@ telaAluno matricula' = do
     ++ show (Aluno.matricula aluno)
     ++ " - "
     ++ nome aluno
-    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral")
+    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral\n")
+
+  opcao <- getLine
+
+  putStrLn ""
+
+  if opcao == "1"
+    then 
+      putStrLn (
+        "" 
+        ++ show (Aluno.toString aluno))
+    else
+      if opcao == "2"
+        then realizarMatricula
+        else
+          if opcao == "3"
+            then
+              putStrLn ""
+              -- show (Aluno.mediaTotal aluno (Aluno.disciplinasMatriculadas aluno)))
+            else putStrLn "Opção inválida"
+
+-- visualizarDisciplinas :: Aluno -> IO ()
+-- visualizarDisciplinas aluno = 
+--   putStrLn (
+--     "" 
+--     ++ Aluno.toStringDisciplinas aluno)
+
+realizarMatricula :: IO ()
+realizarMatricula = 
+  putStrLn "Realizar matrícula..."
+
+visualizarMediaGeral :: IO ()
+visualizarMediaGeral = 
+  putStrLn "Visualizar média global..."
 
 telaProf :: IO ()
 telaProf =

@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+-- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module DataLoader where
 
 import Aluno (Aluno (..))
@@ -44,9 +44,9 @@ carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
 
 carregaAluno :: Int -> [Aluno] -> Aluno
-carregaAluno matricula' (a:as) =
-  if Aluno.matricula a == matricula' then a
-  else carregaAluno matricula' as
+carregaAluno matricula' (a:as)
+  | Aluno.matricula a == matricula' = a
+  | otherwise = carregaAluno matricula' as
 
 parseAluno :: String -> Aluno
 parseAluno linha =

@@ -52,6 +52,12 @@ todasMediasAux matricula (codDisciplina : cs) (disciplina : ds) =
     then mediaAluno matricula (notas disciplina) : todasMediasAux matricula cs ds
     else todasMediasAux matricula cs ds
 
+toStringDisciplinas :: Aluno -> String
+toStringDisciplinas aluno =
+  show disciplinasMatriculadas'
+  where
+    disciplinasMatriculadas' = disciplinasMatriculadas aluno
+
 toString :: Aluno -> String
 toString aluno =
   show matricula' ++ "," ++ nome' ++ "," ++ show disciplinasMatriculadas'
