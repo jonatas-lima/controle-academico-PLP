@@ -1,36 +1,19 @@
 module Main where
 
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor, carregaDisciplina, carregaDisciplinas)
-import Professor (Professor, nome, matricula, disciplinasLecionadas, matriculas, newProfessor)
-import Disciplina (Disciplina, exibeDisciplina, codigo)
-import Aluno (Aluno, nome, matricula, disciplinasMatriculadas, matriculas, newAluno, toStringDisciplinas, mediaTotal, toString)
+import Aluno (Aluno, disciplinasMatriculadas, matricula, matriculas, mediaTotal, newAluno, nome, opcoesDisponiveis, toString, toStringDisciplinas)
+import DataLoader (carregaAluno, carregaAlunos, carregaDisciplina, carregaDisciplinas, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
 import DataSaver (salvaAluno, salvaProfessor)
+import Disciplina (Disciplina, codigo, exibeDisciplina)
+import Professor (Professor, disciplinasLecionadas, matricula, matriculas, newProfessor, nome, opcoesDisponiveis)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
-main =
-  opcoes
+main = do
+  putStrLn ("Bem-Vindo(a)!" ++ "\nPara acessar o controle, faça login:\n")
+  telaLogin
 
-opcoes :: IO ()
-opcoes = do
-  putStrLn
-    ( "1) Fazer login\n"
-      ++ "2) Novo usuário? Fazer cadastro\n"
-    )
-
-  opcao <- getLine
-
-  putStrLn ""
-
-  if opcao == "1"
-    then fazerLogin
-    else
-      if opcao == "2"
-        then fazerCadastro
-        else putStrLn "Opção inválida"
-
-fazerLogin :: IO ()
-fazerLogin = do
+telaLogin :: IO ()
+telaLogin = do
   putStr "Digite sua matrícula: "
   matriculaUsuario <- getLine
 
@@ -40,7 +23,7 @@ fazerLogin = do
   arquivoUsuarios <- leArquivo "./data/usuarios.csv"
   let usuariosDisponiveis = carregaUsuarios arquivoUsuarios
 
-  let autenticacao = Usuario.autentica  matriculaUsuario senha usuariosDisponiveis
+  let autenticacao = Usuario.autentica matriculaUsuario senha usuariosDisponiveis
   let autenticado = fst autenticacao
   let role = snd autenticacao
 
@@ -105,19 +88,10 @@ tela matricula role
 telaAluno :: String -> IO ()
 telaAluno matricula' = do
   arquivoAlunos <- leArquivo "./data/alunos.csv"
-  
-  putStrLn (arquivoAlunos !! 1)
-
   let alunos = DataLoader.carregaAlunos arquivoAlunos
   let aluno = DataLoader.carregaAluno (read matricula') alunos
 
-  putStrLn (
-    "\n--------------------------\n"
-    ++ "Usuário: "
-    ++ show (Aluno.matricula aluno)
-    ++ " - "
-    ++ Aluno.nome aluno
-    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral\n")
+  putStrLn (opcoesAluno aluno)
 
   opcao <- getLine
 
@@ -133,45 +107,54 @@ telaAluno matricula' = do
             then visualizarMediaGeral
             else putStrLn "Opção inválida"
 
+opcoesAluno :: Aluno -> String
+opcoesAluno aluno =
+  header (Aluno.matricula aluno) (Aluno.nome aluno) ++ Aluno.opcoesDisponiveis
+
 visualizarDisciplinas :: Aluno -> IO ()
 visualizarDisciplinas aluno =
-  putStrLn (
-        "" 
-        ++ show (Aluno.toStringDisciplinas aluno))
+  putStrLn
+    ( ""
+        ++ show (Aluno.toStringDisciplinas aluno)
+    )
 
 realizarMatricula :: IO ()
-realizarMatricula = 
+realizarMatricula =
   putStrLn "Realizar matrícula..."
 
 visualizarMediaGeral :: IO ()
-visualizarMediaGeral = 
+visualizarMediaGeral =
   putStrLn "Visualizar média geral..."
-  -- putStrLn (
-  --       "" 
-  --       ++ show (Aluno.toStringDisciplinas aluno))
+
+header :: Int -> String -> String
+header matricula nome =
+  "\n--------------------------\n"
+    ++ "Usuário: "
+    ++ show matricula
+    ++ " - "
+    ++ nome
 
 telaProf :: String -> IO ()
 telaProf matricula' = do
   arquivoProfessores <- leArquivo "./data/professores.csv"
-  let professores =  DataLoader.carregaProfessores arquivoProfessores
+  let professores = DataLoader.carregaProfessores arquivoProfessores
   let professor = DataLoader.carregaProfessor (read matricula') professores
 
   arquivoDisciplinas <- leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
 
-  putStrLn(
-    "\n--------------------------\n"
-    ++ "Usuário: "
-    ++ show(Professor.matricula professor)
-    ++ " - "
-    ++ Professor.nome professor
-    ++ "\n\n1) Visualizar disciplinas\n2) Registrar aula\n3) Cadastrar prova")
+  putStrLn (opcoesProfessor professor)
 
   putStr "Qual a opcao selecionada? "
   opcao <- getLine
 
-  if opcao == "1" then putStrLn (exibeDisciplinas (Professor.disciplinasLecionadas professor) disciplinas)
-  else putStrLn "Opcao inválida"
+  if opcao == "1"
+    then putStrLn (exibeDisciplinas (Professor.disciplinasLecionadas professor) disciplinas)
+    else putStrLn "Opcao inválida"
+
+opcoesProfessor :: Professor -> String
+opcoesProfessor professor =
+  header (Professor.matricula professor) (Professor.nome professor) ++ Professor.opcoesDisponiveis
 
 getDisciplina :: Int -> [Disciplina] -> String
 getDisciplina codigoDisciplina disciplinas = do
@@ -184,8 +167,7 @@ exibeDisciplinas [] _ = ""
 exibeDisciplinas (c : cs) (d : ds) =
   if c == Disciplina.codigo d
     then getDisciplina c (d : ds) ++ exibeDisciplinas cs ds
-    else exibeDisciplinas (c:cs) ds
-
+    else exibeDisciplinas (c : cs) ds
 
 telaAdmin :: IO ()
 telaAdmin =

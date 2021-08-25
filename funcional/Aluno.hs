@@ -52,6 +52,13 @@ todasMediasAux matricula (codDisciplina : cs) (disciplina : ds) =
     then mediaAluno matricula (notas disciplina) : todasMediasAux matricula cs ds
     else todasMediasAux matricula cs ds
 
+opcoesDisponiveis :: String
+opcoesDisponiveis =
+  "\n\n1) Visualizar disciplinas\n"
+    ++ "2) Realizar Matricula\n"
+    ++ "3) Visualizar média geral\n"
+    ++ "4) Sair\n"
+
 toStringDisciplinas :: Aluno -> String
 toStringDisciplinas aluno =
   show disciplinasMatriculadas'
