@@ -42,11 +42,11 @@ findNotasAluno matrAluno (x : xs) =
     notas = snd x
 
 exibeDisciplina :: Disciplina -> String
-exibeDisciplina d = nome d++ " - " ++ show (codigo d)
+exibeDisciplina d = nome d ++ " - " ++ show (codigo d)
 
 toString :: Disciplina -> String
 toString disciplina =
-  show codigo' ++ ";" ++ nome' ++ ";" ++ show creditos' ++ ";" ++ show descartaNotaMaisBaixa' ++ ";" ++ show notas'
+  show codigo' ++ ";" ++ nome' ++ ";" ++ show qtdDeAulas' ++ ";" ++ show descartaNotaMaisBaixa' ++ ";" ++ show notas'
   where
     codigo' = codigo disciplina
     nome' = nome disciplina
