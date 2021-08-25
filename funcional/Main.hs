@@ -1,9 +1,10 @@
 module Main where
 
 import Aluno (Aluno, nome, matricula, matriculas, newAluno)
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor)
+import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor, carregaDisciplina, carregaDisciplinas)
 import DataSaver (salvaAluno, salvaProfessor)
-import Professor (Professor, nome, matricula, matriculas, newProfessor)
+import Professor (Professor, nome, matricula, disciplinasLecionadas, matriculas, newProfessor)
+import Disciplina (Disciplina, exibeDisciplina, codigo)
 import Usuario (Usuario, autentica)
 
 main :: IO ()
@@ -119,6 +120,9 @@ telaProf matricula' = do
   let professores =  DataLoader.carregaProfessores arquivoProfessores
   let professor = DataLoader.carregaProfessor (read matricula') professores
 
+  arquivoDisciplinas <- leArquivo "./data/disciplinas.csv"
+  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+
   putStrLn(
     "\n--------------------------\n"
     ++ "Usuário: "
@@ -126,6 +130,25 @@ telaProf matricula' = do
     ++ " - "
     ++ Professor.nome professor
     ++ "\n\n1) Visualizar disciplinas\n2) Registrar aula\n3) Cadastrar prova")
+
+  putStr "Qual a opcao selecionada? "
+  opcao <- getLine
+
+  if opcao == "1" then putStrLn (exibeDisciplinas (Professor.disciplinasLecionadas professor) disciplinas)
+  else putStrLn "Opcao inválida"
+
+getDisciplina :: Int -> [Disciplina] -> String
+getDisciplina codigoDisciplina disciplinas = do
+  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
+  Disciplina.exibeDisciplina disciplina ++ "\n"
+
+exibeDisciplinas :: [Int] -> [Disciplina] -> String
+exibeDisciplinas _ [] = ""
+exibeDisciplinas [] _ = ""
+exibeDisciplinas (c : cs) (d : ds) =
+  if c == Disciplina.codigo d
+    then getDisciplina c (d : ds) ++ exibeDisciplinas cs ds
+    else exibeDisciplinas (c:cs) ds
 
 
 telaAdmin :: IO ()
