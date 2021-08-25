@@ -1,7 +1,7 @@
 module Main where
 
-import Aluno (matriculas, newAluno)
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo)
+import Aluno (Aluno, nome, matricula, matriculas, newAluno)
+import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno)
 import DataSaver (salvaAluno, salvaProfessor)
 import Professor (Professor, matriculas, newProfessor)
 import Usuario (Usuario, autentica)
@@ -28,8 +28,8 @@ opcoes = do
 
 fazerLogin :: IO ()
 fazerLogin = do
-  putStr "Digite seu nome de usuário: "
-  nomeDeUsuario <- getLine
+  putStr "Digite sua matrícula: "
+  matriculaUsuario <- getLine
 
   putStr "Digite sua senha: "
   senha <- getLine
@@ -37,12 +37,12 @@ fazerLogin = do
   arquivoUsuarios <- leArquivo "./data/usuarios.csv"
   let usuariosDisponiveis = carregaUsuarios arquivoUsuarios
 
-  let autenticacao = Usuario.autentica nomeDeUsuario senha usuariosDisponiveis
+  let autenticacao = Usuario.autentica  matriculaUsuario senha usuariosDisponiveis
   let autenticado = fst autenticacao
   let role = snd autenticacao
 
   if autenticado
-    then tela role
+    then tela matriculaUsuario role
     else
       putStrLn
         "Usuario ou senha invalido"
@@ -92,12 +92,26 @@ cadastraAluno matricula nickname nome senha = do
   where
     aluno = newAluno (read matricula) nome []
 
-tela :: String -> IO ()
-tela role
+tela :: String -> String -> IO ()
+tela matricula role
   | role == "prof" = telaProf
   | role == "admin" = telaAdmin
-  | role == "aluno" = telaAluno
+  | role == "aluno" = telaAluno matricula
   | otherwise = putStrLn "Role invalido"
+
+telaAluno :: String -> IO ()
+telaAluno matricula' = do
+  arquivoAlunos <- leArquivo "./data/alunos.csv"
+  let alunos = DataLoader.carregaAlunos arquivoAlunos
+  let aluno = DataLoader.carregaAluno (read matricula') alunos
+
+  putStrLn (
+    "\n--------------------------\n"
+    ++ "Usuário: "
+    ++ show (Aluno.matricula aluno)
+    ++ " - "
+    ++ nome aluno
+    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral")
 
 telaProf :: IO ()
 telaProf =
@@ -106,7 +120,3 @@ telaProf =
 telaAdmin :: IO ()
 telaAdmin =
   putStrLn "Tela de admin"
-
-telaAluno :: IO ()
-telaAluno =
-  putStrLn "Tela de aluno"
