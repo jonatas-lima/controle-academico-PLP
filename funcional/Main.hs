@@ -134,17 +134,19 @@ telaAluno matricula' = do
             else putStrLn "Opção inválida"
 
 visualizarDisciplinas :: Aluno -> IO ()
-visualizarDisciplinas aluno =
-  putStrLn (
-        "" 
-        ++ show (Aluno.toStringDisciplinas aluno))
+visualizarDisciplinas aluno = do
+  let codigosDisciplinas = read (Aluno.toStringDisciplinas aluno) :: [Int]
+
+
+
+  print (Aluno.toStringDisciplinas aluno)
 
 realizarMatricula :: IO ()
-realizarMatricula = 
+realizarMatricula =
   putStrLn "Realizar matrícula..."
 
 visualizarMediaGeral :: IO ()
-visualizarMediaGeral = 
+visualizarMediaGeral =
   putStrLn "Visualizar média geral..."
   -- putStrLn (
   --       "" 
