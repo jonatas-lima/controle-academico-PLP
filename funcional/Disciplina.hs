@@ -43,7 +43,7 @@ findNotasAluno matrAluno (x : xs) =
 
 toString :: Disciplina -> String
 toString disciplina =
-  show codigo' ++ "," ++ nome' ++ "," ++ show creditos' ++ "," ++ show descartaNotaMaisBaixa' ++ "," ++ show notas'
+  show codigo' ++ ";" ++ nome' ++ ";" ++ show creditos' ++ ";" ++ show descartaNotaMaisBaixa' ++ ";" ++ show notas'
   where
     codigo' = codigo disciplina
     nome' = nome disciplina

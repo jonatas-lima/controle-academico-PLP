@@ -1,10 +1,11 @@
 module Main where
 
-import Aluno (Aluno, nome, matricula, matriculas, newAluno)
-import DataLoader (carregaAlunos, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno, carregaProfessor)
+import Aluno (Aluno, nome, matricula, disciplinasMatriculadas, matriculas, newAluno, toStringDisciplinas, mediaTotal, toString)
+import DataLoader (carregaAlunos, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo, carregaAluno)
 import DataSaver (salvaAluno, salvaProfessor)
-import Professor (Professor, nome, matricula, matriculas, newProfessor)
+import Professor (Professor, nome, matricula, matriculas, newProfessor, toString)
 import Usuario (Usuario, autentica)
+import Control.Monad.Trans.State.Strict (put)
 
 main :: IO ()
 main =
@@ -14,10 +15,12 @@ opcoes :: IO ()
 opcoes = do
   putStrLn
     ( "1) Fazer login\n"
-        ++ "2) Novo usuário? Fazer cadastro\n"
+      ++ "2) Novo usuário? Fazer cadastro\n"
     )
 
   opcao <- getLine
+
+  putStrLn ""
 
   if opcao == "1"
     then fazerLogin
@@ -102,6 +105,9 @@ tela matricula role
 telaAluno :: String -> IO ()
 telaAluno matricula' = do
   arquivoAlunos <- leArquivo "./data/alunos.csv"
+  
+  putStrLn (arquivoAlunos !! 1)
+
   let alunos = DataLoader.carregaAlunos arquivoAlunos
   let aluno = DataLoader.carregaAluno (read matricula') alunos
 
@@ -111,13 +117,46 @@ telaAluno matricula' = do
     ++ show (Aluno.matricula aluno)
     ++ " - "
     ++ Aluno.nome aluno
-    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral")
+    ++ "\n\n1) Visualizar disciplinas\n2) Realizar Matricula\n3) Visualizar média geral\n")
+
+  opcao <- getLine
+
+  putStrLn ""
+
+  if opcao == "1"
+    then visualizarDisciplinas aluno
+    else
+      if opcao == "2"
+        then realizarMatricula
+        else
+          if opcao == "3"
+            then visualizarMediaGeral
+            else putStrLn "Opção inválida"
+
+visualizarDisciplinas :: Aluno -> IO ()
+visualizarDisciplinas aluno =
+  putStrLn (
+        "" 
+        ++ show (Aluno.toStringDisciplinas aluno))
+
+realizarMatricula :: IO ()
+realizarMatricula = 
+  putStrLn "Realizar matrícula..."
+
+visualizarMediaGeral :: IO ()
+visualizarMediaGeral = 
+  putStrLn "Visualizar média geral..."
+  -- putStrLn (
+  --       "" 
+  --       ++ show (Aluno.toStringDisciplinas aluno))
 
 telaProf :: String -> IO ()
 telaProf matricula' = do
   arquivoProfessores <- leArquivo "./data/professores.csv"
   let professores =  DataLoader.carregaProfessores arquivoProfessores
   let professor = DataLoader.carregaProfessor (read matricula') professores
+
+  putStrLn (Professor.toString professor)
 
   putStrLn(
     "\n--------------------------\n"
