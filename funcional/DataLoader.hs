@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+-- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module DataLoader where
 
 import Aluno (Aluno (..))
@@ -43,15 +43,15 @@ parseProfessor linha =
       Professor.disciplinasLecionadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
 
 carregaAluno :: Int -> [Aluno] -> Aluno
-carregaAluno matricula' (a:as) =
-  if Aluno.matricula a == matricula' then a
-  else carregaAluno matricula' as
+carregaAluno matricula' (a:as)
+  | Aluno.matricula a == matricula' = a
+  | otherwise = carregaAluno matricula' as
 
 parseAluno :: String -> Aluno
 parseAluno linha =
@@ -61,7 +61,7 @@ parseAluno linha =
       Aluno.disciplinasMatriculadas = read (dados !! 2) :: [Int]
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 parseDisciplina :: String -> Disciplina
 parseDisciplina linha =
@@ -73,7 +73,7 @@ parseDisciplina linha =
       Disciplina.notas = parseAlunosMatriculados (dados !! 4)
     }
   where
-    dados = splitOn "," linha
+    dados = splitOn ";" linha
 
 carregaDisciplinas :: [String] -> [Disciplina]
 carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]

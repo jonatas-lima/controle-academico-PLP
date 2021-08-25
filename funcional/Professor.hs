@@ -22,7 +22,7 @@ numDisciplinasLecionadas professor = length (disciplinasLecionadas professor)
 
 toString :: Professor -> String
 toString professor =
-  show matricula' ++ "," ++ nome' ++ "," ++ show disciplinasLecionadas'
+  show matricula' ++ ";" ++ nome' ++ ";" ++ show disciplinasLecionadas'
   where
     matricula' = matricula professor
     nome' = nome professor
