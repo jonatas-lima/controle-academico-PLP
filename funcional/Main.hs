@@ -197,7 +197,7 @@ telaProf matricula' = do
         then do
           putStr "Código da disciplina: "
           codigo <- getLine
-          registraAula disciplinasDoProf codigo
+          registraAula professor $ read codigo
         else
           if opcao == "3"
             then putStrLn "Cadastra prova"
@@ -237,9 +237,9 @@ exibeDisciplinasProfessor (c : cs) (d : ds) =
     then getDisciplina c (d : ds) ++ exibeDisciplinasProfessor cs ds
     else exibeDisciplinasProfessor (c : cs) ds
 
-registraAula :: [Int] -> String -> IO ()
-registraAula x codigo =
-  if Professor.temDisciplina (read codigo) x
+registraAula :: Professor -> Int -> IO ()
+registraAula professor codigoDisciplina =
+  if Professor.temDisciplina professor codigoDisciplina
     then putStrLn "Registrado"
     else putStrLn "Disciplina inválida"
 
@@ -262,7 +262,32 @@ painelAdm opcao
   | otherwise = putStrLn "opcao invalida"
 
 telaAssociacaoProfessor :: IO ()
-telaAssociacaoProfessor = putStrLn "associa professor"
+telaAssociacaoProfessor = do
+  clearScreen
+
+  arquivoProfessores <- DataLoader.leArquivo "./data/professores.csv"
+  arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
+  let professores = DataLoader.carregaProfessores arquivoProfessores
+  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+
+  putStrLn "Professores disponíveis:"
+  putStr $ Controle.listaProfessoresDisponiveis professores
+
+  putStr "Matrícula do professor a ser associado > "
+  matricula <- getLine
+  clearScreen
+
+  let professor = DataLoader.carregaProfessor (read matricula) professores
+  putStrLn "Disciplinas disponíveis"
+  putStr $ Controle.listaDisciplinasDisponiveisParaAssociacao professor disciplinas
+
+  putStr "Código da disciplina a ser associada > "
+  codigo <- getLine
+  clearScreen
+
+  let disciplina = DataLoader.carregaDisciplina (read codigo) disciplinas
+
+  Controle.associaProfessorDisciplina professor disciplina disciplinas
 
 listaAlunosSemMatriculas :: IO ()
 listaAlunosSemMatriculas = putStrLn "lista alunos sem matriculas"
