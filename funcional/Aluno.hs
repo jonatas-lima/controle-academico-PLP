@@ -59,9 +59,11 @@ getDisciplinasNaoMatriculadas (c : cs) disciplinas =
 opcoesDisponiveis :: String
 opcoesDisponiveis =
   "\n\n1) Visualizar disciplinas\n"
-    ++ "2) Realizar Matricula\n"
-    ++ "3) Visualizar média geral\n"
-    ++ "4) Sair\n"
+    ++ "2) Realizar matrícula\n"
+    ++ "3) Cancelar matrícula\n"
+    ++ "4) Visualizar média geral\n"
+    ++ "5) Sair do sistema\n"
+    ++ "6) Fazer Logoff\n"
 
 toString :: Aluno -> String
 toString aluno =
