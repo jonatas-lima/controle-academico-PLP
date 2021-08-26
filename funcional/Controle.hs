@@ -60,6 +60,9 @@ professoresSemDisciplinas (p : ps) =
     then Professor.matricula p : professoresSemDisciplinas ps
     else professoresSemDisciplinas ps
 
+disciplinasMatriculadas :: Aluno -> [Disciplina] -> [Disciplina]
+disciplinasMatriculadas aluno disciplinas = [DataLoader.carregaDisciplina c disciplinas | c <- Aluno.disciplinasMatriculadas aluno]
+
 disciplinaComMaiorMedia :: [Disciplina] -> Disciplina
 disciplinaComMaiorMedia disciplinas = do
   let matrDisciplina = matriculaDisciplinaMaiorMedia (mediasDisciplinas disciplinas)

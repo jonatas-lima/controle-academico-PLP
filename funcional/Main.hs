@@ -12,6 +12,7 @@ import Professor (Professor)
 import qualified Professor
 import System.Console.ANSI (clearScreen)
 import qualified Usuario
+import Text.Printf
 
 main :: IO ()
 main = do
@@ -39,9 +40,12 @@ telaLogin = do
       threadDelay (10 ^ 6)
       clearScreen
       tela matriculaUsuario role
-    else
-      putStrLn
-        "Usuario ou senha invalido"
+    else do
+      putStr "\nUsuario ou senha invalido! Tente novamente!"
+      threadDelay (2 * 10 ^ 6)
+      clearScreen
+      main
+
 
 tela :: String -> String -> IO ()
 tela matricula role
@@ -49,6 +53,15 @@ tela matricula role
   | role == "admin" = telaAdmin
   | role == "aluno" = telaAluno matricula
   | otherwise = putStrLn "Role invalido"
+
+codTodasDisciplinas :: [Disciplina] -> [Int]
+codTodasDisciplinas disciplinas = [Disciplina.codigo disciplina | disciplina <- disciplinas]
+
+codFilter :: [Int] -> [Int] -> [Int]
+codFilter codD codA = filter(\cod -> not $ cod `elem` codA) codD
+
+disciplinasFilter :: [Disciplina] -> [Int] -> [Disciplina]
+disciplinasFilter disciplinas cods = filter(\cod -> Disciplina.codigo cod `elem` cods) disciplinas
 
 telaAluno :: String -> IO ()
 telaAluno matricula' = do
@@ -58,9 +71,12 @@ telaAluno matricula' = do
 
   arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
-  
-  let codDisciplinasAlunos = Aluno.disciplinasMatriculadas aluno
 
+  -- variaveis auxiliares
+  let codMatriculadas = Aluno.disciplinasMatriculadas aluno
+  let discMatriculadas = disciplinasFilter disciplinas codMatriculadas
+  let codNaoMatriculadas = codFilter (codTodasDisciplinas disciplinas) codMatriculadas
+  let discNaoMatriculadas = disciplinasFilter disciplinas codNaoMatriculadas
 
   putStrLn "\n\n--- Controle Acadêmico ---"
 
@@ -72,28 +88,30 @@ telaAluno matricula' = do
 
   if opcao == "1"
     then do
-      putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno (Aluno.disciplinasMatriculadas aluno) disciplinas)
+      putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno codMatriculadas disciplinas)
     else
       if opcao == "2"
-        then do
-          realizarMatricula
+        then verificaRealizarMatricula aluno discNaoMatriculadas codNaoMatriculadas
         else
           if opcao == "3"
-            then do
-              putStr "CRA: "
-              visualizarMediaGeral aluno disciplinas
-              putStrLn "\n"
-            else if opcao == "4"
-              then do
-              clearScreen
-              saiDoSistema matricula' "aluno"
-              else if opcao == "5" 
+            then matricula discMatriculadas codMatriculadas "Matricula cancelada...\n"
+            else
+              if opcao == "4"
                 then do
-                clearScreen
-                logoff matricula' "aluno"
-                else putStrLn "Opção inválida"
+                  putStr "CRA: "
+                  printf "%.2f" (Aluno.mediaTotal aluno disciplinas)
+                  putStrLn "\n"
+                else if opcao == "5"
+                  then do
+                  clearScreen
+                  saiDoSistema matricula' "aluno"
+                  else if opcao == "6"
+                    then do
+                    clearScreen
+                    logoff matricula' "aluno"
+                    else putStrLn "Opção inválida"
 
-  if opcao /= "4" && opcao /= "5"
+  if opcao /= "5" && opcao /= "6"
   then do
     putStr "Pressione enter para continuar..."
     x <- getLine
@@ -108,7 +126,7 @@ opcoesAluno aluno =
 getDisciplinaAluno :: Aluno -> Int -> [Disciplina] -> String
 getDisciplinaAluno aluno codigoDisciplina disciplinas = do
   let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
-  Disciplina.exibeDisciplina disciplina ++ "\t\t - " ++ show (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
+  Disciplina.exibeDisciplina disciplina ++ "\t - " ++ printf "%.2f" (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
 
 exibeDisciplinasAluno :: Aluno -> [Int] -> [Disciplina] -> String
 exibeDisciplinasAluno aluno _ [] = ""
@@ -118,13 +136,36 @@ exibeDisciplinasAluno aluno (c : cs) (d : ds) =
     then getDisciplinaAluno aluno c (d : ds) ++ exibeDisciplinasAluno aluno cs ds
     else exibeDisciplinasAluno aluno (c : cs) ds
 
-realizarMatricula :: IO ()
-realizarMatricula =
-  putStrLn "Realizar matrícula..."
+-- verificar se o aluno pode realizar matricula
+verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
+verificaRealizarMatricula aluno disciplinas codD = do
+  if Aluno.numDisciplinasMatriculadas aluno == 4
+    then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula aluno) ++ "] já possui 4 disciplinas matriculadas!\n")
+  else matricula disciplinas codD "Matricula realizada...\n"
 
-visualizarMediaGeral :: Aluno -> [Disciplina] -> IO ()
-visualizarMediaGeral aluno disciplinas =
-  putStr (show (Aluno.mediaTotal aluno disciplinas))
+matricula :: [Disciplina] -> [Int] -> String -> IO ()
+matricula disciplinas codD stringMatricula = do
+  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+
+  putStr "Entre com o código da cadeira: "
+
+  codigo <- getLine
+
+  putStrLn ""
+
+  -- verificar codigo da cadeira --
+  if read codigo `elem` codD
+    then putStrLn stringMatricula -- matricular ou cancelar matricula do aluno na cadeira
+    else putStrLn "Código Inválido\n"
+
+exibeDisciplinas :: [Disciplina] -> String
+exibeDisciplinas [] = ""
+exibeDisciplinas (d : ds) =
+  Disciplina.exibeDisciplina d ++ "\n" ++ exibeDisciplinas ds
+
+-- mediaGeralAluno :: Aluno -> [Disciplina] -> IO ()
+-- mediaGeralAluno aluno disciplinas = do
+--   print (Aluno.todasMedias aluno disciplinas)
 
 header :: Int -> String -> String
 header matricula nome =

@@ -1,6 +1,7 @@
 module Aluno where
 
-import Disciplina (Disciplina, codigo, findNotasAluno, mediaAluno, notas)
+import Disciplina (Disciplina)
+import qualified Disciplina
 
 data Aluno = Aluno
   { matricula :: Int,
@@ -42,23 +43,27 @@ mediaTotal aluno disciplinas =
     somaTodasMedias = sum medias
 
 todasMedias :: Aluno -> [Disciplina] -> [Double]
-todasMedias aluno = todasMediasAux (matricula aluno) (disciplinasMatriculadas aluno)
+todasMedias aluno disciplinas =
+  [Disciplina.mediaAluno (matricula aluno) d | d <- getDisciplinasMatriculadas (disciplinasMatriculadas aluno) disciplinas]
 
-todasMediasAux :: Int -> [Int] -> [Disciplina] -> [Double]
-todasMediasAux _ _ [] = []
-todasMediasAux _ [] _ = []
-todasMediasAux matricula (codDisciplina : cs) (disciplina : ds) =
-  if codDisciplina == codigo disciplina
-    then Disciplina.mediaAluno matricula disciplina : todasMediasAux matricula cs ds
-    else todasMediasAux matricula cs ds
+getDisciplinasMatriculadas :: [Int] -> [Disciplina] -> [Disciplina]
+getDisciplinasMatriculadas [] _ = []
+getDisciplinasMatriculadas (c : cs) disciplinas =
+  filter (\disc -> Disciplina.codigo disc == c) disciplinas ++ getDisciplinasMatriculadas cs disciplinas
+
+getDisciplinasNaoMatriculadas :: [Int] -> [Disciplina] -> [Disciplina]
+getDisciplinasNaoMatriculadas [] _ = []
+getDisciplinasNaoMatriculadas (c : cs) disciplinas =
+  filter (\disc -> Disciplina.codigo disc /= c) disciplinas ++ getDisciplinasMatriculadas cs disciplinas
 
 opcoesDisponiveis :: String
 opcoesDisponiveis =
   "\n\n1) Visualizar disciplinas\n"
-    ++ "2) Realizar Matricula\n"
-    ++ "3) Visualizar média geral\n"
-    ++ "4) Sair\n"
-    ++ "5) Logoff\n"
+    ++ "2) Realizar matrícula\n"
+    ++ "3) Cancelar matrícula\n"
+    ++ "4) Visualizar média geral\n"
+    ++ "5) Sair do sistema\n"
+    ++ "6) Fazer Logoff\n"
 
 toString :: Aluno -> String
 toString aluno =
