@@ -94,7 +94,7 @@ telaAluno matricula' = do
         then verificaRealizarMatricula aluno discNaoMatriculadas codNaoMatriculadas
         else
           if opcao == "3"
-            then matricula discMatriculadas codMatriculadas "Matricula cancelada...\n"
+            then cancelarMatricula discMatriculadas codMatriculadas "Matricula cancelada...\n"
             else
               if opcao == "4"
                 then do
@@ -141,10 +141,27 @@ verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
 verificaRealizarMatricula aluno disciplinas codD = do
   if Aluno.numDisciplinasMatriculadas aluno == 4
     then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula aluno) ++ "] já possui 4 disciplinas matriculadas!\n")
-  else matricula disciplinas codD "Matricula realizada...\n"
+  else realizarMatricula disciplinas codD "Matricula realizada...\n"
 
-matricula :: [Disciplina] -> [Int] -> String -> IO ()
-matricula disciplinas codD stringMatricula = do
+realizarMatricula :: [Disciplina] -> [Int] -> String -> IO ()
+realizarMatricula disciplinas codD stringMatricula = do
+  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+
+  putStr "Entre com o código da cadeira: "
+
+  codigo <- getLine
+
+  putStrLn ""
+
+  -- verificar codigo da cadeira --
+  if read codigo `elem` codD
+    then putStrLn stringMatricula -- matricular ou cancelar matricula do aluno na cadeira
+    else putStrLn "Código Inválido\n"
+
+
+
+cancelarMatricula :: [Disciplina] -> [Int] -> String -> IO ()
+cancelarMatricula disciplinas codD stringMatricula = do
   putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
 
   putStr "Entre com o código da cadeira: "
