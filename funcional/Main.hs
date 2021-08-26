@@ -1,14 +1,13 @@
 module Main where
 
-import Aluno (Aluno, disciplinasMatriculadas, matricula, matriculas, mediaTotal, newAluno, nome, opcoesDisponiveis, toString, toStringDisciplinas)
+import Aluno (Aluno, disciplinasMatriculadas, matricula, matriculas, mediaTotal, newAluno, nome, opcoesDisponiveis, toString, mediaDisciplina, todasMedias, todasMediasAux)
 import DataLoader (carregaAluno, carregaAlunos, carregaDisciplina, carregaDisciplinas, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
 import DataSaver (salvaAluno, salvaProfessor)
-import Disciplina (Disciplina, codigo, exibeDisciplina)
 import Professor (Professor, disciplinasLecionadas, matricula, matriculas, newProfessor, nome, opcoesDisponiveis, temDisciplina)
+import Disciplina (Disciplina, codigo, exibeDisciplina, mediaAluno, notas)
 import Usuario (Usuario, autentica)
 import System.Console.ANSI
 import Control.Concurrent
-
 
 main :: IO ()
 main = do
@@ -98,40 +97,68 @@ telaAluno matricula' = do
   let alunos = DataLoader.carregaAlunos arquivoAlunos
   let aluno = DataLoader.carregaAluno (read matricula') alunos
 
+  arquivoDisciplinas <- leArquivo "./data/disciplinas.csv"
+  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+
+  putStrLn "\n\n--- Controle Acadêmico ---"
+
   putStrLn (opcoesAluno aluno)
 
+  putStr "Qual a opcao selecionada? "
   opcao <- getLine
 
   putStrLn ""
 
   if opcao == "1"
-    then visualizarDisciplinas aluno
+    then do
+      clearScreen
+      putStrLn "-- Visualizando Disciplinas --\n"
+      putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno (Aluno.disciplinasMatriculadas aluno) disciplinas)
     else
       if opcao == "2"
-        then realizarMatricula
+        then do
+          clearScreen
+          putStrLn "-- Realizar Matrícula --\n"
+          realizarMatricula
         else
           if opcao == "3"
-            then visualizarMediaGeral
-            else putStrLn "Opção inválida"
+            then do
+              clearScreen
+              putStrLn "-- Visualizar Média Geral --\nCRA: "
+              -- visualizarMediaGeral aluno disciplinas
+            else
+              if opcao == "4"
+                then putStrLn "Saindo do sistema!"
+                else putStrLn "Opção inválida"
+
+  if opcao /= "4"
+    then telaAluno matricula'
+    else putStrLn ""
 
 opcoesAluno :: Aluno -> String
 opcoesAluno aluno =
   header (Aluno.matricula aluno) (Aluno.nome aluno) ++ Aluno.opcoesDisponiveis
 
-visualizarDisciplinas :: Aluno -> IO ()
-visualizarDisciplinas aluno =
-  putStrLn
-    ( ""
-        ++ show (Aluno.toStringDisciplinas aluno)
-    )
+getDisciplinaAluno :: Aluno -> Int -> [Disciplina] -> String
+getDisciplinaAluno aluno codigoDisciplina disciplinas = do
+  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
+  Disciplina.exibeDisciplina disciplina ++ "\t\t - " ++ show (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
+
+exibeDisciplinasAluno :: Aluno -> [Int] -> [Disciplina] -> String
+exibeDisciplinasAluno aluno _ [] = ""
+exibeDisciplinasAluno aluno [] _ = ""
+exibeDisciplinasAluno aluno (c : cs) (d : ds) =
+  if c == Disciplina.codigo d
+    then getDisciplinaAluno aluno c (d : ds) ++ exibeDisciplinasAluno aluno cs ds
+    else exibeDisciplinasAluno aluno (c : cs) ds
 
 realizarMatricula :: IO ()
 realizarMatricula =
   putStrLn "Realizar matrícula..."
 
-visualizarMediaGeral :: IO ()
-visualizarMediaGeral =
-  putStrLn "Visualizar média geral..."
+-- visualizarMediaGeral :: Aluno -> [Disciplina] -> IO ()
+-- visualizarMediaGeral aluno (d:ds) =
+  -- putStr (show Disciplina.mediaAluno (Aluno.matricula aluno) (Disciplina.notas d))
 
 header :: Int -> String -> String
 header matricula nome =

@@ -75,6 +75,9 @@ parseDisciplina linha =
   where
     dados = splitOn ";" linha
 
+parseAlunosMatriculados :: String -> [(Int, [Double])]
+parseAlunosMatriculados = read
+
 carregaDisciplinas :: [String] -> [Disciplina]
 carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]
 
@@ -82,6 +85,3 @@ carregaDisciplina :: Int -> [Disciplina] -> Disciplina
 carregaDisciplina codigo' (d:ds)=
   if Disciplina.codigo d == codigo' then d
   else carregaDisciplina codigo' ds
-
-parseAlunosMatriculados :: String -> [(Int, [Double])]
-parseAlunosMatriculados = read
