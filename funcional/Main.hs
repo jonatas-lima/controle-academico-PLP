@@ -82,6 +82,7 @@ painelAluno opcao aluno disciplinas
   | opcao == "3" = do
     clearScreen
     putStrLn "-- Visualizar Média Geral --\nCRA: "
+    mediaGeralAluno aluno disciplinas
   | opcao == "4" = do
     putStrLn "Saindo do sistema!"
   | otherwise = do
@@ -110,9 +111,9 @@ realizarMatricula :: IO ()
 realizarMatricula =
   putStrLn "Realizar matrícula..."
 
--- visualizarMediaGeral :: Aluno -> [Disciplina] -> IO ()
--- visualizarMediaGeral aluno (d:ds) =
--- putStr (show Disciplina.mediaAluno (Aluno.matricula aluno) (Disciplina.notas d))
+mediaGeralAluno :: Aluno -> [Disciplina] -> IO ()
+mediaGeralAluno aluno disciplinas = do
+  print (Aluno.todasMedias aluno disciplinas)
 
 header :: Int -> String -> String
 header matricula nome =
