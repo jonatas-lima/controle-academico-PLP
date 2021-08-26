@@ -8,27 +8,34 @@ data Disciplina = Disciplina
     descartaNotaMaisBaixa :: Bool
   }
 
+alunosMatriculados :: Disciplina -> [Int]
+alunosMatriculados disciplina = [fst aluno | aluno <- notas disciplina]
+
 -- / Calcula a média da turma
-mediaDisciplina :: [Int] -> Disciplina -> Double
-mediaDisciplina matriculas disciplina =
-  somaMedias matriculas tuplasMatriculaNotas / numAlunos
+mediaDisciplina :: Disciplina -> Double
+mediaDisciplina disciplina =
+  somaMedias (notas disciplina) / fromIntegral numAlunos
   where
-    numAlunos = fromIntegral (length tuplasMatriculaNotas)
-    tuplasMatriculaNotas = notas disciplina
+    numAlunos = length (notas disciplina)
 
 -- / Soma das médias da turma
-somaMedias :: [Int] -> [(Int, [Double])] -> Double
-somaMedias [] _ = 0
-somaMedias (a : as) tuplasMatriculaNotas =
-  mediaAluno a tuplasMatriculaNotas + somaMedias as tuplasMatriculaNotas
+somaMedias :: [(Int, [Double])] -> Double
+somaMedias [] = 0
+somaMedias (n : ns) =
+  media + somaMedias ns
+  where
+    matrAluno = fst n
+    notasAluno = snd n
+    numNotas = length notasAluno
+    media = sum notasAluno / fromIntegral numNotas
 
 -- / Calcula a média de um aluno a partir de sua matrícula
-mediaAluno :: Int -> [(Int, [Double])] -> Double
-mediaAluno _ [] = 0
-mediaAluno matrAluno tuplasMatriculaNotas =
-  sum notas / fromIntegral (length notas)
+mediaAluno :: Int -> Disciplina -> Double
+mediaAluno matrAluno disciplina =
+  sum notas' / fromIntegral numNotas
   where
-    notas = findNotasAluno matrAluno tuplasMatriculaNotas
+    notas' = findNotasAluno matrAluno (notas disciplina)
+    numNotas = length notas'
 
 -- / Acha as notas de um aluno a partir de sua matrícula
 findNotasAluno :: Int -> [(Int, [Double])] -> [Double]
