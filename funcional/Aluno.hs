@@ -58,6 +58,7 @@ opcoesDisponiveis =
     ++ "2) Realizar Matricula\n"
     ++ "3) Visualizar média geral\n"
     ++ "4) Sair\n"
+    ++ "5) Logoff\n"
 
 toString :: Aluno -> String
 toString aluno =

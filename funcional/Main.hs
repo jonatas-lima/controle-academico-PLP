@@ -31,7 +31,7 @@ telaLogin = do
 
   if autenticado
     then do 
-      putStrLn "Login realizado..."
+      putStrLn "\nLogin realizado..."
       threadDelay (2*10^6)
       clearScreen
       tela matriculaUsuario role
@@ -111,29 +111,34 @@ telaAluno matricula' = do
 
   if opcao == "1"
     then do
-      clearScreen
-      putStrLn "-- Visualizando Disciplinas --\n"
       putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno (Aluno.disciplinasMatriculadas aluno) disciplinas)
     else
       if opcao == "2"
         then do
-          clearScreen
-          putStrLn "-- Realizar Matrícula --\n"
           realizarMatricula
         else
           if opcao == "3"
             then do
-              clearScreen
-              putStrLn "-- Visualizar Média Geral --\nCRA: "
+              putStr "CRA: "
               -- visualizarMediaGeral aluno disciplinas
-            else
-              if opcao == "4"
-                then putStrLn "Saindo do sistema!"
+              putStrLn "\n"
+            else if opcao == "4"
+              then do
+              clearScreen
+              saiDoSistema matricula' "aluno"
+              else if opcao == "5" 
+                then do
+                clearScreen
+                logoff matricula' "aluno"
                 else putStrLn "Opção inválida"
 
-  if opcao /= "4"
-    then telaAluno matricula'
-    else putStrLn ""
+  if opcao /= "4" && opcao /= "5"
+  then do
+    putStr "Pressione enter para continuar..."
+    x <- getLine
+    clearScreen
+    telaAluno matricula'
+  else putStrLn ""
 
 opcoesAluno :: Aluno -> String
 opcoesAluno aluno =
@@ -255,7 +260,7 @@ saiDoSistema matricula' role' = do
 
 logoff :: String -> String -> IO ()
 logoff matricula' role' =  do
-  putStr "Deseja realizar o logoff? (s/n)"
+  putStr "Deseja realizar o logoff? (s/n) "
   opcao <- getLine
   if opcao == "s" then do
      putStrLn "Logoff realizado."
