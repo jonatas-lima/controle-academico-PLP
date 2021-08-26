@@ -1,4 +1,3 @@
--- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module DataLoader where
 
 import Aluno (Aluno (..))
@@ -31,9 +30,10 @@ carregaProfessores :: [String] -> [Professor]
 carregaProfessores linhas = [parseProfessor linha | linha <- linhas]
 
 carregaProfessor :: Int -> [Professor] -> Professor
-carregaProfessor matricula' (p:ps) =
-  if Professor.matricula p == matricula' then p
-  else carregaProfessor matricula' ps
+carregaProfessor matricula (p : ps) =
+  if Professor.matricula p == matricula
+    then p
+    else carregaProfessor matricula ps
 
 parseProfessor :: String -> Professor
 parseProfessor linha =
@@ -49,7 +49,7 @@ carregaAlunos :: [String] -> [Aluno]
 carregaAlunos linhas = [parseAluno linha | linha <- linhas]
 
 carregaAluno :: Int -> [Aluno] -> Aluno
-carregaAluno matricula' (a:as)
+carregaAluno matricula' (a : as)
   | Aluno.matricula a == matricula' = a
   | otherwise = carregaAluno matricula' as
 
@@ -82,6 +82,16 @@ carregaDisciplinas :: [String] -> [Disciplina]
 carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]
 
 carregaDisciplina :: Int -> [Disciplina] -> Disciplina
-carregaDisciplina codigo' (d:ds)=
-  if Disciplina.codigo d == codigo' then d
-  else carregaDisciplina codigo' ds
+carregaDisciplina codigo' (d : ds) =
+  if Disciplina.codigo d == codigo'
+    then d
+    else carregaDisciplina codigo' ds
+
+carregaDisciplinasPorCodigo :: [Int] -> [Disciplina] -> [Disciplina]
+carregaDisciplinasPorCodigo [] _ = []
+carregaDisciplinasPorCodigo (c : cs) disciplinas =
+  if c `elem` codDisciplinas
+    then carregaDisciplina c disciplinas : carregaDisciplinasPorCodigo cs disciplinas
+    else carregaDisciplinasPorCodigo cs disciplinas
+  where
+    codDisciplinas = map Disciplina.codigo disciplinas
