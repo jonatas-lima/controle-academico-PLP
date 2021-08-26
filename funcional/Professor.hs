@@ -25,7 +25,12 @@ opcoesDisponiveis =
   "\n\n1) Visualizar disciplinas\n"
     ++ "2) Registrar aula\n"
     ++ "3) Cadastrar prova\n"
-    ++ "4) Sair\n"
+    ++ "4) Sair do sistema\n"
+    ++ "5) Fazer logoff\n"
+
+temDisciplina :: Int -> [Int]-> Bool
+temDisciplina n [] = False
+temDisciplina n (x:xs) = if n == x then True else temDisciplina n xs
 
 toString :: Professor -> String
 toString professor =
