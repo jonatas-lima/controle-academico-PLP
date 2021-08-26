@@ -2,8 +2,9 @@ module Controle where
 
 import Aluno (Aluno)
 import qualified Aluno
-import DataLoader (carregaAlunos, carregaDisciplina, carregaProfessores, leArquivo)
-import DataSaver (salvaAluno, salvaProfessor)
+import DataLoader
+import DataLoader (carregaDisciplinasPorCodigo)
+import DataSaver (atualizaProfessor, salvaAluno, salvaProfessor)
 import Disciplina (Disciplina)
 import qualified Disciplina
 import Professor (Professor)
@@ -40,9 +41,6 @@ cadastraAluno matrAluno nomeAluno senha = do
 existeMatricula :: Int -> [Int] -> Bool
 existeMatricula matr matriculas = matr `elem` matriculas
 
-associaProfessorDisciplina :: Professor -> Disciplina -> Bool
-associaProfessorDisciplina prof disciplina = True
-
 matriculaAluno :: Aluno -> Disciplina -> Bool
 matriculaAluno aluno disciplina = True
 
@@ -59,6 +57,43 @@ professoresSemDisciplinas (p : ps) =
   if null (Professor.disciplinasLecionadas p)
     then Professor.matricula p : professoresSemDisciplinas ps
     else professoresSemDisciplinas ps
+
+listaProfessoresDisponiveis :: [Professor] -> String
+listaProfessoresDisponiveis [] = ""
+listaProfessoresDisponiveis (p : ps) =
+  if Professor.numDisciplinasLecionadas p < 3
+    then formataListagemProfessor p ++ "\n" ++ listaProfessoresDisponiveis ps
+    else listaProfessoresDisponiveis ps
+
+listaDisciplinasDisponiveisParaAssociacao :: Professor -> [Disciplina] -> String
+listaDisciplinasDisponiveisParaAssociacao professor disciplinas =
+  formataListagemDisciplinas $ DataLoader.carregaDisciplinasPorCodigo codDisciplinasDisponiveis disciplinas
+  where
+    codDisciplinas = map Disciplina.codigo disciplinas
+    disciplinasLecionadas = Professor.disciplinasLecionadas professor
+    codDisciplinasDisponiveis = filter (`notElem` disciplinasLecionadas) codDisciplinas
+
+formataListagemDisciplinas :: [Disciplina] -> String
+formataListagemDisciplinas [] = ""
+formataListagemDisciplinas (d : ds) = formataListagemDisciplina d ++ "\n" ++ formataListagemDisciplinas ds
+
+formataListagemDisciplina :: Disciplina -> String
+formataListagemDisciplina disciplina = show (Disciplina.codigo disciplina) ++ "\t - \t" ++ Disciplina.nome disciplina
+
+formataListagemProfessor :: Professor -> String
+formataListagemProfessor professor = show (Professor.matricula professor) ++ "\t - \t" ++ Professor.nome professor
+
+associaProfessorDisciplina :: Professor -> Disciplina -> [Disciplina] -> IO ()
+associaProfessorDisciplina professor disciplina disciplinas =
+  if notElem (Disciplina.codigo disciplina) codDisciplinas || Professor.temDisciplina professor (Disciplina.codigo disciplina)
+    then putStrLn "Erro ao associar professor à disciplina"
+    else do
+      DataSaver.atualizaProfessor (Professor.matricula professor) professorAtualizado
+      putStrLn "Disciplina associada!"
+  where
+    codDisciplinas = map Disciplina.codigo disciplinas
+    disciplinasLecionadas = Professor.disciplinasLecionadas professor
+    professorAtualizado = Professor.newProfessor (Professor.matricula professor) (Professor.nome professor) (Disciplina.codigo disciplina : Professor.disciplinasLecionadas professor)
 
 disciplinasMatriculadas :: Aluno -> [Disciplina] -> [Disciplina]
 disciplinasMatriculadas aluno disciplinas = [DataLoader.carregaDisciplina c disciplinas | c <- Aluno.disciplinasMatriculadas aluno]
