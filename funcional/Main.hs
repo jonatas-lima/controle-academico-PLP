@@ -40,11 +40,22 @@ telaLogin = do
       threadDelay (10 ^ 6)
       clearScreen
       tela matriculaUsuario role
-    else do
-      putStr "\nUsuario ou senha invalido! Tente novamente!"
-      threadDelay (2 * 10 ^ 6)
-      clearScreen
-      main
+      else do
+        putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
+        opcao <- getLine
+        if opcao == "s"
+          then do
+            clearScreen
+            telaLogin
+            else if opcao == "n"
+              then do
+                  putStr "\nSaindo..."
+                  threadDelay (10^6)
+                else do
+                  putStr "\nOpção inválida. Saindo do sistema por segurança."
+                  threadDelay (10^6)
+
+
 
 
 tela :: String -> String -> IO ()
@@ -183,7 +194,8 @@ telaProf matricula' = do
 
   arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
-  let disciplinasDoProf = Professor.disciplinasLecionadas professor
+  let codDisciplinasDoProf = Professor.disciplinasLecionadas professor
+  let disciplinasDoProf =  disciplinasFilter disciplinas codDisciplinasDoProf
 
   putStrLn (opcoesProfessor professor)
 
@@ -191,13 +203,15 @@ telaProf matricula' = do
   opcao <- getLine
 
   if opcao == "1"
-    then putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinasProfessor disciplinasDoProf disciplinas)
+    then putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
     else
       if opcao == "2"
         then do
-          putStr "Código da disciplina: "
+          putStrLn "Essas são as disciplinas que você leciona:"
+          putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
+          putStr "Código da disciplina para qual você deseja cadastrar aula: "
           codigo <- getLine
-          registraAula disciplinasDoProf codigo
+          registraAula codDisciplinasDoProf codigo
         else
           if opcao == "3"
             then putStrLn "Cadastra prova"
@@ -224,24 +238,11 @@ opcoesProfessor :: Professor -> String
 opcoesProfessor professor =
   header (Professor.matricula professor) (Professor.nome professor) ++ Professor.opcoesDisponiveis
 
-getDisciplina :: Int -> [Disciplina] -> String
-getDisciplina codigoDisciplina disciplinas = do
-  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
-  Disciplina.exibeDisciplina disciplina ++ "\n"
-
-exibeDisciplinasProfessor :: [Int] -> [Disciplina] -> String
-exibeDisciplinasProfessor _ [] = ""
-exibeDisciplinasProfessor [] _ = ""
-exibeDisciplinasProfessor (c : cs) (d : ds) =
-  if c == Disciplina.codigo d
-    then getDisciplina c (d : ds) ++ exibeDisciplinasProfessor cs ds
-    else exibeDisciplinasProfessor (c : cs) ds
-
 registraAula :: [Int] -> String -> IO ()
 registraAula x codigo =
   if Professor.temDisciplina (read codigo) x
-    then putStrLn "Registrado"
-    else putStrLn "Disciplina inválida"
+    then putStrLn "Registrado\n"
+    else putStrLn "Disciplina inválida\n"
 
 telaAdmin :: IO ()
 telaAdmin = do
