@@ -4,8 +4,11 @@ import Aluno (Aluno, disciplinasMatriculadas, matricula, matriculas, mediaTotal,
 import DataLoader (carregaAluno, carregaAlunos, carregaDisciplina, carregaDisciplinas, carregaProfessor, carregaProfessores, carregaUsuarios, leArquivo)
 import DataSaver (salvaAluno, salvaProfessor)
 import Disciplina (Disciplina, codigo, exibeDisciplina)
-import Professor (Professor, disciplinasLecionadas, matricula, matriculas, newProfessor, nome, opcoesDisponiveis)
+import Professor (Professor, disciplinasLecionadas, matricula, matriculas, newProfessor, nome, opcoesDisponiveis, temDisciplina)
 import Usuario (Usuario, autentica)
+import System.Console.ANSI
+import Control.Concurrent
+
 
 main :: IO ()
 main = do
@@ -28,7 +31,11 @@ telaLogin = do
   let role = snd autenticacao
 
   if autenticado
-    then tela matriculaUsuario role
+    then do 
+      putStrLn "Login realizado..."
+      threadDelay (2*10^6)
+      clearScreen
+      tela matriculaUsuario role
     else
       putStrLn
         "Usuario ou senha invalido"
@@ -142,6 +149,7 @@ telaProf matricula' = do
 
   arquivoDisciplinas <- leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+  let disciplinasDoProf = Professor.disciplinasLecionadas professor
 
   putStrLn (opcoesProfessor professor)
 
@@ -149,8 +157,28 @@ telaProf matricula' = do
   opcao <- getLine
 
   if opcao == "1"
-    then putStrLn (exibeDisciplinas (Professor.disciplinasLecionadas professor) disciplinas)
-    else putStrLn "Opcao inválida"
+    then putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinasProfessor (disciplinasDoProf) disciplinas)
+    else if opcao == "2"
+       then do
+         putStr ("Código da disciplina: ")
+         codigo <- getLine
+         registraAula disciplinasDoProf codigo
+         else if opcao == "3"
+           then putStrLn "Cadastra prova"
+           else if opcao == "4" then do
+              clearScreen
+              saiDoSistema matricula' "prof"
+              else if opcao == "5" then do
+                clearScreen
+                logoff matricula' "prof"
+                else putStrLn "Opção inválida"
+  if opcao /= "4" && opcao /= "5"
+  then do
+    putStrLn "Pressione enter para continuar..."
+    x <- getLine
+    clearScreen
+    telaProf matricula'
+  else putStrLn ""
 
 opcoesProfessor :: Professor -> String
 opcoesProfessor professor =
@@ -161,14 +189,57 @@ getDisciplina codigoDisciplina disciplinas = do
   let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
   Disciplina.exibeDisciplina disciplina ++ "\n"
 
-exibeDisciplinas :: [Int] -> [Disciplina] -> String
-exibeDisciplinas _ [] = ""
-exibeDisciplinas [] _ = ""
-exibeDisciplinas (c : cs) (d : ds) =
+exibeDisciplinasProfessor :: [Int] -> [Disciplina] -> String
+exibeDisciplinasProfessor _ [] = ""
+exibeDisciplinasProfessor [] _ = ""
+exibeDisciplinasProfessor (c : cs) (d : ds) =
   if c == Disciplina.codigo d
-    then getDisciplina c (d : ds) ++ exibeDisciplinas cs ds
-    else exibeDisciplinas (c : cs) ds
+    then getDisciplina c (d : ds) ++ exibeDisciplinasProfessor cs ds
+    else exibeDisciplinasProfessor (c : cs) ds
+
+registraAula :: [Int] -> String -> IO ()
+registraAula x codigo = do
+  if (Professor.temDisciplina (read codigo :: Int)  x)
+    then putStrLn "Registrado"
+    else putStrLn "Disciplina inválida"
+  
 
 telaAdmin :: IO ()
 telaAdmin =
   putStrLn "Tela de admin"
+
+saiDoSistema :: String -> String -> IO ()
+saiDoSistema matricula' role' = do
+  putStr "Deseja sair do sistema? (s/n) "
+  opcao <- getLine
+  if opcao == "s" then do
+    putStrLn "Saindo..."
+    threadDelay (10^6)
+    else if opcao == "n" then do
+      clearScreen
+      tela matricula' role'
+      else do
+        putStrLn "Opção inválida"
+        putStrLn "Pressione enter para continuar..."
+        x <- getLine
+        clearScreen
+        saiDoSistema matricula' role'
+
+
+logoff :: String -> String -> IO ()
+logoff matricula' role' =  do
+  putStr "Deseja realizar o logoff? (s/n)"
+  opcao <- getLine
+  if opcao == "s" then do
+     putStrLn "Logoff realizado."
+     clearScreen
+     main
+  else if opcao == "n" then do
+    clearScreen
+    tela matricula' role'
+    else do 
+      putStrLn "Opção inválida"
+      putStrLn "Pressione enter para continuar..."
+      x <- getLine
+      clearScreen
+      logoff matricula' role'
