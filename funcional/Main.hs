@@ -222,6 +222,7 @@ cancelRegistration student subjects studentCodes = do
       let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject) (removeEnrollment studentId (Disciplina.grades subject))
 
       DataSaver.updateStudent studentId newStudent
+      DataSaver.updateSubject subjectCode newSubject
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
@@ -309,9 +310,18 @@ showProfessorSubjects (c : cs) (d : ds) =
     else showProfessorSubjects (c : cs) ds
 
 registerClass :: Professor -> Int -> IO ()
-registerClass professor codeSubject =
-  if Professor.hasSubject professor codeSubject
-    then putStrLn "Registrado"
+registerClass professor subjectCode = do
+  if Professor.hasSubject professor subjectCode
+    then do
+      subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+      let subjects = DataLoader.loadSubjects subjectsFile
+      let subject = DataLoader.loadSubject subjectCode subjects
+
+      if Disciplina.numberClasses subject > 0
+        then do
+          let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject - 1) (Disciplina.grades subject)
+          DataSaver.updateSubject subjectCode newSubject
+        else putStrLn "A disciplina encontra-se encerrada!"
     else putStrLn "Disciplina inválida"
 
 adminScreen :: IO ()
