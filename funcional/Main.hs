@@ -13,6 +13,7 @@ import qualified Professor
 import System.Console.ANSI (clearScreen)
 import qualified Usuario
 import Text.Printf
+import Data.List (sort, delete)
 
 main :: IO ()
 main = do
@@ -91,10 +92,10 @@ telaAluno matricula' = do
       putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno codMatriculadas disciplinas)
     else
       if opcao == "2"
-        then verificaRealizarMatricula aluno discNaoMatriculadas codNaoMatriculadas
+        then verificaRealizarMatricula aluno discNaoMatriculadas codNaoMatriculadas codMatriculadas
         else
           if opcao == "3"
-            then cancelarMatricula discMatriculadas codMatriculadas "Matricula cancelada...\n"
+            then cancelarMatricula aluno discMatriculadas codMatriculadas
             else
               if opcao == "4"
                 then do
@@ -137,14 +138,14 @@ exibeDisciplinasAluno aluno (c : cs) (d : ds) =
     else exibeDisciplinasAluno aluno (c : cs) ds
 
 -- verificar se o aluno pode realizar matricula
-verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
-verificaRealizarMatricula aluno disciplinas codD = do
+verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
+verificaRealizarMatricula aluno disciplinas codD codA = do
   if Aluno.numDisciplinasMatriculadas aluno == 4
     then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula aluno) ++ "] já possui 4 disciplinas matriculadas!\n")
-  else realizarMatricula disciplinas codD "Matricula realizada...\n"
+  else realizarMatricula aluno disciplinas codD codA
 
-realizarMatricula :: [Disciplina] -> [Int] -> String -> IO ()
-realizarMatricula disciplinas codD stringMatricula = do
+realizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
+realizarMatricula aluno disciplinas codD codA = do
   putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
 
   putStr "Entre com o código da cadeira: "
@@ -153,15 +154,26 @@ realizarMatricula disciplinas codD stringMatricula = do
 
   putStrLn ""
 
+  let codInt = read codigo :: Int
+
   -- verificar codigo da cadeira --
-  if read codigo `elem` codD
-    then putStrLn stringMatricula -- matricular ou cancelar matricula do aluno na cadeira
+  if codInt `elem` codD
+    then do
+      let newCods = sort (codInt : codA)
+      let matAluno = Aluno.matricula aluno
+      let nomeAluno = Aluno.nome aluno
+      
+      let newAluno = Aluno.newAluno matAluno nomeAluno newCods
+
+      print newCods
+      
+      DataSaver.atualizaAluno matAluno newAluno
+
+      putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
-
-
-cancelarMatricula :: [Disciplina] -> [Int] -> String -> IO ()
-cancelarMatricula disciplinas codD stringMatricula = do
+cancelarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
+cancelarMatricula aluno disciplinas codA = do
   putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
 
   putStr "Entre com o código da cadeira: "
@@ -170,9 +182,22 @@ cancelarMatricula disciplinas codD stringMatricula = do
 
   putStrLn ""
 
+  let codInt = read codigo :: Int
+
   -- verificar codigo da cadeira --
-  if read codigo `elem` codD
-    then putStrLn stringMatricula -- matricular ou cancelar matricula do aluno na cadeira
+  if codInt `elem` codA
+    then do
+      let newCods = delete codInt codA
+      let matAluno = Aluno.matricula aluno
+      let nomeAluno = Aluno.nome aluno
+      
+      let newAluno = Aluno.newAluno matAluno nomeAluno newCods
+
+      print newCods
+      
+      DataSaver.atualizaAluno matAluno newAluno
+
+      putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
 exibeDisciplinas :: [Disciplina] -> String
