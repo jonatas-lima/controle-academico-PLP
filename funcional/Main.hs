@@ -177,8 +177,6 @@ realizarMatricula aluno disciplinas codD codA = do
       
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
 
-      print newCods
-      
       DataSaver.atualizaAluno matAluno newAluno
 
       putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
@@ -204,8 +202,6 @@ cancelarMatricula aluno disciplinas codA = do
       let nomeAluno = Aluno.nome aluno
       
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
-
-      print newCods
       
       DataSaver.atualizaAluno matAluno newAluno
 

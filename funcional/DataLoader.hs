@@ -68,8 +68,8 @@ parseDisciplina linha =
   Disciplina
     { Disciplina.codigo = read (head dados) :: Int,
       Disciplina.nome = dados !! 1,
-      Disciplina.descartaNotaMaisBaixa = read (dados !! 2) :: Bool,
-      Disciplina.qtdDeAulas = read (dados !! 3) :: Int,
+      Disciplina.qtdDeAulas = read (dados !! 2) :: Int,
+      Disciplina.descartaNotaMaisBaixa = read (dados !! 3) :: Bool,
       Disciplina.notas = parseAlunosMatriculados (dados !! 4)
     }
   where

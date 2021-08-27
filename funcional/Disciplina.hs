@@ -8,6 +8,16 @@ data Disciplina = Disciplina
     descartaNotaMaisBaixa :: Bool
   }
 
+newDisciplina :: Int -> String -> Int -> [(Int, [Double])] -> Bool -> Disciplina 
+newDisciplina codigo' nome' qtdDeAulas' notas' descartaNotaMaisBaixa' =
+  Disciplina
+    { codigo = codigo',
+      nome = nome',
+      qtdDeAulas = qtdDeAulas',
+      notas = notas',
+      descartaNotaMaisBaixa = descartaNotaMaisBaixa'
+    }
+
 alunosMatriculados :: Disciplina -> [Int]
 alunosMatriculados disciplina = [fst aluno | aluno <- notas disciplina]
 
