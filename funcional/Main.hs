@@ -178,7 +178,7 @@ enroll student subjects subjectCodes studentCode = do
   if subjectCode `elem` subjectCodes
     then do
       let newCods = sort (subjectCode : studentCode)
-      
+
       -- variaveis aluno
       let studentId = Aluno.matricula student
       let studentName = Aluno.nome student
@@ -217,12 +217,11 @@ cancelRegistration student subjects studentCode = do
       let studentId = Aluno.matricula student
       let studentName = Aluno.nome student
       let newStudent = Aluno.newAluno studentId studentName newCodes
-      
+
       DataSaver.atualizaAluno studentId newStudent
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
-
 
 showSubjectsWithoutClasses :: [Disciplina] -> String
 showSubjectsWithoutClasses [] = ""
@@ -240,11 +239,6 @@ teacherScreen id' = do
   let teacherSubjectsCode = Professor.disciplinasLecionadas teacher
   let teacherSubjects = subjectsFilter subjects teacherSubjectsCode
 
-showSubjects :: [Disciplina] -> String
-showSubjects [] = ""
-showSubjects (d : ds) =
-  Disciplina.exibeDisciplina d ++ "\n" ++ showSubjects ds
-
   putStrLn (teacherOptions teacher)
 
   putStr "Qual a opcao selecionada? "
@@ -257,13 +251,12 @@ showSubjects (d : ds) =
         then do
           putStrLn "Essas são as disciplinas que você leciona:"
           putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ showTeacherSubjects teacherSubjects)
-          
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           code <- getLine
-          
-          if Professor.temDisciplina teacher $ read code then do
-            let subject = (DataLoader.carregaDisciplina (read code) subjects)
-            registerClass subject
+          if Professor.temDisciplina teacher $ read code
+            then do
+              let subject = DataLoader.carregaDisciplina (read code) subjects
+              registerClass subject
             else putStrLn "Disciplina inválida"
         else
           if option == "3"
@@ -298,16 +291,16 @@ showTeacherSubjects (d : ds) =
   Disciplina.showSubject d ++ "\n" ++ showTeacherSubjects ds
 
 registerClass :: Disciplina -> IO ()
-registerClass disciplina  = do
-  let newQtdAulas = (Disciplina.qtdDeAulas disciplina) - 1
+registerClass disciplina = do
+  let newQtdAulas = Disciplina.qtdDeAulas disciplina - 1
   let codigo = Disciplina.codigo disciplina
   let nome = Disciplina.nome disciplina
   let notas = Disciplina.notas disciplina
 
-  putStrLn ("\nAulas restantes: " ++ (show(newQtdAulas)))
-  
-  let newDisciplina = (Disciplina.newDisciplina codigo nome newQtdAulas notas)
-  
+  putStrLn ("\nAulas restantes: " ++ show newQtdAulas)
+
+  let newDisciplina = Disciplina.newDisciplina codigo nome newQtdAulas notas
+
   DataSaver.atualizaDisciplina codigo newDisciplina
   putStrLn "Aula registrada."
 
