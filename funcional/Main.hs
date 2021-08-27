@@ -51,10 +51,10 @@ telaLogin = do
         else
           if opcao == "n"
             then do
-              putStr "\nSaindo..."
+              putStrLn "\nSaindo..."
               threadDelay (10 ^ 6)
             else do
-              putStr "\nOpção inválida. Saindo do sistema por segurança."
+              putStrLn "\nOpção inválida. Saindo do sistema por segurança."
               threadDelay (10 ^ 6)
 
 tela :: String -> String -> IO ()
@@ -138,7 +138,7 @@ opcoesAluno aluno =
 getDisciplinaAluno :: Aluno -> Int -> [Disciplina] -> String
 getDisciplinaAluno aluno codigoDisciplina disciplinas = do
   let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
-  Disciplina.exibeDisciplina disciplina ++ "\t - " ++ printf "%.2f" (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
+  Disciplina.exibeDisciplinaSemAulas disciplina ++ "\t - " ++ printf "%.2f" (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
 
 exibeDisciplinasAluno :: Aluno -> [Int] -> [Disciplina] -> String
 exibeDisciplinasAluno aluno _ [] = ""
@@ -157,7 +157,7 @@ verificaRealizarMatricula aluno disciplinas codD codA = do
 
 realizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
 realizarMatricula aluno disciplinas codD codA = do
-  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinasSemAulas disciplinas)
 
   putStr "Entre com o código da cadeira: "
 
@@ -177,9 +177,6 @@ realizarMatricula aluno disciplinas codD codA = do
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
       let newDisciplina = Disciplina.newDisciplina codInt (Disciplina.nome disciplina) (Disciplina.qtdDeAulas disciplina) ((matAluno, []) : Disciplina.notas disciplina)
 
-      putStrLn $ Disciplina.toString newDisciplina
-
-      print newCods
 
       DataSaver.atualizaAluno matAluno newAluno
       DataSaver.atualizaDisciplina codInt newDisciplina
@@ -189,7 +186,7 @@ realizarMatricula aluno disciplinas codD codA = do
 
 cancelarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
 cancelarMatricula aluno disciplinas codA = do
-  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinasSemAulas disciplinas)
 
   putStr "Entre com o código da cadeira: "
 
@@ -208,17 +205,15 @@ cancelarMatricula aluno disciplinas codA = do
 
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
 
-      print newCods
-
       DataSaver.atualizaAluno matAluno newAluno
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
-exibeDisciplinas :: [Disciplina] -> String
-exibeDisciplinas [] = ""
-exibeDisciplinas (d : ds) =
-  Disciplina.exibeDisciplina d ++ "\n" ++ exibeDisciplinas ds
+exibeDisciplinasSemAulas :: [Disciplina] -> String
+exibeDisciplinasSemAulas [] = ""
+exibeDisciplinasSemAulas (d : ds) =
+  Disciplina.exibeDisciplinaSemAulas d ++ "\n" ++ exibeDisciplinasSemAulas ds
 
 -- mediaGeralAluno :: Aluno -> [Disciplina] -> IO ()
 -- mediaGeralAluno aluno disciplinas = do
@@ -249,15 +244,18 @@ telaProf matricula' = do
   opcao <- getLine
 
   if opcao == "1"
-    then putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
+    then putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ exibeDisciplinasProfessor disciplinasDoProf)
     else
       if opcao == "2"
         then do
           putStrLn "Essas são as disciplinas que você leciona:"
-          putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
+          putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ exibeDisciplinasProfessor disciplinasDoProf)
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           codigo <- getLine
-          registraAula professor $ read codigo
+          if Professor.temDisciplina professor $ read codigo then do
+            let disciplina = (DataLoader.carregaDisciplina (read codigo) disciplinas)
+            registraAula disciplina
+            else putStrLn "Disciplina inválida"
         else
           if opcao == "3"
             then putStrLn "Cadastra prova"
@@ -284,24 +282,25 @@ opcoesProfessor :: Professor -> String
 opcoesProfessor professor =
   header (Professor.matricula professor) (Professor.nome professor) ++ Professor.opcoesDisponiveis
 
-getDisciplina :: Int -> [Disciplina] -> String
-getDisciplina codigoDisciplina disciplinas = do
-  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
-  Disciplina.exibeDisciplina disciplina ++ "\n"
+exibeDisciplinasProfessor :: [Disciplina] -> String
+exibeDisciplinasProfessor [] = ""
+exibeDisciplinasProfessor (d : ds) =
+  Disciplina.exibeDisciplina d ++ "\n" ++ exibeDisciplinasProfessor ds
 
-exibeDisciplinasProfessor :: [Int] -> [Disciplina] -> String
-exibeDisciplinasProfessor _ [] = ""
-exibeDisciplinasProfessor [] _ = ""
-exibeDisciplinasProfessor (c : cs) (d : ds) =
-  if c == Disciplina.codigo d
-    then getDisciplina c (d : ds) ++ exibeDisciplinasProfessor cs ds
-    else exibeDisciplinasProfessor (c : cs) ds
+registraAula :: Disciplina -> IO ()
+registraAula disciplina  = do
+  let newQtdAulas = (Disciplina.qtdDeAulas disciplina) - 1
+  let codigo = Disciplina.codigo disciplina
+  let nome = Disciplina.nome disciplina
+  let notas = Disciplina.notas disciplina
 
-registraAula :: Professor -> Int -> IO ()
-registraAula professor codigoDisciplina =
-  if Professor.temDisciplina professor codigoDisciplina
-    then putStrLn "Registrado"
-    else putStrLn "Disciplina inválida"
+  putStrLn ("\nAulas restantes: " ++ (show(newQtdAulas)))
+  
+  let newDisciplina = (Disciplina.newDisciplina codigo nome newQtdAulas notas)
+  
+  DataSaver.atualizaDisciplina codigo newDisciplina
+  putStrLn "Aula registrada."
+
 
 telaAdmin :: IO ()
 telaAdmin = do
