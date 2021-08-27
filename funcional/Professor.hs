@@ -1,40 +1,35 @@
 module Professor where
 
 data Professor = Professor
-  { matricula :: Int,
-    nome :: String,
-    disciplinasLecionadas :: [Int]
+  { registration :: Int,
+    name :: String,
+    subjects :: [Int]
   }
 
 newProfessor :: Int -> String -> [Int] -> Professor
-newProfessor matricula' nome' disciplinasLecionadas' =
-  Professor
-    { matricula = matricula',
-      nome = nome',
-      disciplinasLecionadas = disciplinasLecionadas'
-    }
+newProfessor = Professor
 
-matriculas :: [Professor] -> [Int]
-matriculas professores = [matricula prof | prof <- professores]
+registrations :: [Professor] -> [Int]
+registrations professors = [registration prof | prof <- professors]
 
-numDisciplinasLecionadas :: Professor -> Int
-numDisciplinasLecionadas professor = length (disciplinasLecionadas professor)
+numberOfSubjects :: Professor -> Int
+numberOfSubjects professor = length (subjects professor)
 
-opcoesDisponiveis :: String
-opcoesDisponiveis =
+availableOptions :: String
+availableOptions =
   "\n\n1) Visualizar disciplinas\n"
     ++ "2) Registrar aula\n"
     ++ "3) Cadastrar prova\n"
     ++ "4) Sair do sistema\n"
-    ++ "5) Fazer logoff\n"
+    ++ "5) Logout\n"
 
-temDisciplina :: Professor -> Int -> Bool
-temDisciplina professor codigoDisciplina = codigoDisciplina `elem` disciplinasLecionadas professor
+hasSubject :: Professor -> Int -> Bool
+hasSubject professor codeSubject = codeSubject `elem` subjects professor
 
 toString :: Professor -> String
 toString professor =
-  show matricula' ++ ";" ++ nome' ++ ";" ++ show disciplinasLecionadas'
+  show id' ++ ";" ++ name' ++ ";" ++ show subjects'
   where
-    matricula' = matricula professor
-    nome' = nome professor
-    disciplinasLecionadas' = disciplinasLecionadas professor
+    id' = registration professor
+    name' = name professor
+    subjects' = subjects professor

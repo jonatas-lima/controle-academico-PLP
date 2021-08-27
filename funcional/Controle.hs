@@ -4,142 +4,142 @@ import Aluno (Aluno)
 import qualified Aluno
 import DataLoader
 import qualified DataLoader
-import DataSaver (atualizaProfessor, salvaAluno, salvaProfessor)
+import DataSaver (updateProfessor, saveStudent, saveProfessor)
 import Disciplina (Disciplina)
 import qualified Disciplina
 import Professor (Professor)
 import qualified Professor
 
-cadastraProfessor :: Int -> String -> String -> IO ()
-cadastraProfessor matrProf nomeProf senha = do
-  arquivoProfessores <- leArquivo "./data/professores.csv"
-  let professoresCadastrados = carregaProfessores arquivoProfessores
-  let matriculasCadastradas = Professor.matriculas professoresCadastrados
+registerProfessor :: Int -> String -> String -> IO ()
+registerProfessor professorId professorName password = do
+  arqProfessors <- readArq "./data/professores.csv"
+  let registeredProfessors = loadProfessors arqProfessors
+  let registeredEnrollments = Professor.registrations registeredProfessors
 
-  if existeMatricula matrProf matriculasCadastradas
+  if isThereRegristration professorId registeredEnrollments
     then putStrLn "Professor já cadastrado!"
     else do
-      salvaProfessor professor senha
+      saveProfessor professor password
       putStrLn "Professor cadastrado!"
   where
-    professor = Professor.newProfessor matrProf nomeProf []
+    professor = Professor.newProfessor professorId professorName []
 
-cadastraAluno :: Int -> String -> String -> IO ()
-cadastraAluno matrAluno nomeAluno senha = do
-  arquivoAlunos <- leArquivo "./data/alunos.csv"
-  let alunosCadastrados = carregaAlunos arquivoAlunos
-  let matriculasCadastradas = Aluno.matriculas alunosCadastrados
+registerStudent :: Int -> String -> String -> IO ()
+registerStudent studentId studentName password = do
+  arqStudents <- readArq "./data/alunos.csv"
+  let registeredStudents = loadStudents arqStudents
+  let registeredEnrollments = Aluno.registrations registeredStudents
 
-  if existeMatricula matrAluno matriculasCadastradas
+  if isThereRegristration studentId registeredEnrollments
     then putStrLn "Professor já cadastrado!"
     else do
-      salvaAluno aluno senha
+      saveStudent aluno password
       putStrLn "Professor cadastrado!"
   where
-    aluno = Aluno.newAluno matrAluno nomeAluno []
+    aluno = Aluno.newStudent studentId studentName []
 
-existeMatricula :: Int -> [Int] -> Bool
-existeMatricula matr matriculas = matr `elem` matriculas
+isThereRegristration :: Int -> [Int] -> Bool
+isThereRegristration id ids = id `elem` ids
 
-matriculaAluno :: Aluno -> Disciplina -> Bool
-matriculaAluno aluno disciplina = True
+studentRegistration :: Aluno -> Disciplina -> Bool
+studentRegistration student subjects = True
 
-listaAlunosSemMatriculas :: [Aluno] -> String
-listaAlunosSemMatriculas [] = ""
-listaAlunosSemMatriculas (a : as) =
-  if null $ Aluno.disciplinasMatriculadas a
-    then formataListagemAluno a ++ "\n" ++ listaAlunosSemMatriculas as
-    else listaAlunosSemMatriculas as
+listStudentsWithoutRegistration :: [Aluno] -> String
+listStudentsWithoutRegistration [] = ""
+listStudentsWithoutRegistration (a : as) =
+  if null $ Aluno.enrolledSubjects a
+    then listFormatStudent a ++ "\n" ++ listStudentsWithoutRegistration as
+    else listStudentsWithoutRegistration as
 
-formataListagemAluno :: Aluno -> String
-formataListagemAluno aluno = show (Aluno.matricula aluno) ++ "\t - \t" ++ Aluno.nome aluno
+listFormatStudent :: Aluno -> String
+listFormatStudent student = show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student
 
-listaProfessoresSemMatriculas :: [Professor] -> String
-listaProfessoresSemMatriculas [] = ""
-listaProfessoresSemMatriculas (p : ps) =
-  if null $ Professor.disciplinasLecionadas p
-    then formataListagemProfessor p ++ "\n" ++ listaProfessoresSemMatriculas ps
-    else listaProfessoresSemMatriculas ps
+listProfessorsWithoutRegistration :: [Professor] -> String
+listProfessorsWithoutRegistration [] = ""
+listProfessorsWithoutRegistration (p : ps) =
+  if null $ Professor.subjects p
+    then formatListProfessor p ++ "\n" ++ listProfessorsWithoutRegistration ps
+    else listProfessorsWithoutRegistration ps
 
-listaProfessoresDisponiveis :: [Professor] -> String
-listaProfessoresDisponiveis [] = ""
-listaProfessoresDisponiveis (p : ps) =
-  if Professor.numDisciplinasLecionadas p < 3
-    then formataListagemProfessor p ++ "\n" ++ listaProfessoresDisponiveis ps
-    else listaProfessoresDisponiveis ps
+listAvailableProfessors :: [Professor] -> String
+listAvailableProfessors [] = ""
+listAvailableProfessors (p : ps) =
+  if Professor.numberOfSubjects p < 3
+    then formatListProfessor p ++ "\n" ++ listAvailableProfessors ps
+    else listAvailableProfessors ps
 
-listaDisciplinasDisponiveisParaAssociacao :: Professor -> [Disciplina] -> String
-listaDisciplinasDisponiveisParaAssociacao professor disciplinas =
-  formataListagemDisciplinas $ DataLoader.carregaDisciplinasPorCodigo codDisciplinasDisponiveis disciplinas
+listSubjectsAvailableForAssociation :: Professor -> [Disciplina] -> String
+listSubjectsAvailableForAssociation professor subjects =
+  formatListSubjects $ DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
   where
-    codDisciplinas = map Disciplina.codigo disciplinas
-    disciplinasLecionadas = Professor.disciplinasLecionadas professor
-    codDisciplinasDisponiveis = filter (`notElem` disciplinasLecionadas) codDisciplinas
+    codesSubjects = map Disciplina.code subjects
+    subjectsTaught = Professor.subjects professor
+    codesAvailableSubjects = filter (`notElem` subjectsTaught) codesSubjects
 
-formataListagemDisciplinas :: [Disciplina] -> String
-formataListagemDisciplinas [] = ""
-formataListagemDisciplinas (d : ds) = formataListagemDisciplina d ++ "\n" ++ formataListagemDisciplinas ds
+formatListSubjects :: [Disciplina] -> String
+formatListSubjects [] = ""
+formatListSubjects (d : ds) = formatListSubject d ++ "\n" ++ formatListSubjects ds
 
-formataListagemDisciplina :: Disciplina -> String
-formataListagemDisciplina disciplina = show (Disciplina.codigo disciplina) ++ "\t - \t" ++ Disciplina.nome disciplina
+formatListSubject :: Disciplina -> String
+formatListSubject subjects = show (Disciplina.code subjects) ++ "\t - \t" ++ Disciplina.name subjects
 
-formataListagemDisciplinaMedia :: Disciplina -> String
-formataListagemDisciplinaMedia disciplina =
-  formataListagemDisciplina disciplina ++ "\t - \t" ++ show media
+formatListSubjectAverage :: Disciplina -> String
+formatListSubjectAverage subject =
+  formatListSubject subject ++ "\t - \t" ++ show media
   where
-    media = Disciplina.mediaDisciplina disciplina
+    media = Disciplina.subjectAverage subject
 
-formataListagemProfessor :: Professor -> String
-formataListagemProfessor professor = show (Professor.matricula professor) ++ "\t - \t" ++ Professor.nome professor
+formatListProfessor :: Professor -> String
+formatListProfessor professor = show (Professor.registration professor) ++ "\t - \t" ++ Professor.name professor
 
-associaProfessorDisciplina :: Professor -> Disciplina -> [Disciplina] -> IO ()
-associaProfessorDisciplina professor disciplina disciplinas =
-  if notElem (Disciplina.codigo disciplina) codDisciplinas || Professor.temDisciplina professor (Disciplina.codigo disciplina)
+associateProfessorSubject :: Professor -> Disciplina -> [Disciplina] -> IO ()
+associateProfessorSubject professor subject subjects =
+  if notElem (Disciplina.code subject) codesSubjects || Professor.hasSubject professor (Disciplina.code subject)
     then putStrLn "Erro ao associar professor à disciplina"
     else do
-      DataSaver.atualizaProfessor (Professor.matricula professor) professorAtualizado
+      DataSaver.updateProfessor (Professor.registration professor) updatedProfessor
       putStrLn "Disciplina associada!"
   where
-    codDisciplinas = map Disciplina.codigo disciplinas
-    disciplinasLecionadas = Professor.disciplinasLecionadas professor
-    professorAtualizado = Professor.newProfessor (Professor.matricula professor) (Professor.nome professor) (Disciplina.codigo disciplina : Professor.disciplinasLecionadas professor)
+    codesSubjects = map Disciplina.code subjects
+    subjectsTaught = Professor.subjects professor
+    updatedProfessor = Professor.newProfessor (Professor.registration professor) (Professor.name professor) (Disciplina.code subject : Professor.subjects professor)
 
-disciplinasMatriculadas :: Aluno -> [Disciplina] -> [Disciplina]
-disciplinasMatriculadas aluno disciplinas = [DataLoader.carregaDisciplina c disciplinas | c <- Aluno.disciplinasMatriculadas aluno]
+enrolledSubjects :: Aluno -> [Disciplina] -> [Disciplina]
+enrolledSubjects student subjects = [DataLoader.loadSubject c subjects | c <- Aluno.enrolledSubjects student]
 
-exibeDisciplinaComMaiorMedia :: [Disciplina] -> String
-exibeDisciplinaComMaiorMedia disciplinas =
-  formataListagemDisciplinaMedia $ disciplinaComMaiorMedia disciplinas
+showsSubjectWithHigherAverage :: [Disciplina] -> String
+showsSubjectWithHigherAverage subjects =
+  formatListSubjectAverage $ subjectWithHigherAverage subjects
 
-disciplinaComMaiorMedia :: [Disciplina] -> Disciplina
-disciplinaComMaiorMedia disciplinas = do
-  let matrDisciplina = matriculaDisciplinaMaiorMedia (mediasDisciplinas disciplinas)
-  DataLoader.carregaDisciplina matrDisciplina disciplinas
+subjectWithHigherAverage :: [Disciplina] -> Disciplina
+subjectWithHigherAverage subjects = do
+  let subjectId = registerSubjectWithHigherAverage (subjectsAverage subjects)
+  DataLoader.loadSubject subjectId subjects
 
-exibeDisciplinaComMenorMedia :: [Disciplina] -> String
-exibeDisciplinaComMenorMedia disciplinas =
-  formataListagemDisciplinaMedia $ disciplinaComMenorMedia disciplinas
+showsSubjectWithLowestAverage :: [Disciplina] -> String
+showsSubjectWithLowestAverage subjects =
+  formatListSubjectAverage $ subjectWithLowestAverage subjects
 
-disciplinaComMenorMedia :: [Disciplina] -> Disciplina
-disciplinaComMenorMedia disciplinas = do
-  let matrDisciplina = matriculaDisciplinaMenorMedia (mediasDisciplinas disciplinas)
-  DataLoader.carregaDisciplina matrDisciplina disciplinas
+subjectWithLowestAverage :: [Disciplina] -> Disciplina
+subjectWithLowestAverage subjects = do
+  let subjectId = registerSubjectWithLowestAverage (subjectsAverage subjects)
+  DataLoader.loadSubject subjectId subjects
 
-mediasDisciplinas :: [Disciplina] -> [(Int, Double)]
-mediasDisciplinas disciplinas = [(Disciplina.codigo d, Disciplina.mediaDisciplina d) | d <- disciplinas]
+subjectsAverage :: [Disciplina] -> [(Int, Double)]
+subjectsAverage subjects = [(Disciplina.code d, Disciplina.subjectAverage d) | d <- subjects]
 
-matriculaDisciplinaMaiorMedia :: [(Int, Double)] -> Int
-matriculaDisciplinaMaiorMedia [] = -1
-matriculaDisciplinaMaiorMedia (d : ds) =
-  if snd d == maiorNota then fst d else matriculaDisciplinaMaiorMedia ds
+registerSubjectWithHigherAverage :: [(Int, Double)] -> Int
+registerSubjectWithHigherAverage [] = -1
+registerSubjectWithHigherAverage (d : ds) =
+  if snd d == highestGrade then fst d else registerSubjectWithHigherAverage ds
   where
-    notas = [snd m | m <- d : ds]
-    maiorNota = maximum notas
+    grades = [snd m | m <- d : ds]
+    highestGrade = maximum grades
 
-matriculaDisciplinaMenorMedia :: [(Int, Double)] -> Int
-matriculaDisciplinaMenorMedia [] = -1
-matriculaDisciplinaMenorMedia (d : ds) =
-  if snd d == menorNota then fst d else matriculaDisciplinaMenorMedia ds
+registerSubjectWithLowestAverage :: [(Int, Double)] -> Int
+registerSubjectWithLowestAverage [] = -1
+registerSubjectWithLowestAverage (d : ds) =
+  if snd d == lowestGrade then fst d else registerSubjectWithLowestAverage ds
   where
-    notas = [snd m | m <- d : ds]
-    menorNota = minimum notas
+    grades = [snd m | m <- d : ds]
+    lowestGrade = minimum grades
