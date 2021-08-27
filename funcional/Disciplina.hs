@@ -51,19 +51,22 @@ findStudentGrades studentId (x : xs) =
     id = fst x
     grades = snd x
 
-exibeDisciplina :: Disciplina -> String
-exibeDisciplina d = show (code d) ++ "\t - " ++ exibeNomeDisciplina (name d)
+showSubject :: Disciplina -> String
+showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show(numberClasses d)
 
-exibeNomeDisciplina :: String -> String
-exibeNomeDisciplina nome
-  | length nome < 6 = exibeNomeDisciplina (nome ++ " ")
-  | otherwise = nome
+showSubjectWithoutClasses :: Disciplina -> String
+showSubjectWithoutClasses d = show (code d) ++ "\t - " ++ showsSubjectName (name d)
+
+showsSubjectName :: String -> String
+showsSubjectName name
+  | length name < 6 = showsSubjectName (name ++ " ")
+  | otherwise = name
 
 toString :: Disciplina -> String
-toString disciplina =
-  show codigo' ++ ";" ++ nome' ++ ";" ++ show qtdDeAulas' ++ ";" ++ show notas'
+toString subject =
+  show code' ++ ";" ++ name' ++ ";" ++ show numberClasses' ++ ";" ++ show grades'
   where
-    codigo' = code disciplina
-    nome' = name disciplina
-    qtdDeAulas' = numberClasses disciplina
-    notas' = grades disciplina
+    code' = code subject
+    name' = name subject
+    numberClasses' = numberClasses subject
+    grades' = grades subject
