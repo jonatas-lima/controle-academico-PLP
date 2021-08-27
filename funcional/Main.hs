@@ -334,11 +334,12 @@ adminOptions =
   header 0 "admin"
     ++ "\n\n1) Cadastrar professor\n"
     ++ "2) Cadastrar aluno\n"
-    ++ "3) Associar professor à disciplina\n"
-    ++ "4) Listar alunos sem matrículas\n"
-    ++ "5) Listar professores sem disciplinas\n"
-    ++ "6) Disciplina com a maior média\n"
-    ++ "7) Disciplina com a menor média\n"
+    ++ "3) Cadastrar disciplina\n"
+    ++ "4) Associar professor à disciplina\n"
+    ++ "5) Listar alunos sem matrículas\n"
+    ++ "6) Listar professores sem disciplinas\n"
+    ++ "7) Disciplina com a maior média\n"
+    ++ "8) Disciplina com a menor média\n"
     ++ "(S)air do sistema\n"
     ++ "Fazer (l)ogoff\n"
 
@@ -346,13 +347,38 @@ adminPanel :: String -> IO ()
 adminPanel option
   | option == "1" = registrationScreen "professor"
   | option == "2" = registrationScreen "aluno"
-  | option == "3" = associateTeacherScreen
-  | option == "4" = listStudentsWithoutEnrollment
-  | option == "5" = listProfessorWithoutEnrollment
-  | option == "6" = showsSubjectHigherAverage
-  | option == "7" = showsSubjectLowestAverage
+  | option == "3" = createSubjectScreen
+  | option == "4" = associateTeacherScreen
+  | option == "5" = listStudentsWithoutEnrollment
+  | option == "6" = listProfessorWithoutEnrollment
+  | option == "7" = showsSubjectHigherAverage
+  | option == "8" = showsSubjectLowestAverage
   | option == "S" = quit "" ""
   | otherwise = putStrLn "opcao invalida"
+
+createSubjectScreen :: IO ()
+createSubjectScreen = do
+  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+  let subjects = DataLoader.loadSubjects subjectsFile
+  let subjectCodes = map Disciplina.code subjects
+
+  putStr "\nDigite o código da disciplina: \n> "
+  subjectCode <- getLine
+
+  putStr "Digite o nome da disciplina: \n> "
+  subjectName <- getLine
+
+  putStr "Digite o número de aulas: \n> "
+  numberClasses <- getLine
+
+  if read subjectCode `elem` subjectCodes
+    then putStrLn "Disciplina já cadastrada!"
+    else do
+      let newSubject = Disciplina.newSubject (read subjectCode) subjectName (read numberClasses) []
+      DataSaver.saveSubject newSubject
+      putStrLn "Disciplina cadastrada com sucesso!"
+
+  waitEnterAdmin
 
 registrationScreen :: String -> IO ()
 registrationScreen option = do
