@@ -4,6 +4,7 @@ import Aluno (Aluno)
 import qualified Aluno
 import Control.Concurrent (threadDelay)
 import qualified Controle
+import Data.List (delete, sort)
 import qualified DataLoader
 import qualified DataSaver
 import Disciplina (Disciplina)
@@ -41,22 +42,21 @@ telaLogin = do
       threadDelay (10 ^ 6)
       clearScreen
       tela matriculaUsuario role
-      else do
-        putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
-        opcao <- getLine
-        if opcao == "s"
-          then do
-            clearScreen
-            telaLogin
-            else if opcao == "n"
-              then do
-                  putStr "\nSaindo..."
-                  threadDelay (10^6)
-                else do
-                  putStr "\nOpção inválida. Saindo do sistema por segurança."
-                  threadDelay (10^6)
-
-
+    else do
+      putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
+      opcao <- getLine
+      if opcao == "s"
+        then do
+          clearScreen
+          telaLogin
+        else
+          if opcao == "n"
+            then do
+              putStr "\nSaindo..."
+              threadDelay (10 ^ 6)
+            else do
+              putStr "\nOpção inválida. Saindo do sistema por segurança."
+              threadDelay (10 ^ 6)
 
 tela :: String -> String -> IO ()
 tela matricula role
@@ -154,7 +154,7 @@ verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
 verificaRealizarMatricula aluno disciplinas codD codA = do
   if Aluno.numDisciplinasMatriculadas aluno == 4
     then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula aluno) ++ "] já possui 4 disciplinas matriculadas!\n")
-  else realizarMatricula aluno disciplinas codD codA
+    else realizarMatricula aluno disciplinas codD codA
 
 realizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
 realizarMatricula aluno disciplinas codD codA = do
@@ -167,17 +167,25 @@ realizarMatricula aluno disciplinas codD codA = do
   putStrLn ""
 
   let codInt = read codigo :: Int
-
+  let disciplina = DataLoader.carregaDisciplina codInt disciplinas
   -- verificar codigo da cadeira --
   if codInt `elem` codD
     then do
       let newCods = sort (codInt : codA)
       let matAluno = Aluno.matricula aluno
       let nomeAluno = Aluno.nome aluno
-      
+      let qtdAulasDisciplina = Disciplina.qtdDeAulas disciplina
+      let newNotas = (matAluno, []) : Disciplina.notas disciplina
+
+      let nomeDisciplina = Disciplina.nome disciplina
+
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
+      let newDisciplina = Disciplina.newDisciplina codInt nomeDisciplina qtdAulasDisciplina newNotas
+
+      putStrLn $ Disciplina.toString newDisciplina
 
       DataSaver.atualizaAluno matAluno newAluno
+      DataSaver.atualizaDisciplina codInt newDisciplina
 
       putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
@@ -200,7 +208,7 @@ cancelarMatricula aluno disciplinas codA = do
       let newCods = delete codInt codA
       let matAluno = Aluno.matricula aluno
       let nomeAluno = Aluno.nome aluno
-      
+
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
       
       DataSaver.atualizaAluno matAluno newAluno
@@ -234,7 +242,7 @@ telaProf matricula' = do
   arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
   let codDisciplinasDoProf = Professor.disciplinasLecionadas professor
-  let disciplinasDoProf =  disciplinasFilter disciplinas codDisciplinasDoProf
+  let disciplinasDoProf = disciplinasFilter disciplinas codDisciplinasDoProf
 
   putStrLn (opcoesProfessor professor)
 
@@ -251,7 +259,6 @@ telaProf matricula' = do
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           codigo <- getLine
           registraAula professor $ read codigo
-
         else
           if opcao == "3"
             then putStrLn "Cadastra prova"
@@ -373,27 +380,28 @@ telaAssociacaoProfessor = do
 
 listaAlunosSemMatriculas :: IO ()
 listaAlunosSemMatriculas = do
-  clearScreen
-  putStrLn "Alunos sem matrículas:"
-  arquivoAlunos <- DataLoader.leArquivo "./data/alunos.csv"
-  let alunos = DataLoader.carregaAlunos arquivoAlunos
-
-  putStr $ Controle.listaAlunosSemMatriculas alunos
+  showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listaAlunosSemMatriculas DataLoader.carregaAlunos
 
 listaProfessoresSemMatriculas :: IO ()
 listaProfessoresSemMatriculas = do
-  clearScreen
-  putStrLn "Professores sem disciplinas:"
-  arquivoProfessores <- DataLoader.leArquivo "./data/professores.csv"
-  let professores = DataLoader.carregaProfessores arquivoProfessores
-
-  putStr $ Controle.listaProfessoresSemMatriculas professores
+  showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listaProfessoresSemMatriculas DataLoader.carregaProfessores
 
 exibeDisciplinaMaiorMedia :: IO ()
-exibeDisciplinaMaiorMedia = putStrLn "exibe disciplina com maior media geral"
+exibeDisciplinaMaiorMedia = do
+  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMaiorMedia DataLoader.carregaDisciplinas
 
 exibeDisciplinaMenorMedia :: IO ()
-exibeDisciplinaMenorMedia = putStrLn "exibe disciplina com menor media geral"
+exibeDisciplinaMenorMedia = do
+  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMenorMedia DataLoader.carregaDisciplinas
+
+showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
+showData message filePath display loadAll = do
+  clearScreen
+  putStrLn message
+  entityFile <- DataLoader.leArquivo filePath
+  let entities = loadAll entityFile
+
+  putStrLn $ display entities
 
 saiDoSistema :: String -> String -> IO ()
 saiDoSistema matricula' role' = do

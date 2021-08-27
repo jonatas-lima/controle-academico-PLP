@@ -69,14 +69,10 @@ parseDisciplina linha =
     { Disciplina.codigo = read (head dados) :: Int,
       Disciplina.nome = dados !! 1,
       Disciplina.qtdDeAulas = read (dados !! 2) :: Int,
-      Disciplina.descartaNotaMaisBaixa = read (dados !! 3) :: Bool,
-      Disciplina.notas = parseAlunosMatriculados (dados !! 4)
+      Disciplina.notas = read (dados !! 3) :: [(Int, [Double])]
     }
   where
     dados = splitOn ";" linha
-
-parseAlunosMatriculados :: String -> [(Int, [Double])]
-parseAlunosMatriculados = read
 
 carregaDisciplinas :: [String] -> [Disciplina]
 carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]
