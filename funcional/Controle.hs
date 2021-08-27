@@ -83,6 +83,12 @@ formataListagemDisciplinas (d : ds) = formataListagemDisciplina d ++ "\n" ++ for
 formataListagemDisciplina :: Disciplina -> String
 formataListagemDisciplina disciplina = show (Disciplina.codigo disciplina) ++ "\t - \t" ++ Disciplina.nome disciplina
 
+formataListagemDisciplinaMedia :: Disciplina -> String
+formataListagemDisciplinaMedia disciplina =
+  formataListagemDisciplina disciplina ++ "\t - \t" ++ show media
+  where
+    media = Disciplina.mediaDisciplina disciplina
+
 formataListagemProfessor :: Professor -> String
 formataListagemProfessor professor = show (Professor.matricula professor) ++ "\t - \t" ++ Professor.nome professor
 
@@ -101,10 +107,18 @@ associaProfessorDisciplina professor disciplina disciplinas =
 disciplinasMatriculadas :: Aluno -> [Disciplina] -> [Disciplina]
 disciplinasMatriculadas aluno disciplinas = [DataLoader.carregaDisciplina c disciplinas | c <- Aluno.disciplinasMatriculadas aluno]
 
+exibeDisciplinaComMaiorMedia :: [Disciplina] -> String
+exibeDisciplinaComMaiorMedia disciplinas =
+  formataListagemDisciplinaMedia $ disciplinaComMaiorMedia disciplinas
+
 disciplinaComMaiorMedia :: [Disciplina] -> Disciplina
 disciplinaComMaiorMedia disciplinas = do
   let matrDisciplina = matriculaDisciplinaMaiorMedia (mediasDisciplinas disciplinas)
   DataLoader.carregaDisciplina matrDisciplina disciplinas
+
+exibeDisciplinaComMenorMedia :: [Disciplina] -> String
+exibeDisciplinaComMenorMedia disciplinas =
+  formataListagemDisciplinaMedia $ disciplinaComMenorMedia disciplinas
 
 disciplinaComMenorMedia :: [Disciplina] -> Disciplina
 disciplinaComMenorMedia disciplinas = do
@@ -125,7 +139,7 @@ matriculaDisciplinaMaiorMedia (d : ds) =
 matriculaDisciplinaMenorMedia :: [(Int, Double)] -> Int
 matriculaDisciplinaMenorMedia [] = -1
 matriculaDisciplinaMenorMedia (d : ds) =
-  if snd d == maiorNota then fst d else matriculaDisciplinaMaiorMedia ds
+  if snd d == menorNota then fst d else matriculaDisciplinaMenorMedia ds
   where
     notas = [snd m | m <- d : ds]
-    maiorNota = minimum notas
+    menorNota = minimum notas

@@ -41,22 +41,21 @@ telaLogin = do
       threadDelay (10 ^ 6)
       clearScreen
       tela matriculaUsuario role
-      else do
-        putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
-        opcao <- getLine
-        if opcao == "s"
-          then do
-            clearScreen
-            telaLogin
-            else if opcao == "n"
-              then do
-                  putStr "\nSaindo..."
-                  threadDelay (10^6)
-                else do
-                  putStr "\nOpção inválida. Saindo do sistema por segurança."
-                  threadDelay (10^6)
-
-
+    else do
+      putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
+      opcao <- getLine
+      if opcao == "s"
+        then do
+          clearScreen
+          telaLogin
+        else
+          if opcao == "n"
+            then do
+              putStr "\nSaindo..."
+              threadDelay (10 ^ 6)
+            else do
+              putStr "\nOpção inválida. Saindo do sistema por segurança."
+              threadDelay (10 ^ 6)
 
 tela :: String -> String -> IO ()
 tela matricula role
@@ -238,7 +237,7 @@ telaProf matricula' = do
   arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
   let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
   let codDisciplinasDoProf = Professor.disciplinasLecionadas professor
-  let disciplinasDoProf =  disciplinasFilter disciplinas codDisciplinasDoProf
+  let disciplinasDoProf = disciplinasFilter disciplinas codDisciplinasDoProf
 
   putStrLn (opcoesProfessor professor)
 
@@ -255,7 +254,6 @@ telaProf matricula' = do
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           codigo <- getLine
           registraAula professor $ read codigo
-
         else
           if opcao == "3"
             then putStrLn "Cadastra prova"
@@ -377,27 +375,28 @@ telaAssociacaoProfessor = do
 
 listaAlunosSemMatriculas :: IO ()
 listaAlunosSemMatriculas = do
-  clearScreen
-  putStrLn "Alunos sem matrículas:"
-  arquivoAlunos <- DataLoader.leArquivo "./data/alunos.csv"
-  let alunos = DataLoader.carregaAlunos arquivoAlunos
-
-  putStr $ Controle.listaAlunosSemMatriculas alunos
+  showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listaAlunosSemMatriculas DataLoader.carregaAlunos
 
 listaProfessoresSemMatriculas :: IO ()
 listaProfessoresSemMatriculas = do
-  clearScreen
-  putStrLn "Professores sem disciplinas:"
-  arquivoProfessores <- DataLoader.leArquivo "./data/professores.csv"
-  let professores = DataLoader.carregaProfessores arquivoProfessores
-
-  putStr $ Controle.listaProfessoresSemMatriculas professores
+  showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listaProfessoresSemMatriculas DataLoader.carregaProfessores
 
 exibeDisciplinaMaiorMedia :: IO ()
-exibeDisciplinaMaiorMedia = putStrLn "exibe disciplina com maior media geral"
+exibeDisciplinaMaiorMedia = do
+  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMaiorMedia DataLoader.carregaDisciplinas
 
 exibeDisciplinaMenorMedia :: IO ()
-exibeDisciplinaMenorMedia = putStrLn "exibe disciplina com menor media geral"
+exibeDisciplinaMenorMedia = do
+  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMenorMedia DataLoader.carregaDisciplinas
+
+showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
+showData message filePath display loadAll = do
+  clearScreen
+  putStrLn message
+  entityFile <- DataLoader.leArquivo filePath
+  let entities = loadAll entityFile
+
+  putStrLn $ display entities
 
 saiDoSistema :: String -> String -> IO ()
 saiDoSistema matricula' role' = do
