@@ -178,7 +178,7 @@ enroll student subjects subjectCodes studentCode = do
   if subjectCode `elem` subjectCodes
     then do
       let newCods = sort (subjectCode : studentCode)
-
+      
       -- variaveis aluno
       let studentId = Aluno.matricula student
       let studentName = Aluno.nome student
@@ -202,7 +202,6 @@ enroll student subjects subjectCodes studentCode = do
 cancelRegistration :: Aluno -> [Disciplina] -> [Int] -> IO ()
 cancelRegistration student subjects studentCode = do
   putStrLn ("Código\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
-
   putStr "Entre com o código da cadeira: "
 
   code <- getLine
@@ -217,13 +216,13 @@ cancelRegistration student subjects studentCode = do
       let newCodes = delete subjectCode studentCode
       let studentId = Aluno.matricula student
       let studentName = Aluno.nome student
-
       let newStudent = Aluno.newAluno studentId studentName newCodes
-
+      
       DataSaver.atualizaAluno studentId newStudent
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
+
 
 showSubjectsWithoutClasses :: [Disciplina] -> String
 showSubjectsWithoutClasses [] = ""
@@ -241,6 +240,11 @@ teacherScreen id' = do
   let teacherSubjectsCode = Professor.disciplinasLecionadas teacher
   let teacherSubjects = subjectsFilter subjects teacherSubjectsCode
 
+showSubjects :: [Disciplina] -> String
+showSubjects [] = ""
+showSubjects (d : ds) =
+  Disciplina.exibeDisciplina d ++ "\n" ++ showSubjects ds
+
   putStrLn (teacherOptions teacher)
 
   putStr "Qual a opcao selecionada? "
@@ -253,8 +257,10 @@ teacherScreen id' = do
         then do
           putStrLn "Essas são as disciplinas que você leciona:"
           putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ showTeacherSubjects teacherSubjects)
+          
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           code <- getLine
+          
           if Professor.temDisciplina teacher $ read code then do
             let subject = (DataLoader.carregaDisciplina (read code) subjects)
             registerClass subject
