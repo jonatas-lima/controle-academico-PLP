@@ -202,7 +202,6 @@ enroll student subjects subjectCodes studentCode = do
 cancelRegistration :: Aluno -> [Disciplina] -> [Int] -> IO ()
 cancelRegistration student subjects studentCodes = do
   putStrLn ("Código\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
-
   putStr "Entre com o código da cadeira: "
 
   code <- getLine
@@ -217,13 +216,22 @@ cancelRegistration student subjects studentCodes = do
       let newCodes = delete subjectCode studentCodes
       let studentId = Aluno.registration student
       let studentName = Aluno.name student
+      let subject = DataLoader.loadSubject subjectCode subjects
 
       let newStudent = Aluno.newStudent studentId studentName newCodes
-      
+      let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject) (removeEnrollment studentId (Disciplina.grades subject))
+
       DataSaver.updateStudent studentId newStudent
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
+
+removeEnrollment :: Int -> [(Int, [Double])] -> [(Int, [Double])]
+removeEnrollment _ [] = []
+removeEnrollment registration (g : gs) =
+  if fst g == registration
+    then removeEnrollment registration gs
+    else g : removeEnrollment registration gs
 
 showSubjectsWithoutClasses :: [Disciplina] -> String
 showSubjectsWithoutClasses [] = ""
@@ -255,9 +263,10 @@ professorScreen id' = do
           putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ showProfessorSubjects codesProfessorSubjects professorSubjects)
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
           code <- getLine
-          if Professor.hasSubject professor $ read code then do
-            let subject = (DataLoader.loadSubject (read code) professorSubjects)
-            registerClass professor (Disciplina.code subject)
+          if Professor.hasSubject professor $ read code
+            then do
+              let subject = DataLoader.loadSubject (read code) professorSubjects
+              registerClass professor (Disciplina.code subject)
             else putStrLn "Disciplina inválida"
         else
           if option == "3"
