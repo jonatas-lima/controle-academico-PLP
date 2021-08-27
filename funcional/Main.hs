@@ -18,36 +18,36 @@ import qualified Usuario
 main :: IO ()
 main = do
   putStrLn ("Bem-Vindo(a)!" ++ "\nPara acessar o controle, faça login:\n")
-  telaLogin
+  loginScreen
 
-telaLogin :: IO ()
-telaLogin = do
+loginScreen :: IO ()
+loginScreen = do
   putStr "Digite sua matrícula: "
-  matriculaUsuario <- getLine
+  userId <- getLine
 
   putStr "Digite sua senha: "
-  senha <- getLine
+  password <- getLine
 
-  arquivoUsuarios <- DataLoader.leArquivo "./data/usuarios.csv"
-  let usuariosDisponiveis = DataLoader.carregaUsuarios arquivoUsuarios
+  usersFile <- DataLoader.leArquivo "./data/usuarios.csv"
+  let availableUsers = DataLoader.carregaUsuarios usersFile
 
-  let autenticacao = Usuario.autentica matriculaUsuario senha usuariosDisponiveis
-  let autenticado = fst autenticacao
-  let role = snd autenticacao
+  let authentication = Usuario.autentica userId password availableUsers
+  let authenticated = fst authentication
+  let role = snd authentication
 
-  if autenticado
+  if authenticated
     then do
       putStrLn "\nLogin realizado..."
       threadDelay (10 ^ 6)
       clearScreen
-      tela matriculaUsuario role
+      screen userId role
     else do
       putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
       opcao <- getLine
       if opcao == "s"
         then do
           clearScreen
-          telaLogin
+          loginScreen
         else
           if opcao == "n"
             then do
@@ -57,260 +57,259 @@ telaLogin = do
               putStr "\nOpção inválida. Saindo do sistema por segurança."
               threadDelay (10 ^ 6)
 
-tela :: String -> String -> IO ()
-tela matricula role
-  | role == "prof" = telaProf matricula
-  | role == "admin" = telaAdmin
-  | role == "aluno" = telaAluno matricula
-  | otherwise = putStrLn "Role invalido"
+screen :: String -> String -> IO ()
+screen id role
+  | role == "prof" = teacherScreen id
+  | role == "admin" = adminScreen
+  | role == "aluno" = studentScreen id
+  | otherwise = putStrLn "Role inválido."
 
-codTodasDisciplinas :: [Disciplina] -> [Int]
-codTodasDisciplinas disciplinas = [Disciplina.codigo disciplina | disciplina <- disciplinas]
+header :: Int -> String -> String
+header id name =
+  "\n--------------------------\n"
+    ++ "Usuário: "
+    ++ show id
+    ++ " - "
+    ++ name
 
-codFilter :: [Int] -> [Int] -> [Int]
-codFilter codD codA = filter (\cod -> not $ cod `elem` codA) codD
+studentScreen :: String -> IO ()
+studentScreen id' = do
+  studentsFile <- DataLoader.leArquivo "./data/alunos.csv"
+  let students = DataLoader.carregaAlunos studentsFile
+  let student = DataLoader.carregaAluno (read id') students
 
-disciplinasFilter :: [Disciplina] -> [Int] -> [Disciplina]
-disciplinasFilter disciplinas cods = filter (\cod -> Disciplina.codigo cod `elem` cods) disciplinas
-
-telaAluno :: String -> IO ()
-telaAluno matricula' = do
-  arquivoAlunos <- DataLoader.leArquivo "./data/alunos.csv"
-  let alunos = DataLoader.carregaAlunos arquivoAlunos
-  let aluno = DataLoader.carregaAluno (read matricula') alunos
-
-  arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
-  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+  subjectsFile <- DataLoader.leArquivo "./data/disciplinas.csv"
+  let subjects = DataLoader.carregaDisciplinas subjectsFile
 
   -- variaveis auxiliares
-  let codMatriculadas = Aluno.disciplinasMatriculadas aluno
-  let discMatriculadas = disciplinasFilter disciplinas codMatriculadas
-  let codNaoMatriculadas = codFilter (codTodasDisciplinas disciplinas) codMatriculadas
-  let discNaoMatriculadas = disciplinasFilter disciplinas codNaoMatriculadas
+  let enrolledSubjectsCodes = Aluno.disciplinasMatriculadas student
+  let enrolledSubjects = subjectsFilter subjects enrolledSubjectsCodes
+  let notEnrolledSubjectsCodes = codesFilter (allSubjectsCode subjects) enrolledSubjectsCodes
+  let notEnrolledSubjects = subjectsFilter subjects notEnrolledSubjectsCodes
 
   putStrLn "\n\n--- Controle Acadêmico ---"
 
-  putStrLn (opcoesAluno aluno)
+  putStrLn (studentOptions student)
 
   putStr "Qual a opcao selecionada?\n> "
-  opcao <- getLine
+  option <- getLine
   putStrLn ""
 
-  if opcao == "1"
-    then do
-      putStrLn ("Código\t - Disciplina\t - Média\n" ++ exibeDisciplinasAluno aluno codMatriculadas disciplinas)
+  if option == "1"
+    then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showStudentSubjects student enrolledSubjectsCodes subjects)
     else
-      if opcao == "2"
-        then verificaRealizarMatricula aluno discNaoMatriculadas codNaoMatriculadas codMatriculadas
+      if option == "2"
+        then checkStudentEnrollment student notEnrolledSubjects notEnrolledSubjectsCodes enrolledSubjectsCodes
         else
-          if opcao == "3"
-            then cancelarMatricula aluno discMatriculadas codMatriculadas
+          if option == "3"
+            then cancelRegistration student enrolledSubjects enrolledSubjectsCodes
             else
-              if opcao == "4"
+              if option == "4"
                 then do
                   putStr "CRA: "
-                  printf "%.2f" (Aluno.mediaTotal aluno disciplinas)
+                  printf "%.2f" (Aluno.mediaTotal student subjects)
                   putStrLn "\n"
                 else
-                  if opcao == "5"
+                  if option == "5"
                     then do
                       clearScreen
-                      saiDoSistema matricula' "aluno"
+                      quit id' "aluno"
                     else
-                      if opcao == "6"
+                      if option == "6"
                         then do
                           clearScreen
-                          logoff matricula' "aluno"
+                          logout id' "aluno"
                         else putStrLn "Opção inválida"
 
-  if opcao /= "5" && opcao /= "6"
+  if option /= "5" && option /= "6"
     then do
       putStr "Pressione enter para continuar..."
       x <- getLine
       clearScreen
-      telaAluno matricula'
+      studentScreen id'
     else putStrLn ""
 
-opcoesAluno :: Aluno -> String
-opcoesAluno aluno =
-  header (Aluno.matricula aluno) (Aluno.nome aluno) ++ Aluno.opcoesDisponiveis
+allSubjectsCode :: [Disciplina] -> [Int]
+allSubjectsCode subjects = [Disciplina.codigo subject | subject <- subjects]
 
-getDisciplinaAluno :: Aluno -> Int -> [Disciplina] -> String
-getDisciplinaAluno aluno codigoDisciplina disciplinas = do
-  let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
-  Disciplina.exibeDisciplina disciplina ++ "\t - " ++ printf "%.2f" (Aluno.mediaDisciplina aluno disciplina) ++ "\n"
+codesFilter :: [Int] -> [Int] -> [Int]
+codesFilter subjectCodes studentCode = filter (`notElem` studentCode) subjectCodes
 
-exibeDisciplinasAluno :: Aluno -> [Int] -> [Disciplina] -> String
-exibeDisciplinasAluno aluno _ [] = ""
-exibeDisciplinasAluno aluno [] _ = ""
-exibeDisciplinasAluno aluno (c : cs) (d : ds) =
+subjectsFilter :: [Disciplina] -> [Int] -> [Disciplina]
+subjectsFilter subjects subjectCodes = filter (\cod -> Disciplina.codigo cod `elem` subjectCodes) subjects
+
+studentOptions :: Aluno -> String
+studentOptions student =
+  header (Aluno.matricula student) (Aluno.nome student) ++ Aluno.opcoesDisponiveis
+
+showStudentSubjects' :: Aluno -> Int -> [Disciplina] -> String
+showStudentSubjects' student codeSubject subjects = do
+  let subject = DataLoader.carregaDisciplina codeSubject subjects
+  Disciplina.exibeDisciplina subject ++ "\t - " ++ printf "%.2f" (Aluno.mediaDisciplina student subject) ++ "\n"
+
+showStudentSubjects :: Aluno -> [Int] -> [Disciplina] -> String
+showStudentSubjects student _ [] = ""
+showStudentSubjects student [] _ = ""
+showStudentSubjects student (c : cs) (d : ds) =
   if c == Disciplina.codigo d
-    then getDisciplinaAluno aluno c (d : ds) ++ exibeDisciplinasAluno aluno cs ds
-    else exibeDisciplinasAluno aluno (c : cs) ds
+    then showStudentSubjects' student c (d : ds) ++ showStudentSubjects student cs ds
+    else showStudentSubjects student (c : cs) ds
 
 -- verificar se o aluno pode realizar matricula
-verificaRealizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
-verificaRealizarMatricula aluno disciplinas codD codA = do
-  if Aluno.numDisciplinasMatriculadas aluno == 4
-    then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula aluno) ++ "] já possui 4 disciplinas matriculadas!\n")
-    else realizarMatricula aluno disciplinas codD codA
+checkStudentEnrollment :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
+checkStudentEnrollment student subjects subjectCodes studentCodes =
+  if Aluno.numDisciplinasMatriculadas student == 4
+    then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.matricula student) ++ "] já possui 4 disciplinas matriculadas!\n")
+    else enroll student subjects subjectCodes studentCodes
 
-realizarMatricula :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
-realizarMatricula aluno disciplinas codD codA = do
-  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+enroll :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
+enroll student subjects subjectCodes studentCode = do
+  putStrLn ("Código\t - Disciplina\n" ++ showSubjects subjects)
 
   putStr "Entre com o código da cadeira: "
 
-  codigo <- getLine
+  code <- getLine
 
   putStrLn ""
 
-  let codInt = read codigo :: Int
-  let disciplina = DataLoader.carregaDisciplina codInt disciplinas
+  let subjectCode = read code :: Int
+  let subject = DataLoader.carregaDisciplina subjectCode subjects
   -- verificar codigo da cadeira --
-  if codInt `elem` codD
+  if subjectCode `elem` subjectCodes
     then do
-      let newCods = sort (codInt : codA)
-      let matAluno = Aluno.matricula aluno
-      let nomeAluno = Aluno.nome aluno
+      let newCods = sort (subjectCode : studentCode)
 
-      let newAluno = Aluno.newAluno matAluno nomeAluno newCods
-      let newDisciplina = Disciplina.newDisciplina codInt (Disciplina.nome disciplina) (Disciplina.qtdDeAulas disciplina) ((matAluno, []) : Disciplina.notas disciplina)
+      -- variaveis aluno
+      let studentId = Aluno.matricula student
+      let studentName = Aluno.nome student
 
-      putStrLn $ Disciplina.toString newDisciplina
+      -- variaveis disciplina
+      let subjectName = Disciplina.nome subject
+      let numberClassesSubject = Disciplina.qtdDeAulas subject
+      let newGrades = (studentId, []) : Disciplina.notas subject
 
-      print newCods
+      let newStudent = Aluno.newAluno studentId studentName newCods
+      let newSubject = Disciplina.newDisciplina subjectCode subjectName numberClassesSubject newGrades
 
-      DataSaver.atualizaAluno matAluno newAluno
-      DataSaver.atualizaDisciplina codInt newDisciplina
+      -- putStrLn $ Disciplina.toString newDisciplina
+
+      DataSaver.atualizaAluno studentId newStudent
+      DataSaver.atualizaDisciplina subjectCode newSubject
 
       putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
-cancelarMatricula :: Aluno -> [Disciplina] -> [Int] -> IO ()
-cancelarMatricula aluno disciplinas codA = do
-  putStrLn ("Código\t - Disciplina\n" ++ exibeDisciplinas disciplinas)
+cancelRegistration :: Aluno -> [Disciplina] -> [Int] -> IO ()
+cancelRegistration student subjects studentCode = do
+  putStrLn ("Código\t - Disciplina\n" ++ showSubjects subjects)
 
   putStr "Entre com o código da cadeira: "
 
-  codigo <- getLine
+  code <- getLine
 
   putStrLn ""
 
-  let codInt = read codigo :: Int
+  let subjectCode = read code :: Int
 
   -- verificar codigo da cadeira --
-  if codInt `elem` codA
+  if subjectCode `elem` studentCode
     then do
-      let newCods = delete codInt codA
-      let matAluno = Aluno.matricula aluno
-      let nomeAluno = Aluno.nome aluno
+      let newCodes = delete subjectCode studentCode
+      let studentId = Aluno.matricula student
+      let studentName = Aluno.nome student
 
-      let newAluno = Aluno.newAluno matAluno nomeAluno newCods
+      let newStudent = Aluno.newAluno studentId studentName newCodes
 
-      print newCods
-
-      DataSaver.atualizaAluno matAluno newAluno
+      DataSaver.atualizaAluno studentId newStudent
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
-exibeDisciplinas :: [Disciplina] -> String
-exibeDisciplinas [] = ""
-exibeDisciplinas (d : ds) =
-  Disciplina.exibeDisciplina d ++ "\n" ++ exibeDisciplinas ds
+showSubjects :: [Disciplina] -> String
+showSubjects [] = ""
+showSubjects (d : ds) =
+  Disciplina.exibeDisciplina d ++ "\n" ++ showSubjects ds
 
--- mediaGeralAluno :: Aluno -> [Disciplina] -> IO ()
--- mediaGeralAluno aluno disciplinas = do
---   print (Aluno.todasMedias aluno disciplinas)
+teacherScreen :: String -> IO ()
+teacherScreen id' = do
+  teachersFile <- DataLoader.leArquivo "./data/professores.csv"
+  let teachers = DataLoader.carregaProfessores teachersFile
+  let teacher = DataLoader.carregaProfessor (read id') teachers
 
-header :: Int -> String -> String
-header matricula nome =
-  "\n--------------------------\n"
-    ++ "Usuário: "
-    ++ show matricula
-    ++ " - "
-    ++ nome
+  subjectsFile <- DataLoader.leArquivo "./data/disciplinas.csv"
+  let disciplinas = DataLoader.carregaDisciplinas subjectsFile
+  let teacherSubjectsCode = Professor.disciplinasLecionadas teacher
+  let teacherSubjects = subjectsFilter disciplinas teacherSubjectsCode
 
-telaProf :: String -> IO ()
-telaProf matricula' = do
-  arquivoProfessores <- DataLoader.leArquivo "./data/professores.csv"
-  let professores = DataLoader.carregaProfessores arquivoProfessores
-  let professor = DataLoader.carregaProfessor (read matricula') professores
-
-  arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
-  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
-  let codDisciplinasDoProf = Professor.disciplinasLecionadas professor
-  let disciplinasDoProf = disciplinasFilter disciplinas codDisciplinasDoProf
-
-  putStrLn (opcoesProfessor professor)
+  putStrLn (teacherOptions teacher)
 
   putStr "Qual a opcao selecionada? "
-  opcao <- getLine
+  option <- getLine
 
-  if opcao == "1"
-    then putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
+  if option == "1"
+    then putStrLn ("\nCódigo\t - Disciplina\n" ++ showSubjects teacherSubjects)
     else
-      if opcao == "2"
+      if option == "2"
         then do
           putStrLn "Essas são as disciplinas que você leciona:"
-          putStrLn ("\nCódigo\t - Disciplina\n" ++ exibeDisciplinas disciplinasDoProf)
+          putStrLn ("\nCódigo\t - Disciplina\n" ++ showSubjects teacherSubjects)
           putStr "Código da disciplina para qual você deseja cadastrar aula: "
-          codigo <- getLine
-          registraAula professor $ read codigo
+          code <- getLine
+          registerClass teacher $ read code
         else
-          if opcao == "3"
+          if option == "3"
             then putStrLn "Cadastra prova"
             else
-              if opcao == "4"
+              if option == "4"
                 then do
                   clearScreen
-                  saiDoSistema matricula' "prof"
+                  quit id' "prof"
                 else
-                  if opcao == "5"
+                  if option == "5"
                     then do
                       clearScreen
-                      logoff matricula' "prof"
+                      logout id' "prof"
                     else putStrLn "Opção inválida"
-  if opcao /= "4" && opcao /= "5"
+
+  if option /= "4" && option /= "5"
     then do
       putStr "Pressione enter para continuar..."
       x <- getLine
       clearScreen
-      telaProf matricula'
+      teacherScreen id'
     else putStrLn ""
 
-opcoesProfessor :: Professor -> String
-opcoesProfessor professor =
+teacherOptions :: Professor -> String
+teacherOptions professor =
   header (Professor.matricula professor) (Professor.nome professor) ++ Professor.opcoesDisponiveis
 
-getDisciplina :: Int -> [Disciplina] -> String
-getDisciplina codigoDisciplina disciplinas = do
+showTeacherSubjects' :: Int -> [Disciplina] -> String
+showTeacherSubjects' codigoDisciplina disciplinas = do
   let disciplina = DataLoader.carregaDisciplina codigoDisciplina disciplinas
   Disciplina.exibeDisciplina disciplina ++ "\n"
 
-exibeDisciplinasProfessor :: [Int] -> [Disciplina] -> String
-exibeDisciplinasProfessor _ [] = ""
-exibeDisciplinasProfessor [] _ = ""
-exibeDisciplinasProfessor (c : cs) (d : ds) =
+showTeacherSubjects :: [Int] -> [Disciplina] -> String
+showTeacherSubjects _ [] = ""
+showTeacherSubjects [] _ = ""
+showTeacherSubjects (c : cs) (d : ds) =
   if c == Disciplina.codigo d
-    then getDisciplina c (d : ds) ++ exibeDisciplinasProfessor cs ds
-    else exibeDisciplinasProfessor (c : cs) ds
+    then showTeacherSubjects' c (d : ds) ++ showTeacherSubjects cs ds
+    else showTeacherSubjects (c : cs) ds
 
-registraAula :: Professor -> Int -> IO ()
-registraAula professor codigoDisciplina =
-  if Professor.temDisciplina professor codigoDisciplina
+registerClass :: Professor -> Int -> IO ()
+registerClass professor codeSubject =
+  if Professor.temDisciplina professor codeSubject
     then putStrLn "Registrado"
     else putStrLn "Disciplina inválida"
 
-telaAdmin :: IO ()
-telaAdmin = do
-  putStr (opcoesAdmin ++ "> ")
-  opcao <- getLine
-  painelAdm opcao
+adminScreen :: IO ()
+adminScreen = do
+  putStr (adminOptions ++ "> ")
+  option <- getLine
+  adminPanel option
 
-opcoesAdmin :: String
-opcoesAdmin =
+adminOptions :: String
+adminOptions =
   header 0 "admin"
     ++ "\n\n1) Cadastrar professor\n"
     ++ "2) Cadastrar aluno\n"
@@ -322,75 +321,75 @@ opcoesAdmin =
     ++ "(S)air do sistema\n"
     ++ "Fazer (l)ogoff\n"
 
-telaCadastro :: String -> IO ()
-telaCadastro opcao = do
-  putStr "\nDigite a matrícula: \n> "
-  matricula <- getLine
-
-  putStr "Digite seu nome: \n> "
-  nome <- getLine
-
-  putStr "Digite sua senha: \n> "
-  senha <- getLine
-
-  if opcao == "professor"
-    then Controle.cadastraProfessor (read matricula) nome senha
-    else Controle.cadastraAluno (read matricula) nome senha
-
-painelAdm :: String -> IO ()
-painelAdm opcao
-  | opcao == "1" = telaCadastro "professor"
-  | opcao == "2" = telaCadastro "aluno"
-  | opcao == "3" = telaAssociacaoProfessor
-  | opcao == "4" = listaAlunosSemMatriculas
-  | opcao == "5" = listaProfessoresSemMatriculas
-  | opcao == "6" = exibeDisciplinaMaiorMedia
-  | opcao == "7" = exibeDisciplinaMenorMedia
-  | opcao == "S" = saiDoSistema "" ""
+adminPanel :: String -> IO ()
+adminPanel option
+  | option == "1" = registrationScreen "professor"
+  | option == "2" = registrationScreen "aluno"
+  | option == "3" = associateTeacherScreen
+  | option == "4" = listStudentsWithoutEnrollment
+  | option == "5" = listProfessorWithoutEnrollment
+  | option == "6" = showsSubjectHigherAverage
+  | option == "7" = showsSubjectLowestAverage
+  | option == "S" = quit "" ""
   | otherwise = putStrLn "opcao invalida"
 
-telaAssociacaoProfessor :: IO ()
-telaAssociacaoProfessor = do
+registrationScreen :: String -> IO ()
+registrationScreen option = do
+  putStr "\nDigite a matrícula: \n> "
+  id <- getLine
+
+  putStr "Digite seu nome: \n> "
+  name <- getLine
+
+  putStr "Digite sua senha: \n> "
+  password <- getLine
+
+  if option == "professor"
+    then Controle.cadastraProfessor (read id) name password
+    else Controle.cadastraAluno (read id) name password
+
+associateTeacherScreen :: IO ()
+associateTeacherScreen = do
   clearScreen
 
-  arquivoProfessores <- DataLoader.leArquivo "./data/professores.csv"
-  arquivoDisciplinas <- DataLoader.leArquivo "./data/disciplinas.csv"
-  let professores = DataLoader.carregaProfessores arquivoProfessores
-  let disciplinas = DataLoader.carregaDisciplinas arquivoDisciplinas
+  teachersFile <- DataLoader.leArquivo "./data/professores.csv"
+  subjectsFile <- DataLoader.leArquivo "./data/disciplinas.csv"
+  let teachers = DataLoader.carregaProfessores teachersFile
+  let subjects = DataLoader.carregaDisciplinas subjectsFile
 
   putStrLn "Professores disponíveis:"
-  putStr $ Controle.listaProfessoresDisponiveis professores
+  putStr $ Controle.listaProfessoresDisponiveis teachers
 
   putStr "Matrícula do professor a ser associado > "
-  matricula <- getLine
+  id <- getLine
   clearScreen
 
-  let professor = DataLoader.carregaProfessor (read matricula) professores
+  let teacher = DataLoader.carregaProfessor (read id) teachers
   putStrLn "Disciplinas disponíveis"
-  putStr $ Controle.listaDisciplinasDisponiveisParaAssociacao professor disciplinas
+  putStr $ Controle.listaDisciplinasDisponiveisParaAssociacao teacher subjects
 
   putStr "Código da disciplina a ser associada > "
-  codigo <- getLine
+  subjectCode <- getLine
   clearScreen
 
-  let disciplina = DataLoader.carregaDisciplina (read codigo) disciplinas
+  let subject = DataLoader.carregaDisciplina (read subjectCode) subjects
 
-  Controle.associaProfessorDisciplina professor disciplina disciplinas
+  Controle.associaProfessorDisciplina teacher subject subjects
 
-listaAlunosSemMatriculas :: IO ()
-listaAlunosSemMatriculas = do
+listStudentsWithoutEnrollment :: IO ()
+listStudentsWithoutEnrollment =
   showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listaAlunosSemMatriculas DataLoader.carregaAlunos
 
-listaProfessoresSemMatriculas :: IO ()
-listaProfessoresSemMatriculas = do
+listProfessorWithoutEnrollment :: IO ()
+listProfessorWithoutEnrollment =
   showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listaProfessoresSemMatriculas DataLoader.carregaProfessores
 
-exibeDisciplinaMaiorMedia :: IO ()
-exibeDisciplinaMaiorMedia = do
+showsSubjectHigherAverage :: IO ()
+showsSubjectHigherAverage =
   showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMaiorMedia DataLoader.carregaDisciplinas
 
-exibeDisciplinaMenorMedia :: IO ()
-exibeDisciplinaMenorMedia = do
+showsSubjectLowestAverage :: IO ()
+showsSubjectLowestAverage =
   showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.exibeDisciplinaComMenorMedia DataLoader.carregaDisciplinas
 
 showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
@@ -402,43 +401,43 @@ showData message filePath display loadAll = do
 
   putStrLn $ display entities
 
-saiDoSistema :: String -> String -> IO ()
-saiDoSistema matricula' role' = do
+quit :: String -> String -> IO ()
+quit id' role' = do
   putStr "Deseja sair do sistema? (s/n) "
-  opcao <- getLine
-  if opcao == "s"
+  option <- getLine
+  if option == "s"
     then do
       putStr "\nSaindo..."
       threadDelay (10 ^ 6)
     else
-      if opcao == "n"
+      if option == "n"
         then do
           clearScreen
-          tela matricula' role'
+          screen id' role'
         else do
           putStrLn "Opção inválida"
           putStrLn "Pressione enter para continuar..."
           x <- getLine
           clearScreen
-          saiDoSistema matricula' role'
+          quit id' role'
 
-logoff :: String -> String -> IO ()
-logoff matricula' role' = do
-  putStr "Deseja realizar o logoff? (s/n) "
-  opcao <- getLine
-  if opcao == "s"
+logout :: String -> String -> IO ()
+logout id' role' = do
+  putStr "Deseja realizar o logout? (s/n) "
+  option <- getLine
+  if option == "s"
     then do
-      putStrLn "Logoff realizado."
+      putStrLn "logout realizado."
       clearScreen
       main
     else
-      if opcao == "n"
+      if option == "n"
         then do
           clearScreen
-          tela matricula' role'
+          screen id' role'
         else do
           putStrLn "Opção inválida"
           putStrLn "Pressione enter para continuar..."
           x <- getLine
           clearScreen
-          logoff matricula' role'
+          logout id' role'
