@@ -51,11 +51,11 @@ findNotasAluno matrAluno (x : xs) =
     matr = fst x
     notas = snd x
 
-exibeDisciplina :: Disciplina -> String
-exibeDisciplina d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d) ++ "\t - " ++ show(qtdDeAulas d)
+showSubject :: Disciplina -> String
+showSubject d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d) ++ "\t - " ++ show(qtdDeAulas d)
 
-exibeDisciplinaSemAulas :: Disciplina -> String
-exibeDisciplinaSemAulas d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d)
+showSubjectWithoutClasses :: Disciplina -> String
+showSubjectWithoutClasses d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d)
 
 exibeNomeDisciplina :: String -> String
 exibeNomeDisciplina nome
