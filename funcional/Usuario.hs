@@ -1,39 +1,34 @@
 module Usuario where
 
 data Usuario = Usuario
-  { nickname :: String,
-    senha :: String,
+  { name :: String,
+    password :: String,
     role :: String
   }
 
-newUsuario :: String -> String -> String -> Usuario
-newUsuario nickname' senha' role' =
-  Usuario
-    { nickname = nickname',
-      senha = senha',
-      role = role'
-    }
+newUser :: String -> String -> String -> Usuario
+newUser = Usuario
 
 -- / Verifica se um usuário e senha está cadastrado no sistema e retorna (Se está autenticado, seu 'role')
-autentica :: String -> String -> [Usuario] -> (Bool, String)
-autentica usuario senha usuariosDisponiveis =
-  (parUsuarioSenha `elem` usuariosESenhas, role)
+authenticates :: String -> String -> [Usuario] -> (Bool, String)
+authenticates user password availableUsers =
+  (userPassword `elem` usersAndPasswords, role)
   where
-    usuariosESenhas = usuariosSenhas usuariosDisponiveis
-    parUsuarioSenha = (usuario, senha)
-    role = findRole usuario senha usuariosDisponiveis
+    usersAndPasswords = usersPasswords availableUsers
+    userPassword = (user, password)
+    role = findRole user password availableUsers
 
-usuariosSenhas :: [Usuario] -> [(String, String)]
-usuariosSenhas = map (\u -> (nickname u, senha u))
+usersPasswords :: [Usuario] -> [(String, String)]
+usersPasswords = map (\u -> (name u, password u))
 
 findRole :: String -> String -> [Usuario] -> String
 findRole _ _ [] = ""
-findRole nick password (u : us) = if nick == nickname u && password == senha u then role u else findRole nick password us
+findRole name' password' (u : us) = if name' == name u && password' == password u then role u else findRole name' password' us
 
 toString :: Usuario -> String
-toString usuario =
-  nickname' ++ "," ++ senha' ++ "," ++ role'
+toString user =
+  name' ++ "," ++ password' ++ "," ++ role'
   where
-    nickname' = nickname usuario
-    senha' = senha usuario
-    role' = role usuario
+    name' = name user
+    password' = password user
+    role' = role user

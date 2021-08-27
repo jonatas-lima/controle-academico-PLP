@@ -1,58 +1,58 @@
 module Disciplina where
 
 data Disciplina = Disciplina
-  { codigo :: Int,
-    nome :: String,
-    qtdDeAulas :: Int,
-    notas :: [(Int, [Double])]
+  { code :: Int,
+    name :: String,
+    numberClasses :: Int,
+    grades :: [(Int, [Double])]
   }
 
-newDisciplina :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
-newDisciplina = Disciplina
+newSubject :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
+newSubject = Disciplina
 
-alunosMatriculados :: Disciplina -> [Int]
-alunosMatriculados disciplina = [fst aluno | aluno <- notas disciplina]
+enrolledStudents :: Disciplina -> [Int]
+enrolledStudents subject = [fst student | student <- grades subject]
 
 -- / Calcula a média da turma
-mediaDisciplina :: Disciplina -> Double
-mediaDisciplina disciplina =
-  somaMedias (notas disciplina) / fromIntegral numAlunos
+subjectAverage :: Disciplina -> Double
+subjectAverage subject =
+  sumAverages (grades subject) / fromIntegral numStudents
   where
-    numAlunos = length (notas disciplina)
+    numStudents = length (grades subject)
 
 -- / Soma das médias da turma
-somaMedias :: [(Int, [Double])] -> Double
-somaMedias [] = 0
-somaMedias (n : ns) =
-  media + somaMedias ns
+sumAverages :: [(Int, [Double])] -> Double
+sumAverages [] = 0
+sumAverages (n : ns) =
+  average + sumAverages ns
   where
-    matrAluno = fst n
-    notasAluno = snd n
-    numNotas = length notasAluno
-    media = sum notasAluno / fromIntegral numNotas
+    studentId = fst n
+    studentGrades = snd n
+    numGrades = length studentGrades
+    average = sum studentGrades / fromIntegral numGrades
 
 -- / Calcula a média de um aluno a partir de sua matrícula
-mediaAluno :: Int -> Disciplina -> Double
-mediaAluno matrAluno disciplina =
-  media
+studentAverage :: Int -> Disciplina -> Double
+studentAverage studentId subject =
+  average
   where
-    notas' = findNotasAluno matrAluno (notas disciplina)
-    numNotas = length notas'
-    media = if numNotas == 0 then 0 else sum notas' / fromIntegral numNotas
+    grades' = findStudentGrades studentId (grades subject)
+    numGrades = length grades'
+    average = if numGrades == 0 then 0 else sum grades' / fromIntegral numGrades
 
 -- / Acha as notas de um aluno a partir de sua matrícula
-findNotasAluno :: Int -> [(Int, [Double])] -> [Double]
-findNotasAluno _ [] = []
-findNotasAluno matrAluno (x : xs) =
-  if matrAluno == matr
-    then notas
-    else findNotasAluno matrAluno xs
+findStudentGrades :: Int -> [(Int, [Double])] -> [Double]
+findStudentGrades _ [] = []
+findStudentGrades studentId (x : xs) =
+  if studentId == id
+    then grades
+    else findStudentGrades studentId xs
   where
-    matr = fst x
-    notas = snd x
+    id = fst x
+    grades = snd x
 
 exibeDisciplina :: Disciplina -> String
-exibeDisciplina d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d)
+exibeDisciplina d = show (code d) ++ "\t - " ++ exibeNomeDisciplina (name d)
 
 exibeNomeDisciplina :: String -> String
 exibeNomeDisciplina nome
@@ -63,7 +63,7 @@ toString :: Disciplina -> String
 toString disciplina =
   show codigo' ++ ";" ++ nome' ++ ";" ++ show qtdDeAulas' ++ ";" ++ show notas'
   where
-    codigo' = codigo disciplina
-    nome' = nome disciplina
-    qtdDeAulas' = qtdDeAulas disciplina
-    notas' = notas disciplina
+    codigo' = code disciplina
+    nome' = name disciplina
+    qtdDeAulas' = numberClasses disciplina
+    notas' = grades disciplina
