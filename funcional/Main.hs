@@ -237,13 +237,23 @@ cancelRegistration student subjects studentCode = do
       let newCodes = delete subjectCode studentCode
       let studentId = Aluno.matricula student
       let studentName = Aluno.nome student
+      let subject = DataLoader.carregaDisciplina subjectCode subjects
 
+      let newSubject = Disciplina.Disciplina subjectCode (Disciplina.nome subject) (Disciplina.qtdDeAulas subject) (removeEnrollment studentId (Disciplina.notas subject))
       let newStudent = Aluno.newAluno studentId studentName newCodes
 
       DataSaver.atualizaAluno studentId newStudent
+      DataSaver.atualizaDisciplina subjectCode newSubject
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
+
+removeEnrollment :: Int -> [(Int, [Double])] -> [(Int, [Double])]
+removeEnrollment _ [] = []
+removeEnrollment registration (g : gs) =
+  if fst g == registration
+    then removeEnrollment registration gs
+    else g : removeEnrollment registration gs
 
 showSubjects :: [Disciplina] -> String
 showSubjects [] = ""
