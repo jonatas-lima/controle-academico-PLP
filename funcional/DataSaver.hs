@@ -36,6 +36,10 @@ atualizaAluno :: Int -> Aluno -> IO ()
 atualizaAluno matricula =
   atualizaEntidade matricula "./data/alunos.csv" Aluno.toString DataLoader.carregaAlunos DataLoader.carregaAluno
 
+atualizaDisciplina :: Int -> Disciplina -> IO ()
+atualizaDisciplina codigo =
+  atualizaEntidade codigo "./data/disciplinas.csv" Disciplina.toString DataLoader.carregaDisciplinas DataLoader.carregaDisciplina
+
 atualizaEntidade :: Int -> String -> (t -> String) -> ([String] -> [t]) -> (Int -> [t] -> t) -> t -> IO ()
 atualizaEntidade matricula filePath toString loadAll loadOne entidade = do
   arquivo <- DataLoader.leArquivo filePath

@@ -4,9 +4,11 @@ data Disciplina = Disciplina
   { codigo :: Int,
     nome :: String,
     qtdDeAulas :: Int,
-    notas :: [(Int, [Double])],
-    descartaNotaMaisBaixa :: Bool
+    notas :: [(Int, [Double])]
   }
+
+newDisciplina :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
+newDisciplina = Disciplina
 
 alunosMatriculados :: Disciplina -> [Int]
 alunosMatriculados disciplina = [fst aluno | aluno <- notas disciplina]
@@ -32,10 +34,11 @@ somaMedias (n : ns) =
 -- / Calcula a média de um aluno a partir de sua matrícula
 mediaAluno :: Int -> Disciplina -> Double
 mediaAluno matrAluno disciplina =
-  sum notas' / fromIntegral numNotas
+  media
   where
     notas' = findNotasAluno matrAluno (notas disciplina)
     numNotas = length notas'
+    media = if numNotas == 0 then 0 else sum notas' / fromIntegral numNotas
 
 -- / Acha as notas de um aluno a partir de sua matrícula
 findNotasAluno :: Int -> [(Int, [Double])] -> [Double]
@@ -52,16 +55,15 @@ exibeDisciplina :: Disciplina -> String
 exibeDisciplina d = show (codigo d) ++ "\t - " ++ exibeNomeDisciplina (nome d)
 
 exibeNomeDisciplina :: String -> String
-exibeNomeDisciplina nome 
+exibeNomeDisciplina nome
   | length nome < 6 = exibeNomeDisciplina (nome ++ " ")
   | otherwise = nome
 
 toString :: Disciplina -> String
 toString disciplina =
-  show codigo' ++ ";" ++ nome' ++ ";" ++ show qtdDeAulas' ++ ";" ++ show descartaNotaMaisBaixa' ++ ";" ++ show notas'
+  show codigo' ++ ";" ++ nome' ++ ";" ++ show qtdDeAulas' ++ ";" ++ show notas'
   where
     codigo' = codigo disciplina
     nome' = nome disciplina
     qtdDeAulas' = qtdDeAulas disciplina
-    descartaNotaMaisBaixa' = descartaNotaMaisBaixa disciplina
     notas' = notas disciplina
