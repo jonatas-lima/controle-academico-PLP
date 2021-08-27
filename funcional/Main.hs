@@ -99,10 +99,16 @@ studentScreen id' = do
     then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showStudentSubjects student enrolledSubjectsCodes subjects)
     else
       if option == "2"
-        then checkStudentEnrollment student notEnrolledSubjects notEnrolledSubjectsCodes enrolledSubjectsCodes
+        then
+          if Aluno.numberEnrolledSubjects student < 4
+            then enroll student subjects (map Disciplina.code subjects) (map Aluno.registration students)
+            else putStrLn ("O aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
         else
           if option == "3"
-            then cancelRegistration student enrolledSubjects enrolledSubjectsCodes
+            then
+              if Aluno.numberEnrolledSubjects student > 0
+                then cancelRegistration student enrolledSubjects enrolledSubjectsCodes
+                else putStrLn "O aluno não está matriculado em nenhuma disciplina!"
             else
               if option == "4"
                 then do
@@ -154,13 +160,6 @@ showStudentSubjects student (c : cs) (d : ds) =
   if c == Disciplina.code d
     then showStudentSubjects' student c (d : ds) ++ showStudentSubjects student cs ds
     else showStudentSubjects student (c : cs) ds
-
--- verificar se o aluno pode realizar matricula
-checkStudentEnrollment :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
-checkStudentEnrollment student subjects subjectCodes studentCodes =
-  if Aluno.numberEnrolledSubjects student == 4
-    then putStrLn ("O aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
-    else enroll student subjects subjectCodes studentCodes
 
 enroll :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
 enroll student subjects subjectCodes studentCode = do
