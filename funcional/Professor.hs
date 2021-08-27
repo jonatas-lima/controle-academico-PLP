@@ -28,9 +28,8 @@ opcoesDisponiveis =
     ++ "4) Sair do sistema\n"
     ++ "5) Fazer logoff\n"
 
-temDisciplina :: Int -> [Int]-> Bool
-temDisciplina n [] = False
-temDisciplina n (x:xs) = if n == x then True else temDisciplina n xs
+temDisciplina :: Professor -> Int -> Bool
+temDisciplina professor codigoDisciplina = codigoDisciplina `elem` disciplinasLecionadas professor
 
 toString :: Professor -> String
 toString professor =
