@@ -4,6 +4,7 @@ import Aluno (Aluno)
 import qualified Aluno
 import Control.Concurrent (threadDelay)
 import qualified Controle
+import Data.List (delete, sort)
 import qualified DataLoader
 import qualified DataSaver
 import Disciplina (Disciplina)
@@ -12,7 +13,6 @@ import Professor (Professor)
 import qualified Professor
 import System.Console.ANSI (clearScreen)
 import Text.Printf
-import Data.List (sort, delete)
 import qualified Usuario
 
 main :: IO ()
@@ -166,19 +166,23 @@ realizarMatricula aluno disciplinas codD codA = do
   putStrLn ""
 
   let codInt = read codigo :: Int
-
+  let disciplina = DataLoader.carregaDisciplina codInt disciplinas
   -- verificar codigo da cadeira --
   if codInt `elem` codD
     then do
       let newCods = sort (codInt : codA)
       let matAluno = Aluno.matricula aluno
       let nomeAluno = Aluno.nome aluno
-      
+
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
+      let newDisciplina = Disciplina.newDisciplina codInt (Disciplina.nome disciplina) (Disciplina.qtdDeAulas disciplina) ((matAluno, []) : Disciplina.notas disciplina)
+
+      putStrLn $ Disciplina.toString newDisciplina
 
       print newCods
-      
+
       DataSaver.atualizaAluno matAluno newAluno
+      DataSaver.atualizaDisciplina codInt newDisciplina
 
       putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
@@ -201,11 +205,11 @@ cancelarMatricula aluno disciplinas codA = do
       let newCods = delete codInt codA
       let matAluno = Aluno.matricula aluno
       let nomeAluno = Aluno.nome aluno
-      
+
       let newAluno = Aluno.newAluno matAluno nomeAluno newCods
 
       print newCods
-      
+
       DataSaver.atualizaAluno matAluno newAluno
 
       putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
