@@ -369,6 +369,8 @@ registrationScreen option = do
     then Controle.registerProfessor (read id) name password
     else Controle.registerStudent (read id) name password
 
+  waitEnterAdmin
+
 associateTeacherScreen :: IO ()
 associateTeacherScreen = do
   clearScreen
@@ -394,24 +396,29 @@ associateTeacherScreen = do
   clearScreen
 
   let subject = DataLoader.loadSubject (read subjectCode) subjects
-
   Controle.associateProfessorSubject professor subject subjects
+
+  waitEnterAdmin
 
 listStudentsWithoutEnrollment :: IO ()
 listStudentsWithoutEnrollment = do
   showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listStudentsWithoutRegistration DataLoader.loadStudents
+  waitEnterAdmin
 
 listProfessorWithoutEnrollment :: IO ()
 listProfessorWithoutEnrollment = do
   showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listProfessorsWithoutRegistration DataLoader.loadProfessors
+  waitEnterAdmin
 
 showsSubjectHigherAverage :: IO ()
 showsSubjectHigherAverage = do
   showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.showsSubjectWithHigherAverage DataLoader.loadSubjects
+  waitEnterAdmin
 
 showsSubjectLowestAverage :: IO ()
 showsSubjectLowestAverage = do
   showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.showsSubjectWithLowestAverage DataLoader.loadSubjects
+  waitEnterAdmin
 
 showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
 showData message filePath display loadAll = do
@@ -462,3 +469,10 @@ logout id' role' = do
           x <- getLine
           clearScreen
           logout id' role'
+
+waitEnterAdmin :: IO ()
+waitEnterAdmin = do
+  putStr "Pressione enter para continuar..."
+  x <- getLine
+  clearScreen
+  adminScreen
