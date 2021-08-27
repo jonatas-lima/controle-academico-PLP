@@ -1,54 +1,54 @@
 module DataSaver where
 
-import Aluno (Aluno (matricula), toString)
+import Aluno (Aluno (registration), toString)
 import Data.List.Split (splitOn)
 import Data.Text (replace, unpack)
 import qualified DataLoader
 import Disciplina (Disciplina, toString)
-import Professor (Professor (Professor, matricula), toString)
+import Professor (Professor (Professor, registration), toString)
 import qualified System.IO.Strict as Strict
 import Usuario (Usuario (Usuario), toString)
 
 append :: String -> String -> IO ()
-append linha arquivo = appendFile arquivo (linha ++ "\n")
+append line arq = appendFile arq (line ++ "\n")
 
-salvaUsuario :: Usuario -> IO ()
-salvaUsuario usuario = append (Usuario.toString usuario) "./data/usuarios.csv"
+saveUser :: Usuario -> IO ()
+saveUser user = append (Usuario.toString user) "./data/usuarios.csv"
 
-salvaProfessor :: Professor -> String -> IO ()
-salvaProfessor professor senha = do
+saveProfessor :: Professor -> String -> IO ()
+saveProfessor professor password = do
   append (Professor.toString professor) "./data/professores.csv"
-  append (show (Professor.matricula professor) ++ "," ++ senha ++ "," ++ "prof") "./data/usuarios.csv"
+  append (show (Professor.registration professor) ++ "," ++ password ++ "," ++ "prof") "./data/usuarios.csv"
 
-salvaAluno :: Aluno -> String -> IO ()
-salvaAluno aluno senha = do
-  append (Aluno.toString aluno) "./data/alunos.csv"
-  append (show (Aluno.matricula aluno) ++ "," ++ senha ++ "," ++ "aluno") "./data/usuarios.csv"
+saveStudent :: Aluno -> String -> IO ()
+saveStudent student password = do
+  append (Aluno.toString student) "./data/alunos.csv"
+  append (show (Aluno.registration student) ++ "," ++ password ++ "," ++ "aluno") "./data/usuarios.csv"
 
-salvaDisciplina :: Disciplina -> IO ()
-salvaDisciplina disciplina = append (Disciplina.toString disciplina) "./data/disciplinas.csv"
+saveSubject :: Disciplina -> IO ()
+saveSubject subject = append (Disciplina.toString subject) "./data/disciplinas.csv"
 
-atualizaProfessor :: Int -> Professor -> IO ()
-atualizaProfessor matricula =
-  atualizaEntidade matricula "./data/professores.csv" Professor.toString DataLoader.carregaProfessores DataLoader.carregaProfessor
+updateProfessor :: Int -> Professor -> IO ()
+updateProfessor registration =
+  updateEntity registration "./data/professores.csv" Professor.toString DataLoader.loadProfessors DataLoader.loadProfessor
 
-atualizaAluno :: Int -> Aluno -> IO ()
-atualizaAluno matricula =
-  atualizaEntidade matricula "./data/alunos.csv" Aluno.toString DataLoader.carregaAlunos DataLoader.carregaAluno
+updateStudent :: Int -> Aluno -> IO ()
+updateStudent registration =
+  updateEntity registration "./data/alunos.csv" Aluno.toString DataLoader.loadStudents DataLoader.loadStudent
 
-atualizaDisciplina :: Int -> Disciplina -> IO ()
-atualizaDisciplina codigo =
-  atualizaEntidade codigo "./data/disciplinas.csv" Disciplina.toString DataLoader.carregaDisciplinas DataLoader.carregaDisciplina
+updateSubject :: Int -> Disciplina -> IO ()
+updateSubject codigo =
+  updateEntity codigo "./data/disciplinas.csv" Disciplina.toString DataLoader.loadSubjects DataLoader.loadSubject
 
-atualizaEntidade :: Int -> String -> (t -> String) -> ([String] -> [t]) -> (Int -> [t] -> t) -> t -> IO ()
-atualizaEntidade matricula filePath toString loadAll loadOne entidade = do
-  arquivo <- DataLoader.leArquivo filePath
+updateEntity :: Int -> String -> (t -> String) -> ([String] -> [t]) -> (Int -> [t] -> t) -> t -> IO ()
+updateEntity registration filePath toString loadAll loadOne entity = do
+  arq <- DataLoader.readArq filePath
 
-  let entidades = loadAll arquivo
-  let entidadeAntiga = toString $ loadOne matricula entidades
-  let arquivoAtualizado = updateEntityData (toString entidade) entidadeAntiga arquivo
+  let entitys = loadAll arq
+  let oldEntity = toString $ loadOne registration entitys
+  let updatedArq = updateEntityData (toString entity) oldEntity arq
 
-  writeFile filePath $ parseLines arquivoAtualizado
+  writeFile filePath $ parseLines updatedArq
 
 parseLines :: [String] -> String
 parseLines [] = ""

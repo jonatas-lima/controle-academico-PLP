@@ -7,87 +7,87 @@ import Professor (Professor (..))
 import qualified System.IO.Strict as Strict
 import Usuario (Usuario (..))
 
-leArquivo :: String -> IO [String]
-leArquivo path = do
+readArq :: String -> IO [String]
+readArq path = do
   arq <- Strict.readFile path
   let list = lines arq
   return list
 
-carregaUsuarios :: [String] -> [Usuario]
-carregaUsuarios linhas = [parseUsuario linha | linha <- linhas]
+loadUsers :: [String] -> [Usuario]
+loadUsers lines = [parseUser line | line <- lines]
 
-parseUsuario :: String -> Usuario
-parseUsuario linha =
+parseUser :: String -> Usuario
+parseUser line =
   Usuario
-    { Usuario.nickname = head dados,
-      Usuario.senha = dados !! 1,
-      Usuario.role = dados !! 2
+    { Usuario.name = head data',
+      Usuario.password = data' !! 1,
+      Usuario.role = data' !! 2
     }
   where
-    dados = splitOn "," linha
+    data' = splitOn "," line
 
-carregaProfessores :: [String] -> [Professor]
-carregaProfessores linhas = [parseProfessor linha | linha <- linhas]
+loadProfessors :: [String] -> [Professor]
+loadProfessors lines = [parseProfessor line | line <- lines]
 
-carregaProfessor :: Int -> [Professor] -> Professor
-carregaProfessor matricula (p : ps) =
-  if Professor.matricula p == matricula
+loadProfessor :: Int -> [Professor] -> Professor
+loadProfessor id (p : ps) =
+  if Professor.registration p == id
     then p
-    else carregaProfessor matricula ps
+    else loadProfessor id ps
 
 parseProfessor :: String -> Professor
-parseProfessor linha =
+parseProfessor line =
   Professor
-    { Professor.matricula = read (head dados) :: Int,
-      Professor.nome = dados !! 1,
-      Professor.disciplinasLecionadas = read (dados !! 2) :: [Int]
+    { Professor.registration = read (head data') :: Int,
+      Professor.name = data' !! 1,
+      Professor.subjects = read (data' !! 2) :: [Int]
     }
   where
-    dados = splitOn ";" linha
+    data' = splitOn ";" line
 
-carregaAlunos :: [String] -> [Aluno]
-carregaAlunos linhas = [parseAluno linha | linha <- linhas]
+loadStudents :: [String] -> [Aluno]
+loadStudents lines = [parseStudent line | line <- lines]
 
-carregaAluno :: Int -> [Aluno] -> Aluno
-carregaAluno matricula' (a : as)
-  | Aluno.matricula a == matricula' = a
-  | otherwise = carregaAluno matricula' as
+loadStudent :: Int -> [Aluno] -> Aluno
+loadStudent id' (a : as)
+  | Aluno.registration a == id' = a
+  | otherwise = loadStudent id' as
 
-parseAluno :: String -> Aluno
-parseAluno linha =
+parseStudent :: String -> Aluno
+parseStudent line =
   Aluno
-    { Aluno.matricula = read (head dados) :: Int,
-      Aluno.nome = dados !! 1,
-      Aluno.disciplinasMatriculadas = read (dados !! 2) :: [Int]
+    { Aluno.registration = read (head data') :: Int,
+      Aluno.name = data' !! 1,
+      Aluno.enrolledSubjects = read (data' !! 2) :: [Int]
     }
   where
-    dados = splitOn ";" linha
+    data' = splitOn ";" line
 
-parseDisciplina :: String -> Disciplina
-parseDisciplina linha =
+parseSubject :: String -> Disciplina
+parseSubject lines =
   Disciplina
-    { Disciplina.codigo = read (head dados) :: Int,
-      Disciplina.nome = dados !! 1,
-      Disciplina.qtdDeAulas = read (dados !! 2) :: Int,
-      Disciplina.notas = read (dados !! 3) :: [(Int, [Double])]
+    { Disciplina.code = read (head data') :: Int,
+      Disciplina.name = data' !! 1,
+      Disciplina.numberClasses = read (data' !! 2) :: Int,
+      Disciplina.grades = read (data' !! 3) :: [(Int, [Double])]
     }
   where
-    dados = splitOn ";" linha
+    data' = splitOn ";" lines
 
-carregaDisciplinas :: [String] -> [Disciplina]
-carregaDisciplinas linhas = [parseDisciplina linha | linha <- linhas]
+loadSubjects :: [String] -> [Disciplina]
+loadSubjects lines = [parseSubject linha | linha <- lines]
 
-carregaDisciplina :: Int -> [Disciplina] -> Disciplina
-carregaDisciplina codigo' (d : ds) =
-  if Disciplina.codigo d == codigo'
+loadSubject :: Int -> [Disciplina] -> Disciplina
+loadSubject code' (d : ds) =
+  if Disciplina.code d == code'
     then d
-    else carregaDisciplina codigo' ds
+    else loadSubject code' ds
 
-carregaDisciplinasPorCodigo :: [Int] -> [Disciplina] -> [Disciplina]
-carregaDisciplinasPorCodigo [] _ = []
-carregaDisciplinasPorCodigo (c : cs) disciplinas =
-  if c `elem` codDisciplinas
-    then carregaDisciplina c disciplinas : carregaDisciplinasPorCodigo cs disciplinas
-    else carregaDisciplinasPorCodigo cs disciplinas
+loadSubjectsByCode :: [Int] -> [Disciplina] -> [Disciplina]
+loadSubjectsByCode [] _ = []
+loadSubjectsByCode (c : cs) subjects =
+  if c `elem` codesSubjects
+    then loadSubject c subjects : loadSubjectsByCode cs subjects
+    else loadSubjectsByCode cs subjects
   where
-    codDisciplinas = map Disciplina.codigo disciplinas
+    codesSubjects = map Disciplina.code subjects

@@ -4,71 +4,66 @@ import Disciplina (Disciplina)
 import qualified Disciplina
 
 data Aluno = Aluno
-  { matricula :: Int,
-    nome :: String,
-    disciplinasMatriculadas :: [Int]
+  { registration :: Int,
+    name :: String,
+    enrolledSubjects :: [Int]
   }
 
-newAluno :: Int -> String -> [Int] -> Aluno
-newAluno matricula' nome' disciplinasMatriculadas' =
-  Aluno
-    { matricula = matricula',
-      nome = nome',
-      disciplinasMatriculadas = disciplinasMatriculadas'
-    }
+newStudent :: Int -> String -> [Int] -> Aluno
+newStudent = Aluno
 
-numDisciplinasMatriculadas :: Aluno -> Int
-numDisciplinasMatriculadas aluno = length (disciplinasMatriculadas aluno)
+numberEnrolledSubjects :: Aluno -> Int
+numberEnrolledSubjects student = length (enrolledSubjects student)
 
-matriculas :: [Aluno] -> [Int]
-matriculas alunos = [matricula aluno | aluno <- alunos]
+registrations :: [Aluno] -> [Int]
+registrations students = [registration student | student <- students]
 
-aprovado :: Aluno -> Disciplina -> Bool
-aprovado aluno disciplina = Disciplina.mediaAluno (matricula aluno) disciplina >= 7
+approved :: Aluno -> Disciplina -> Bool
+approved student subject = Disciplina.studentAverage (registration student) subject >= 7
 
 final :: Aluno -> Disciplina -> Bool
-final aluno disciplina = not (aprovado aluno disciplina) && Disciplina.mediaAluno (matricula aluno) disciplina >= 5
+final student subject = not (approved student subject) && Disciplina.studentAverage (registration student) subject >= 5
 
-reprovado :: Aluno -> Disciplina -> Bool
-reprovado aluno disciplina = not (final aluno disciplina) && not (aprovado aluno disciplina)
+disapproved :: Aluno -> Disciplina -> Bool
+disapproved student subject = not (final student subject) && not (approved student subject)
 
-mediaDisciplina :: Aluno -> Disciplina -> Double
-mediaDisciplina aluno = Disciplina.mediaAluno (matricula aluno)
+subjectAverage :: Aluno -> Disciplina -> Double
+subjectAverage student = Disciplina.studentAverage (registration student)
 
-mediaTotal :: Aluno -> [Disciplina] -> Double
-mediaTotal aluno disciplinas =
-  somaTodasMedias / fromIntegral (length medias)
+totalAverage :: Aluno -> [Disciplina] -> Double
+totalAverage student subjects =
+  sumAllAverage / fromIntegral (length averages)
   where
-    medias = todasMedias aluno disciplinas
-    somaTodasMedias = sum medias
+    averages = allAverages student subjects
+    sumAllAverage = sum averages
 
-todasMedias :: Aluno -> [Disciplina] -> [Double]
-todasMedias aluno disciplinas =
-  [Disciplina.mediaAluno (matricula aluno) d | d <- getDisciplinasMatriculadas (disciplinasMatriculadas aluno) disciplinas]
+allAverages :: Aluno -> [Disciplina] -> [Double]
+allAverages student subjects =
+  [Disciplina.studentAverage (registration student) d | d <- getEnrolledSubjects (enrolledSubjects student) subjects]
 
-getDisciplinasMatriculadas :: [Int] -> [Disciplina] -> [Disciplina]
-getDisciplinasMatriculadas [] _ = []
-getDisciplinasMatriculadas (c : cs) disciplinas =
-  filter (\disc -> Disciplina.codigo disc == c) disciplinas ++ getDisciplinasMatriculadas cs disciplinas
+getEnrolledSubjects :: [Int] -> [Disciplina] -> [Disciplina]
+getEnrolledSubjects [] _ = []
+getEnrolledSubjects (c : cs) subjects =
+  filter (\disc -> Disciplina.code disc == c) subjects ++ getEnrolledSubjects cs subjects
 
-getDisciplinasNaoMatriculadas :: [Int] -> [Disciplina] -> [Disciplina]
-getDisciplinasNaoMatriculadas [] _ = []
-getDisciplinasNaoMatriculadas (c : cs) disciplinas =
-  filter (\disc -> Disciplina.codigo disc /= c) disciplinas ++ getDisciplinasMatriculadas cs disciplinas
+getNotEnrolledSubjects :: [Int] -> [Disciplina] -> [Disciplina]
+getNotEnrolledSubjects [] _ = []
+getNotEnrolledSubjects (c : cs) subjects =
+  filter (\disc -> Disciplina.code disc /= c) subjects ++ getEnrolledSubjects cs subjects
 
-opcoesDisponiveis :: String
-opcoesDisponiveis =
+availableOptions :: String
+availableOptions =
   "\n\n1) Visualizar disciplinas\n"
     ++ "2) Realizar matrícula\n"
     ++ "3) Cancelar matrícula\n"
     ++ "4) Visualizar média geral\n"
     ++ "5) Sair do sistema\n"
-    ++ "6) Fazer Logoff\n"
+    ++ "6) Logout\n"
 
 toString :: Aluno -> String
 toString aluno =
-  show matricula' ++ ";" ++ nome' ++ ";" ++ show disciplinasMatriculadas'
+  show registration' ++ ";" ++ name' ++ ";" ++ show enrolledSubjects'
   where
-    matricula' = matricula aluno
-    nome' = nome aluno
-    disciplinasMatriculadas' = disciplinasMatriculadas aluno
+    registration' = registration aluno
+    name' = name aluno
+    enrolledSubjects' = enrolledSubjects aluno
