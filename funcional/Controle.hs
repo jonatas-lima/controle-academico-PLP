@@ -3,7 +3,7 @@ module Controle where
 import Aluno (Aluno)
 import qualified Aluno
 import DataLoader
-import DataLoader (carregaDisciplinasPorCodigo)
+import qualified DataLoader
 import DataSaver (atualizaProfessor, salvaAluno, salvaProfessor)
 import Disciplina (Disciplina)
 import qualified Disciplina
@@ -44,19 +44,22 @@ existeMatricula matr matriculas = matr `elem` matriculas
 matriculaAluno :: Aluno -> Disciplina -> Bool
 matriculaAluno aluno disciplina = True
 
-alunosSemMatriculas :: [Aluno] -> [Int]
-alunosSemMatriculas [] = []
-alunosSemMatriculas (a : as) =
-  if null (Aluno.disciplinasMatriculadas a)
-    then Aluno.matricula a : alunosSemMatriculas as
-    else alunosSemMatriculas as
+listaAlunosSemMatriculas :: [Aluno] -> String
+listaAlunosSemMatriculas [] = ""
+listaAlunosSemMatriculas (a : as) =
+  if null $ Aluno.disciplinasMatriculadas a
+    then formataListagemAluno a ++ "\n" ++ listaAlunosSemMatriculas as
+    else listaAlunosSemMatriculas as
 
-professoresSemDisciplinas :: [Professor] -> [Int]
-professoresSemDisciplinas [] = []
-professoresSemDisciplinas (p : ps) =
-  if null (Professor.disciplinasLecionadas p)
-    then Professor.matricula p : professoresSemDisciplinas ps
-    else professoresSemDisciplinas ps
+formataListagemAluno :: Aluno -> String
+formataListagemAluno aluno = show (Aluno.matricula aluno) ++ "\t - \t" ++ Aluno.nome aluno
+
+listaProfessoresSemMatriculas :: [Professor] -> String
+listaProfessoresSemMatriculas [] = ""
+listaProfessoresSemMatriculas (p : ps) =
+  if null $ Professor.disciplinasLecionadas p
+    then formataListagemProfessor p ++ "\n" ++ listaProfessoresSemMatriculas ps
+    else listaProfessoresSemMatriculas ps
 
 listaProfessoresDisponiveis :: [Professor] -> String
 listaProfessoresDisponiveis [] = ""
