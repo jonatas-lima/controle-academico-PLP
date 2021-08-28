@@ -103,8 +103,8 @@ studentPanel id option
     Controle.cancelEnrollmentScreen id
     waitUserResponse id studentScreen
   | option == "4" = do
-     Controle.totalAverage id
-     waitUserResponse id studentScreen
+    Controle.totalAverage id
+    waitUserResponse id studentScreen
   | option == "S" = do 
     quit
   | otherwise = do 
@@ -132,201 +132,23 @@ professorOptions id name =
 
 professorPanel :: Int -> String -> IO ()
 professorPanel id option
-  | option == "1" = showProfessorSubjects id
-  | option == "2" = classRegistrationScreen id
-  | option == "3" = registerTestScreen id
-  | option == "4" = classSituationScreen id
-  | option == "S" = quit
-  | otherwise = putStrLn "opcao invalida"
-
-showProfessorSubjects :: Int -> IO()
-showProfessorSubjects id = do
-  professorFile <- DataLoader.readArq "./data/professores.csv"
-  let professors = DataLoader.loadProfessors professorFile
-  let professor = DataLoader.loadProfessor id professors
-
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let codesProfessorSubjects = Professor.subjects professor
-  let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
-
-  putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ getProfessorSubjects codesProfessorSubjects professorSubjects)
-  waitUserResponse id professorScreen
-
-classRegistrationScreen :: Int -> IO()
-classRegistrationScreen id = do
-  professorFile <- DataLoader.readArq "./data/professores.csv"
-  let professors = DataLoader.loadProfessors professorFile
-  let professor = DataLoader.loadProfessor id professors
-
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let codesProfessorSubjects = Professor.subjects professor
-  let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
-
-  putStrLn "Essas são as disciplinas que você leciona:"
-  putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ getProfessorSubjects codesProfessorSubjects professorSubjects)
-  putStr "Código da disciplina para qual você deseja cadastrar aula: "
-  code <- getLine
-  if Professor.hasSubject professor $ read code
-    then do
-      let subject = DataLoader.loadSubject (read code) professorSubjects
-      registerClass professor (Disciplina.code subject)
-    else putStrLn "Disciplina inválida"
-  waitUserResponse id professorScreen
-
-registerTestScreen :: Int -> IO()
-registerTestScreen id = do
-  professorFile <- DataLoader.readArq "./data/professores.csv"
-  let professors = DataLoader.loadProfessors professorFile
-  let professor = DataLoader.loadProfessor id professors
-
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let codesProfessorSubjects = Professor.subjects professor
-  let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
-  registerTest professor
-  waitUserResponse id professorScreen
-
-classSituationScreen :: Int -> IO()
-classSituationScreen id = do
-  professorFile <- DataLoader.readArq "./data/professores.csv"
-  let professors = DataLoader.loadProfessors professorFile
-  let professor = DataLoader.loadProfessor id professors
-
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-
-  classSituation professor subjects
-  waitUserResponse id professorScreen
-
-classSituation :: Professor -> [Disciplina] -> IO()
-classSituation professor subjects = do
-
-  let codesProfessorSubjects = Professor.subjects professor
-  let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
-
-  putStrLn "Disciplinas lecionadas:"
-  putStr $ getProfessorSubjects (Professor.subjects professor) subjects
-
-  putStr "Disciplina (código) a ser consultada > "
-  code <- getLine
-  if read code `elem` codesProfessorSubjects
-    then do
-      let subject = DataLoader.loadSubject (read code) professorSubjects
-
-      classSituation' subject
-    else putStrLn "O professor não leciona essa disciplina"
-
-classSituation' :: Disciplina -> IO ()
-classSituation' subject = do
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let students = DataLoader.loadStudents studentsFile
-  let subjectStudents = DataLoader.loadStudentsByRegistration (Disciplina.enrolledStudents subject) students
-
-  putStr $ "Código\t\t Disciplina\t\t Média\n" ++ studentsSituations subjectStudents subject
-
-studentsSituations :: [Aluno] -> Disciplina -> String
-studentsSituations [] _ = ""
-studentsSituations (s : sa) subject =
-  studentSituation s subject ++ "\n" ++ studentsSituations sa subject
-
-studentSituation :: Aluno -> Disciplina -> String
-studentSituation student subject = do
-  show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ printf "\t - \t %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
-
-registerTest :: Professor -> IO ()
-registerTest professor = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let students = DataLoader.loadStudents studentsFile
-
-  putStrLn "Disciplinas lecionadas:"
-  putStrLn $ getProfessorSubjects (Professor.subjects professor) subjects
-
-  putStr "Qual disciplina (código) deseja registrar uma prova?\n > "
-  subjectCode <- getLine
-
-  if read subjectCode `elem` Professor.subjects professor
-    then do
-      let subject = DataLoader.loadSubject (read subjectCode) subjects
-      if not $ Disciplina.isFinished subject
-        then do
-          let grades = Disciplina.grades subject
-
-          if null grades
-            then putStrLn "Não há matrículas nessa disciplina!"
-            else do
-              let enrolledStudentsCode = Disciplina.enrolledStudents subject
-              let enrolledStudents = DataLoader.loadStudentsByRegistration enrolledStudentsCode students
-
-              addStudentsGrades enrolledStudents subject
-        else putStrLn "A disciplina encontra-se encerrada!"
-    else putStrLn "O professor não leciona essa disciplina!"
-
-addStudentsGrades :: [Aluno] -> Disciplina -> IO ()
-addStudentsGrades [] _ = putStrLn "Todas as notas cadastradas!"
-addStudentsGrades enrolledStudents subject = do
-  putStrLn $ "Alunos matriculados na disciplina " ++ Disciplina.name subject
-  putStr $ showStudents enrolledStudents
-
-  let studentRegistration = Aluno.registration $ head enrolledStudents
-
-  if studentRegistration `elem` Aluno.registrations enrolledStudents
-    then do
-      putStr $ "Digite a nota do aluno " ++ show studentRegistration ++ ": "
-      grade <- getLine
-
-      addGrade studentRegistration (read grade) (Disciplina.code subject)
-      addStudentsGrades (tail enrolledStudents) subject
-    else putStrLn "O aluno não está matriculado!"
-
-addGrade :: Int -> Double -> Int -> IO ()
-addGrade studentRegistration grade subjectCode = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let subject = DataLoader.loadSubject subjectCode subjects
-
-  let newGrades = replaceGrade studentRegistration grade (Disciplina.grades subject)
-  let newSubject = Disciplina.newSubject (Disciplina.code subject) (Disciplina.name subject) (Disciplina.numberClasses subject) newGrades
-  DataSaver.updateSubject (Disciplina.code subject) newSubject
-  putStrLn "Nota adicionada!"
-
-replaceGrade :: Int -> Double -> [(Int, [Double])] -> [(Int, [Double])]
-replaceGrade _ _ [] = []
-replaceGrade studentRegistration newGrade (s : sa) =
-  if studentRegistration == fst s
-    then (fst s, newGrade : snd s) : replaceGrade studentRegistration newGrade sa
-    else s : replaceGrade studentRegistration newGrade sa
-
-showStudents :: [Aluno] -> String
-showStudents [] = ""
-showStudents (s : sa) =
-  showStudent s ++ "\n" ++ showStudents sa
-
-showStudent :: Aluno -> String
-showStudent student = show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student
-
-getProfessorSubjects :: [Int] -> [Disciplina] -> String
-getProfessorSubjects subjectCodes subjects = do
-  let professorSubjects = DataLoader.loadSubjectsByCode subjectCodes subjects
-  Controle.showSubjectsWithoutClasses professorSubjects
-
-registerClass :: Professor -> Int -> IO ()
-registerClass professor subjectCode =
-  if Professor.hasSubject professor subjectCode
-    then do
-      subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-      let subjects = DataLoader.loadSubjects subjectsFile
-      let subject = DataLoader.loadSubject subjectCode subjects
-
-      if Disciplina.numberClasses subject > 0
-        then do
-          let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject - 1) (Disciplina.grades subject)
-          DataSaver.updateSubject subjectCode newSubject
-        else putStrLn "A disciplina encontra-se encerrada!"
-    else putStrLn "Disciplina inválida"
+  | option == "1" = do
+    Controle.showProfessorSubjects id
+    waitUserResponse id professorScreen
+  | option == "2" = do
+    Controle.classRegistrationScreen id
+    waitUserResponse id professorScreen
+  | option == "3" = do 
+    Controle.registerTestScreen id
+    waitUserResponse id professorScreen
+  | option == "4" = do 
+    classSituationScreen id
+    waitUserResponse id professorScreen
+  | option == "S" = do
+    quit
+  | otherwise = do
+    putStrLn "opcao invalida"
+    waitUserResponse id professorScreen
 
 adminScreen :: IO ()
 adminScreen = do
