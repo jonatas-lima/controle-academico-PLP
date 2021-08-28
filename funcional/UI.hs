@@ -150,13 +150,15 @@ createSubjectScreen = do
   putStr "Digite o número de aulas: \n> "
   numberClasses <- getLine
 
+  putStr "Digite a quantidade de vagas: \n> "
+  studentLimit <- getLine
+
   if read subjectCode `elem` subjectCodes
     then putStrLn "Disciplina já cadastrada!"
     else do
-      let newSubject = Disciplina.newSubject (read subjectCode) 0 subjectName (read numberClasses) []
+      let newSubject = Disciplina.newSubject (read subjectCode) 0 subjectName (read numberClasses) (read studentLimit) []
       DataSaver.saveSubject newSubject
       putStrLn "Disciplina cadastrada com sucesso!"
-
 
 associateTeacherScreen :: IO ()
 associateTeacherScreen = do
@@ -174,8 +176,8 @@ associateTeacherScreen = do
   let professor = DataLoader.loadProfessor (read id) professors
   if Professor.name professor /= "not found"
     then do
-      putStrLn "Disciplinas disponíveis"
       putStr $ Controle.listSubjectsAvailableForAssociation professor subjects
+      putStrLn "Disciplinas disponíveis"
 
       putStr "Código da disciplina a ser associada > "
       subjectCode <- getLine
