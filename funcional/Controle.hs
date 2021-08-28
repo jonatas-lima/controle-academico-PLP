@@ -478,3 +478,95 @@ studentsSituations (s : sa) subject =
 studentSituation :: Aluno -> Disciplina -> String
 studentSituation student subject = do
   show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ printf "\t - \t %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
+
+createSubjectScreen :: IO ()
+createSubjectScreen = do
+  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+  let subjects = DataLoader.loadSubjects subjectsFile
+  let subjectCodes = map Disciplina.code subjects
+
+  putStr "\nDigite o código da disciplina: \n> "
+  subjectCode <- getLine
+
+  putStr "Digite o nome da disciplina: \n> "
+  subjectName <- getLine
+
+  putStr "Digite o número de aulas: \n> "
+  numberClasses <- getLine
+
+  if read subjectCode `elem` subjectCodes
+    then putStrLn "Disciplina já cadastrada!"
+    else do
+      let newSubject = Disciplina.newSubject (read subjectCode) subjectName (read numberClasses) []
+      DataSaver.saveSubject newSubject
+      putStrLn "Disciplina cadastrada com sucesso!"
+
+registrationScreen :: String -> IO ()
+registrationScreen option = do
+  putStr "\nDigite a matrícula: \n> "
+  id <- getLine
+
+  putStr "Digite seu nome: \n> "
+  name <- getLine
+
+  putStr "Digite sua senha: \n> "
+  password <- getLine
+
+  if option == "professor"
+    then Controle.registerProfessor (read id) name password
+    else Controle.registerStudent (read id) name password
+
+
+associateTeacherScreen :: IO ()
+associateTeacherScreen = do
+  professorsFile <- DataLoader.readArq "./data/professores.csv"
+  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+  let professors = DataLoader.loadProfessors professorsFile
+  let subjects = DataLoader.loadSubjects subjectsFile
+
+  putStrLn "Professores disponíveis:"
+  putStr $ Controle.listAvailableProfessors professors
+
+  putStr "Matrícula do professor a ser associado > "
+  id <- getLine
+  
+  let professor = DataLoader.loadProfessor (read id) professors
+  if Professor.name professor /= "not found"
+    then do
+      putStrLn "Disciplinas disponíveis"
+      putStr $ Controle.listSubjectsAvailableForAssociation professor subjects
+
+      putStr "Código da disciplina a ser associada > "
+      subjectCode <- getLine
+      let subject = DataLoader.loadSubject (read subjectCode) subjects
+      associateProfessor professor subject subjects
+    else putStrLn "Professor inválido"
+
+associateProfessor :: Professor -> Disciplina -> [Disciplina] -> IO ()
+associateProfessor professor subject subjects =
+  if Disciplina.name subject /= "not found"
+    then Controle.associateProfessorSubject professor subject subjects
+    else putStrLn "Disciplina inválida"
+
+listStudentsWithoutEnrollment :: IO ()
+listStudentsWithoutEnrollment = do
+  showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listStudentsWithoutRegistration DataLoader.loadStudents
+
+listProfessorWithoutEnrollment :: IO ()
+listProfessorWithoutEnrollment = do
+  showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listProfessorsWithoutRegistration DataLoader.loadProfessors
+
+showsSubjectHigherAverage :: IO ()
+showsSubjectHigherAverage = do
+  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.showsSubjectWithHigherAverage DataLoader.loadSubjects
+
+showsSubjectLowestAverage :: IO ()
+showsSubjectLowestAverage = do
+  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.showsSubjectWithLowestAverage DataLoader.loadSubjects
+
+showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
+showData message filePath display loadAll = do
+  entityFile <- DataLoader.readArq filePath
+  let entities = loadAll entityFile
+
+  putStrLn $ display entities

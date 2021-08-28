@@ -142,7 +142,7 @@ professorPanel id option
     Controle.registerTestScreen id
     waitUserResponse id professorScreen
   | option == "4" = do 
-    classSituationScreen id
+    Controle.classSituationScreen id
     waitUserResponse id professorScreen
   | option == "S" = do
     quit
@@ -172,123 +172,34 @@ adminOptions =
 
 adminPanel :: String -> IO ()
 adminPanel option
-  | option == "1" = registrationScreen "professor"
-  | option == "2" = registrationScreen "aluno"
-  | option == "3" = createSubjectScreen
-  | option == "4" = associateTeacherScreen
-  | option == "5" = listStudentsWithoutEnrollment
-  | option == "6" = listProfessorWithoutEnrollment
-  | option == "7" = showsSubjectHigherAverage
-  | option == "8" = showsSubjectLowestAverage
+  | option == "1" = do 
+    Controle.registrationScreen "professor"
+    waitEnterAdmin
+  | option == "2" = do
+    Controle.registrationScreen "aluno"
+    waitEnterAdmin
+  | option == "3" = do
+    Controle.createSubjectScreen
+    waitEnterAdmin
+  | option == "4" = do
+    Controle.associateTeacherScreen
+    waitEnterAdmin
+  | option == "5" = do
+    Controle.listStudentsWithoutEnrollment
+    waitEnterAdmin
+  | option == "6" = do 
+    Controle.listProfessorWithoutEnrollment
+    waitEnterAdmin
+  | option == "7" = do 
+    Controle.showsSubjectHigherAverage
+    waitEnterAdmin
+  | option == "8" = do 
+    Controle.showsSubjectLowestAverage
+    waitEnterAdmin
   | option == "S" = quit
-  | otherwise = putStrLn "opcao invalida"
-
-createSubjectScreen :: IO ()
-createSubjectScreen = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let subjectCodes = map Disciplina.code subjects
-
-  putStr "\nDigite o código da disciplina: \n> "
-  subjectCode <- getLine
-
-  putStr "Digite o nome da disciplina: \n> "
-  subjectName <- getLine
-
-  putStr "Digite o número de aulas: \n> "
-  numberClasses <- getLine
-
-  if read subjectCode `elem` subjectCodes
-    then putStrLn "Disciplina já cadastrada!"
-    else do
-      let newSubject = Disciplina.newSubject (read subjectCode) subjectName (read numberClasses) []
-      DataSaver.saveSubject newSubject
-      putStrLn "Disciplina cadastrada com sucesso!"
-
-  waitEnterAdmin
-
-registrationScreen :: String -> IO ()
-registrationScreen option = do
-  putStr "\nDigite a matrícula: \n> "
-  id <- getLine
-
-  putStr "Digite seu nome: \n> "
-  name <- getLine
-
-  putStr "Digite sua senha: \n> "
-  password <- getLine
-
-  if option == "professor"
-    then Controle.registerProfessor (read id) name password
-    else Controle.registerStudent (read id) name password
-
-  waitEnterAdmin
-
-associateTeacherScreen :: IO ()
-associateTeacherScreen = do
-  clearScreen
-
-  professorsFile <- DataLoader.readArq "./data/professores.csv"
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  let professors = DataLoader.loadProfessors professorsFile
-  let subjects = DataLoader.loadSubjects subjectsFile
-
-  putStrLn "Professores disponíveis:"
-  putStr $ Controle.listAvailableProfessors professors
-
-  putStr "Matrícula do professor a ser associado > "
-  id <- getLine
-  clearScreen
-
-  let professor = DataLoader.loadProfessor (read id) professors
-  if Professor.name professor /= "not found"
-    then do
-      putStrLn "Disciplinas disponíveis"
-      putStr $ Controle.listSubjectsAvailableForAssociation professor subjects
-
-      putStr "Código da disciplina a ser associada > "
-      subjectCode <- getLine
-      clearScreen
-
-      let subject = DataLoader.loadSubject (read subjectCode) subjects
-      associateProfessor professor subject subjects
-    else putStrLn "Professor inválido"
-  waitEnterAdmin
-
-associateProfessor :: Professor -> Disciplina -> [Disciplina] -> IO ()
-associateProfessor professor subject subjects =
-  if Disciplina.name subject /= "not found"
-    then Controle.associateProfessorSubject professor subject subjects
-    else putStrLn "Disciplina inválida"
-
-listStudentsWithoutEnrollment :: IO ()
-listStudentsWithoutEnrollment = do
-  showData "Alunos sem matrículas:" "./data/alunos.csv" Controle.listStudentsWithoutRegistration DataLoader.loadStudents
-  waitEnterAdmin
-
-listProfessorWithoutEnrollment :: IO ()
-listProfessorWithoutEnrollment = do
-  showData "Professores sem disciplinas:" "./data/professores.csv" Controle.listProfessorsWithoutRegistration DataLoader.loadProfessors
-  waitEnterAdmin
-
-showsSubjectHigherAverage :: IO ()
-showsSubjectHigherAverage = do
-  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controle.showsSubjectWithHigherAverage DataLoader.loadSubjects
-  waitEnterAdmin
-
-showsSubjectLowestAverage :: IO ()
-showsSubjectLowestAverage = do
-  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.showsSubjectWithLowestAverage DataLoader.loadSubjects
-  waitEnterAdmin
-
-showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
-showData message filePath display loadAll = do
-  clearScreen
-  putStrLn message
-  entityFile <- DataLoader.readArq filePath
-  let entities = loadAll entityFile
-
-  putStrLn $ display entities
+  | otherwise = do 
+    putStrLn "opcao invalida"
+    waitEnterAdmin
 
 quit :: IO ()
 quit = putStrLn "Até a próxima"
