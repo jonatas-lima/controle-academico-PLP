@@ -23,8 +23,9 @@ availableOptions =
   "\n\n1) Visualizar disciplinas\n"
     ++ "2) Registrar aula\n"
     ++ "3) Cadastrar prova\n"
-    ++ "4) Sair do sistema\n"
-    ++ "5) Logout\n"
+    ++ "4) Situação da classe\n"
+    ++ "5) Sair do sistema\n"
+    ++ "6) Logout\n"
 
 hasSubject :: Professor -> Int -> Bool
 hasSubject professor codeSubject = codeSubject `elem` subjects professor

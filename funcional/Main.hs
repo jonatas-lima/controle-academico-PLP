@@ -94,7 +94,7 @@ studentScreen id' = do
   putStrLn ""
 
   if option == "1"
-    then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showSubjects (read id') enrolledSubjects)
+    then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showStudentSubjects (read id') enrolledSubjects)
     else
       if option == "2"
         then
@@ -137,22 +137,9 @@ studentOptions :: Aluno -> String
 studentOptions student =
   header (Aluno.registration student) (Aluno.name student) ++ Aluno.availableOptions
 
--- showStudentSubjects' :: Aluno -> Int -> [Disciplina] -> String
--- showStudentSubjects' student codeSubject subjects = do
---   let subject = DataLoader.loadSubject codeSubject subjects
---   Disciplina.showSubjectWithoutClasses subject ++ "\t - " ++ printf "%.2f" (Aluno.subjectAverage student subject) ++ "\n"
-
--- showStudentSubjects :: Aluno -> [Int] -> [Disciplina] -> String
--- showStudentSubjects student _ [] = ""
--- showStudentSubjects student [] _ = ""
--- showStudentSubjects student (c : cs) (d : ds) =
---   if c == Disciplina.code d
---     then showStudentSubjects' student c (d : ds) ++ showStudentSubjects student cs ds
---     else showStudentSubjects student (c : cs) ds
-
-showSubjects :: Int -> [Disciplina] -> String
-showSubjects _ [] = ""
-showSubjects studentRegistration (s : sa) =
+showStudentSubjects :: Int -> [Disciplina] -> String
+showStudentSubjects _ [] = ""
+showStudentSubjects studentRegistration (s : sa) =
   Disciplina.showSubjectWithoutClasses s ++ "\t - " ++ printf "%.2f" (Disciplina.studentAverage studentRegistration s) ++ "\n"
 
 showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
@@ -275,22 +262,53 @@ professorScreen id' = do
             else
               if option == "4"
                 then do
-                  clearScreen
-                  quit id' "prof"
+                  putStrLn "Disciplinas lecionadas:"
+                  putStr $ showProfessorSubjects (Professor.subjects professor) subjects
+
+                  putStr "Disciplina (código) a ser consultada > "
+                  code <- getLine
+                  if read code `elem` codesProfessorSubjects
+                    then do
+                      let subject = DataLoader.loadSubject (read code) professorSubjects
+
+                      classSituation subject
+                    else putStrLn "O professor não leciona essa disciplina"
                 else
                   if option == "5"
                     then do
                       clearScreen
-                      logout id' "prof"
-                    else putStrLn "Opção inválida"
+                      quit id' "prof"
+                    else
+                      if option == "6"
+                        then do
+                          clearScreen
+                          logout id' "prof"
+                        else putStrLn "Opção inválida"
 
-  if option /= "4" && option /= "5"
+  if option /= "5" && option /= "6"
     then do
       putStr "Pressione enter para continuar..."
       x <- getLine
       clearScreen
       professorScreen id'
     else putStrLn ""
+
+classSituation :: Disciplina -> IO ()
+classSituation subject = do
+  studentsFile <- DataLoader.readArq "./data/alunos.csv"
+  let students = DataLoader.loadStudents studentsFile
+  let subjectStudents = DataLoader.loadStudentsByRegistration (Disciplina.enrolledStudents subject) students
+
+  putStr $ "Código\t\t Disciplina\t\t Média\n" ++ studentsSituations subjectStudents subject
+
+studentsSituations :: [Aluno] -> Disciplina -> String
+studentsSituations [] _ = ""
+studentsSituations (s : sa) subject =
+  studentSituation s subject ++ "\n" ++ studentsSituations sa subject
+
+studentSituation :: Aluno -> Disciplina -> String
+studentSituation student subject = do
+  show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ printf "\t - \t %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
 
 professorOptions :: Professor -> String
 professorOptions professor =
@@ -369,18 +387,23 @@ showStudents (s : sa) =
 showStudent :: Aluno -> String
 showStudent student = show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student
 
-showProfessorSubjects' :: Int -> [Disciplina] -> String
-showProfessorSubjects' codigoDisciplina disciplinas = do
-  let disciplina = DataLoader.loadSubject codigoDisciplina disciplinas
-  Disciplina.showSubject disciplina ++ "\n"
+-- showProfessorSubjects' :: Int -> [Disciplina] -> String
+-- showProfessorSubjects' codigoDisciplina disciplinas = do
+--   let disciplina = DataLoader.loadSubject codigoDisciplina disciplinas
+--   Disciplina.showSubject disciplina ++ "\n"
+
+-- showProfessorSubjects :: [Int] -> [Disciplina] -> String
+-- showProfessorSubjects _ [] = ""
+-- showProfessorSubjects [] _ = ""
+-- showProfessorSubjects (c : cs) (d : ds) =
+--   if c == Disciplina.code d
+--     then showProfessorSubjects' c (d : ds) ++ showProfessorSubjects cs ds
+--     else showProfessorSubjects (c : cs) ds
 
 showProfessorSubjects :: [Int] -> [Disciplina] -> String
-showProfessorSubjects _ [] = ""
-showProfessorSubjects [] _ = ""
-showProfessorSubjects (c : cs) (d : ds) =
-  if c == Disciplina.code d
-    then showProfessorSubjects' c (d : ds) ++ showProfessorSubjects cs ds
-    else showProfessorSubjects (c : cs) ds
+showProfessorSubjects subjectCodes subjects = do
+  let professorSubjects = DataLoader.loadSubjectsByCode subjectCodes subjects
+  showSubjectsWithoutClasses professorSubjects
 
 registerClass :: Professor -> Int -> IO ()
 registerClass professor subjectCode =

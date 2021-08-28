@@ -27,8 +27,15 @@ approved student subject = Disciplina.studentAverage (registration student) subj
 final :: Aluno -> Disciplina -> Bool
 final student subject = not (approved student subject) && Disciplina.studentAverage (registration student) subject >= 5
 
-disapproved :: Aluno -> Disciplina -> Bool
-disapproved student subject = not (final student subject) && not (approved student subject)
+situation :: Aluno -> Disciplina -> String
+situation student subject
+  | approved student subject = "(APROVADO)"
+  | final student subject = "(FINAL)"
+  | reproved student subject = "(REPROVADO)"
+  | otherwise = "(EM ANDAMENTO)"
+
+reproved :: Aluno -> Disciplina -> Bool
+reproved student subject = not (final student subject) && not (approved student subject)
 
 subjectAverage :: Aluno -> Disciplina -> Double
 subjectAverage student = Disciplina.studentAverage (registration student)
