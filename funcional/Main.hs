@@ -83,9 +83,7 @@ studentScreen id' = do
 
   -- variaveis auxiliares
   let enrolledSubjectsCodes = Aluno.enrolledSubjects student
-  let enrolledSubjects = subjectsFilter subjects enrolledSubjectsCodes
-  let notEnrolledSubjectsCodes = codesFilter (allSubjectsCode subjects) enrolledSubjectsCodes
-  let notEnrolledSubjects = subjectsFilter subjects notEnrolledSubjectsCodes
+  let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectsCodes subjects
 
   putStrLn "\n\n--- Controle Acadêmico ---"
 
@@ -96,12 +94,12 @@ studentScreen id' = do
   putStrLn ""
 
   if option == "1"
-    then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showStudentSubjects student enrolledSubjectsCodes subjects)
+    then putStrLn ("Código\t - Disciplina\t - Média\n" ++ showSubjects (read id') enrolledSubjects)
     else
       if option == "2"
         then
           if Aluno.numberEnrolledSubjects student < 4
-            then enroll student subjects (map Disciplina.code subjects) (map Aluno.registration students)
+            then enroll student subjects
             else putStrLn ("O aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
         else
           if option == "3"
@@ -135,35 +133,38 @@ studentScreen id' = do
       studentScreen id'
     else putStrLn ""
 
-allSubjectsCode :: [Disciplina] -> [Int]
-allSubjectsCode subjects = [Disciplina.code subject | subject <- subjects]
-
-codesFilter :: [Int] -> [Int] -> [Int]
-codesFilter subjectCodes studentCode = filter (`notElem` studentCode) subjectCodes
-
-subjectsFilter :: [Disciplina] -> [Int] -> [Disciplina]
-subjectsFilter subjects codes = filter (\cod -> Disciplina.code cod `elem` codes) subjects
-
 studentOptions :: Aluno -> String
 studentOptions student =
   header (Aluno.registration student) (Aluno.name student) ++ Aluno.availableOptions
 
-showStudentSubjects' :: Aluno -> Int -> [Disciplina] -> String
-showStudentSubjects' student codeSubject subjects = do
-  let subject = DataLoader.loadSubject codeSubject subjects
-  Disciplina.showSubjectWithoutClasses subject ++ "\t - " ++ printf "%.2f" (Aluno.subjectAverage student subject) ++ "\n"
+-- showStudentSubjects' :: Aluno -> Int -> [Disciplina] -> String
+-- showStudentSubjects' student codeSubject subjects = do
+--   let subject = DataLoader.loadSubject codeSubject subjects
+--   Disciplina.showSubjectWithoutClasses subject ++ "\t - " ++ printf "%.2f" (Aluno.subjectAverage student subject) ++ "\n"
 
-showStudentSubjects :: Aluno -> [Int] -> [Disciplina] -> String
-showStudentSubjects student _ [] = ""
-showStudentSubjects student [] _ = ""
-showStudentSubjects student (c : cs) (d : ds) =
-  if c == Disciplina.code d
-    then showStudentSubjects' student c (d : ds) ++ showStudentSubjects student cs ds
-    else showStudentSubjects student (c : cs) ds
+-- showStudentSubjects :: Aluno -> [Int] -> [Disciplina] -> String
+-- showStudentSubjects student _ [] = ""
+-- showStudentSubjects student [] _ = ""
+-- showStudentSubjects student (c : cs) (d : ds) =
+--   if c == Disciplina.code d
+--     then showStudentSubjects' student c (d : ds) ++ showStudentSubjects student cs ds
+--     else showStudentSubjects student (c : cs) ds
 
-enroll :: Aluno -> [Disciplina] -> [Int] -> [Int] -> IO ()
-enroll student subjects subjectCodes studentCode = do
-  putStrLn ("Código\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
+showSubjects :: Int -> [Disciplina] -> String
+showSubjects _ [] = ""
+showSubjects studentRegistration (s : sa) =
+  Disciplina.showSubjectWithoutClasses s ++ "\t - " ++ printf "%.2f" (Disciplina.studentAverage studentRegistration s) ++ "\n"
+
+showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
+showAvailableSubjectsToStudent _ [] = ""
+showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
+  if Disciplina.code s `notElem` enrolledSubjectCodes
+    then Disciplina.showSubjectWithoutClasses s ++ "\n" ++ showAvailableSubjectsToStudent enrolledSubjectCodes sa
+    else showAvailableSubjectsToStudent enrolledSubjectCodes sa
+
+enroll :: Aluno -> [Disciplina] -> IO ()
+enroll student subjects = do
+  putStrLn ("Código\t - Disciplina\n" ++ showAvailableSubjectsToStudent (Aluno.enrolledSubjects student) subjects)
 
   putStr "Entre com o código da cadeira: "
 
@@ -174,9 +175,9 @@ enroll student subjects subjectCodes studentCode = do
   let subjectCode = read code :: Int
   let subject = DataLoader.loadSubject subjectCode subjects
   -- verificar codigo da cadeira --
-  if subjectCode `elem` subjectCodes
+  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student)
     then do
-      let newCods = sort (subjectCode : studentCode)
+      let newEnrolledSubjects = sort (subjectCode : Aluno.enrolledSubjects student)
 
       -- variaveis aluno
       let studentId = Aluno.registration student
@@ -187,7 +188,7 @@ enroll student subjects subjectCodes studentCode = do
       let numberClassesSubject = Disciplina.numberClasses subject
       let newGrades = (studentId, []) : Disciplina.grades subject
 
-      let newStudent = Aluno.newStudent studentId studentName newCods
+      let newStudent = Aluno.newStudent studentId studentName newEnrolledSubjects
       let newSubject = Disciplina.newSubject subjectCode subjectName numberClassesSubject newGrades
 
       -- putStrLn $ Disciplina.toString newDisciplina
@@ -245,9 +246,9 @@ professorScreen id' = do
   let professor = DataLoader.loadProfessor (read id') professors
 
   arqSubjects <- DataLoader.readArq "./data/disciplinas.csv"
-  let disciplinas = DataLoader.loadSubjects arqSubjects
+  let subjects = DataLoader.loadSubjects arqSubjects
   let codesProfessorSubjects = Professor.subjects professor
-  let professorSubjects = subjectsFilter disciplinas codesProfessorSubjects
+  let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
   putStrLn (professorOptions professor)
 
@@ -372,7 +373,7 @@ showProfessorSubjects (c : cs) (d : ds) =
     else showProfessorSubjects (c : cs) ds
 
 registerClass :: Professor -> Int -> IO ()
-registerClass professor subjectCode = do
+registerClass professor subjectCode =
   if Professor.hasSubject professor subjectCode
     then do
       subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
