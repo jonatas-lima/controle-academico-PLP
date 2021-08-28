@@ -54,6 +54,9 @@ findStudentGrades studentId (x : xs) =
     id = fst x
     grades = snd x
 
+isFinished :: Disciplina -> Bool
+isFinished subject = numberClasses subject == 0
+
 showSubject :: Disciplina -> String
 showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show (numberClasses d)
 
