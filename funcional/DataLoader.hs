@@ -72,7 +72,8 @@ parseSubject lines =
       Disciplina.professorRegistration = read (data' !! 1) :: Int,
       Disciplina.name = data' !! 2,
       Disciplina.numberClasses = read (data' !! 3) :: Int,
-      Disciplina.grades = read (data' !! 4) :: [(Int, [Double])]
+      Disciplina.studentLimit = read (data' !! 4) :: Int,
+      Disciplina.grades = read (data' !! 5) :: [(Int, [Double])]
     }
   where
     data' = splitOn ";" lines
