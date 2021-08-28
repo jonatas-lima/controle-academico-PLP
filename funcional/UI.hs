@@ -153,7 +153,7 @@ createSubjectScreen = do
   if read subjectCode `elem` subjectCodes
     then putStrLn "Disciplina já cadastrada!"
     else do
-      let newSubject = Disciplina.newSubject (read subjectCode) subjectName (read numberClasses) []
+      let newSubject = Disciplina.newSubject (read subjectCode) 0 subjectName (read numberClasses) []
       DataSaver.saveSubject newSubject
       putStrLn "Disciplina cadastrada com sucesso!"
 
@@ -181,7 +181,7 @@ associateTeacherScreen = do
       subjectCode <- getLine
       let subject = DataLoader.loadSubject (read subjectCode) subjects
       Controle.associateProfessor professor subject subjects
-    else putStrLn "Professor inválido"
+    else putStrLn "Professor inexistente"
 
 listStudentsWithoutEnrollment :: IO ()
 listStudentsWithoutEnrollment = do
