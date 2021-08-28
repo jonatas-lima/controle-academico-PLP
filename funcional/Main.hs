@@ -158,7 +158,7 @@ showSubjects studentRegistration (s : sa) =
 showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
 showAvailableSubjectsToStudent _ [] = ""
 showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
-  if Disciplina.code s `notElem` enrolledSubjectCodes
+  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s)
     then Disciplina.showSubjectWithoutClasses s ++ "\n" ++ showAvailableSubjectsToStudent enrolledSubjectCodes sa
     else showAvailableSubjectsToStudent enrolledSubjectCodes sa
 
@@ -312,33 +312,43 @@ registerTest professor = do
   if read subjectCode `elem` Professor.subjects professor
     then do
       let subject = DataLoader.loadSubject (read subjectCode) subjects
-      let grades = Disciplina.grades subject
-      let enrolledStudentsCode = Disciplina.enrolledStudents subject
-      let enrolledStudents = DataLoader.loadStudentsByRegistration enrolledStudentsCode students
+      if not $ Disciplina.isFinished subject
+        then do
+          let grades = Disciplina.grades subject
 
-      addStudentGrade enrolledStudents subject
+          if null grades
+            then putStrLn "Não há matrículas nessa disciplina!"
+            else do
+              let enrolledStudentsCode = Disciplina.enrolledStudents subject
+              let enrolledStudents = DataLoader.loadStudentsByRegistration enrolledStudentsCode students
+
+              addStudentsGrades enrolledStudents subject
+        else putStrLn "A disciplina encontra-se encerrada!"
     else putStrLn "O professor não leciona essa disciplina!"
 
-addStudentGrade :: [Aluno] -> Disciplina -> IO ()
-addStudentGrade [] _ = putStrLn "Todas as notas cadastradas!"
-addStudentGrade enrolledStudents subject = do
+addStudentsGrades :: [Aluno] -> Disciplina -> IO ()
+addStudentsGrades [] _ = putStrLn "Todas as notas cadastradas!"
+addStudentsGrades enrolledStudents subject = do
   putStrLn $ "Alunos matriculados na disciplina " ++ Disciplina.name subject
   putStr $ showStudents enrolledStudents
 
-  putStr "Digite a matrícula do aluno a dar nota > "
-  studentRegistration <- getLine
+  let studentRegistration = Aluno.registration $ head enrolledStudents
 
-  if read studentRegistration `elem` Aluno.registrations enrolledStudents
+  if studentRegistration `elem` Aluno.registrations enrolledStudents
     then do
-      putStr $ "Digite a nota do aluno " ++ studentRegistration ++ ": "
+      putStr $ "Digite a nota do aluno " ++ show studentRegistration ++ ": "
       grade <- getLine
 
-      addGrade (read studentRegistration) (read grade) subject
-      addStudentGrade (tail enrolledStudents) subject
+      addGrade studentRegistration (read grade) (Disciplina.code subject)
+      addStudentsGrades (tail enrolledStudents) subject
     else putStrLn "O aluno não está matriculado!"
 
-addGrade :: Int -> Double -> Disciplina -> IO ()
-addGrade studentRegistration grade subject = do
+addGrade :: Int -> Double -> Int -> IO ()
+addGrade studentRegistration grade subjectCode = do
+  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+  let subjects = DataLoader.loadSubjects subjectsFile
+  let subject = DataLoader.loadSubject subjectCode subjects
+
   let newGrades = replaceGrade studentRegistration grade (Disciplina.grades subject)
   let newSubject = Disciplina.newSubject (Disciplina.code subject) (Disciplina.name subject) (Disciplina.numberClasses subject) newGrades
   DataSaver.updateSubject (Disciplina.code subject) newSubject
@@ -349,7 +359,7 @@ replaceGrade _ _ [] = []
 replaceGrade studentRegistration newGrade (s : sa) =
   if studentRegistration == fst s
     then (fst s, newGrade : snd s) : replaceGrade studentRegistration newGrade sa
-    else replaceGrade studentRegistration newGrade sa
+    else s : replaceGrade studentRegistration newGrade sa
 
 showStudents :: [Aluno] -> String
 showStudents [] = ""
