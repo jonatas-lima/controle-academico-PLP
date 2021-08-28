@@ -93,157 +93,23 @@ studentOptions id name =
 
 studentPanel :: Int -> String -> IO ()
 studentPanel id option
-  | option == "1" = showStudentSubjectsScreen id
-  | option == "2" = enrollSubjectScreen id
-  | option == "3" = cancelEnrollmentScreen id
-  | option == "4" = totalAverage id
-  | option == "S" = quit
-  | otherwise = putStrLn "opcao invalida"
-
-showStudentSubjectsScreen :: Int -> IO()
-showStudentSubjectsScreen studentRegistration = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let students = DataLoader.loadStudents studentsFile
-  let student = DataLoader.loadStudent studentRegistration students
-
-  let enrolledSubjectCodes = Aluno.enrolledSubjects student
-  let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectCodes subjects
-
-  putStrLn $ showStudentSubjects studentRegistration enrolledSubjects
-  waitUserResponse studentRegistration studentScreen
-
-enrollSubjectScreen :: Int -> IO()
-enrollSubjectScreen studentRegistration = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let students = DataLoader.loadStudents studentsFile
-  let student = DataLoader.loadStudent studentRegistration students
-
-  if Aluno.numberEnrolledSubjects student < 4
-    then enroll student subjects
-    else putStrLn ("O aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
-  waitUserResponse studentRegistration studentScreen
-
-cancelEnrollmentScreen :: Int -> IO()
-cancelEnrollmentScreen studentRegistration = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let students = DataLoader.loadStudents studentsFile
-  let student = DataLoader.loadStudent studentRegistration students
-
-  let enrolledSubjectCodes = Aluno.enrolledSubjects student
-  let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectCodes subjects
-
-  if Aluno.numberEnrolledSubjects student > 0
-    then cancelRegistration student enrolledSubjects enrolledSubjectCodes
-    else putStrLn "O aluno não está matriculado em nenhuma disciplina!"
-  waitUserResponse studentRegistration studentScreen
-
-totalAverage :: Int -> IO()
-totalAverage studentRegistration = do
-  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
-  studentsFile <- DataLoader.readArq "./data/alunos.csv"
-  let subjects = DataLoader.loadSubjects subjectsFile
-  let students = DataLoader.loadStudents studentsFile
-  let student = DataLoader.loadStudent studentRegistration students
-
-  putStr "CRA: "
-  printf "%.2f" (Aluno.totalAverage student subjects)
-  putStrLn "\n"
-  waitUserResponse studentRegistration studentScreen
-
-showStudentSubjects :: Int -> [Disciplina] -> String
-showStudentSubjects _ [] = ""
-showStudentSubjects studentRegistration (s : sa) =
-  Disciplina.showSubjectWithoutClasses s ++ "\t - " ++ printf "%.2f" (Disciplina.studentAverage studentRegistration s) ++ "\n" ++ showStudentSubjects studentRegistration sa
-
-showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
-showAvailableSubjectsToStudent _ [] = ""
-showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
-  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s)
-    then Disciplina.showSubjectWithoutClasses s ++ "\n" ++ showAvailableSubjectsToStudent enrolledSubjectCodes sa
-    else showAvailableSubjectsToStudent enrolledSubjectCodes sa
-
-enroll :: Aluno -> [Disciplina] -> IO ()
-enroll student subjects = do
-  putStrLn ("Código\t - Disciplina\n" ++ showAvailableSubjectsToStudent (Aluno.enrolledSubjects student) subjects)
-
-  putStr "Entre com o código da cadeira: "
-
-  code <- getLine
-
-  putStrLn ""
-
-  let subjectCode = read code :: Int
-  let subject = DataLoader.loadSubject subjectCode subjects
-  -- verificar codigo da cadeira --
-  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student)
-    then do
-      let newEnrolledSubjects = sort (subjectCode : Aluno.enrolledSubjects student)
-
-      -- variaveis aluno
-      let studentId = Aluno.registration student
-      let studentName = Aluno.name student
-
-      -- variaveis disciplina
-      let subjectName = Disciplina.name subject
-      let numberClassesSubject = Disciplina.numberClasses subject
-      let newGrades = (studentId, []) : Disciplina.grades subject
-
-      let newStudent = Aluno.newStudent studentId studentName newEnrolledSubjects
-      let newSubject = Disciplina.newSubject subjectCode subjectName numberClassesSubject newGrades
-
-      -- putStrLn $ Disciplina.toString newDisciplina
-
-      DataSaver.updateStudent studentId newStudent
-      DataSaver.updateSubject subjectCode newSubject
-
-      putStrLn "Matricula realizada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
-    else putStrLn "Código Inválido\n"
-
-cancelRegistration :: Aluno -> [Disciplina] -> [Int] -> IO ()
-cancelRegistration student subjects studentCodes = do
-  putStrLn ("Código\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
-  putStr "Entre com o código da cadeira: "
-
-  code <- getLine
-
-  putStrLn ""
-
-  let subjectCode = read code :: Int
-
-  -- verificar codigo da cadeira --
-  if subjectCode `elem` studentCodes
-    then do
-      let newCodes = delete subjectCode studentCodes
-      let studentId = Aluno.registration student
-      let studentName = Aluno.name student
-      let subject = DataLoader.loadSubject subjectCode subjects
-
-      let newStudent = Aluno.newStudent studentId studentName newCodes
-      let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject) (removeEnrollment studentId (Disciplina.grades subject))
-
-      DataSaver.updateStudent studentId newStudent
-      DataSaver.updateSubject subjectCode newSubject
-
-      putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
-    else putStrLn "Código Inválido\n"
-
-removeEnrollment :: Int -> [(Int, [Double])] -> [(Int, [Double])]
-removeEnrollment _ [] = []
-removeEnrollment registration (g : gs) =
-  if fst g == registration
-    then removeEnrollment registration gs
-    else g : removeEnrollment registration gs
-
-showSubjectsWithoutClasses :: [Disciplina] -> String
-showSubjectsWithoutClasses [] = ""
-showSubjectsWithoutClasses (d : ds) =
-  Disciplina.showSubjectWithoutClasses d ++ "\n" ++ showSubjectsWithoutClasses ds
+  | option == "1" = do 
+    Controle.showStudentSubjectsScreen id
+    waitUserResponse id studentScreen
+  | option == "2" = do
+     Controle.enrollSubjectScreen id
+     waitUserResponse id studentScreen
+  | option == "3" = do 
+    Controle.cancelEnrollmentScreen id
+    waitUserResponse id studentScreen
+  | option == "4" = do
+     Controle.totalAverage id
+     waitUserResponse id studentScreen
+  | option == "S" = do 
+    quit
+  | otherwise = do 
+    putStrLn "opcao invalida"
+    waitUserResponse id studentScreen
 
 professorScreen :: Int -> IO ()
 professorScreen id = do
@@ -445,7 +311,7 @@ showStudent student = show (Aluno.registration student) ++ "\t - \t" ++ Aluno.na
 getProfessorSubjects :: [Int] -> [Disciplina] -> String
 getProfessorSubjects subjectCodes subjects = do
   let professorSubjects = DataLoader.loadSubjectsByCode subjectCodes subjects
-  showSubjectsWithoutClasses professorSubjects
+  Controle.showSubjectsWithoutClasses professorSubjects
 
 registerClass :: Professor -> Int -> IO ()
 registerClass professor subjectCode =
