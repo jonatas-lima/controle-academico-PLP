@@ -292,8 +292,13 @@ addStudentsGrades enrolledStudents subject = do
       putStr $ "Digite a nota do aluno " ++ show studentRegistration ++ ": "
       grade <- getLine
 
-      addGrade studentRegistration (read grade) (Disciplina.code subject)
-      addStudentsGrades (tail enrolledStudents) subject
+      if read grade < 10.0 && read grade >= 0.0 
+        then do
+          addGrade studentRegistration (read grade) (Disciplina.code subject)
+          addStudentsGrades (tail enrolledStudents) subject
+        else do 
+          putStrLn "Insira um valor válido para a nota"
+          addStudentsGrades enrolledStudents subject
     else putStrLn "O aluno não está matriculado!"
 
 addGrade :: Int -> Double -> Int -> IO ()
