@@ -7,6 +7,9 @@ data Disciplina = Disciplina
     grades :: [(Int, [Double])]
   }
 
+notFound :: Disciplina
+notFound = Disciplina 0 "not found" 0 []
+
 newSubject :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
 newSubject = Disciplina
 
@@ -52,7 +55,7 @@ findStudentGrades studentId (x : xs) =
     grades = snd x
 
 showSubject :: Disciplina -> String
-showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show(numberClasses d)
+showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show (numberClasses d)
 
 showSubjectWithoutClasses :: Disciplina -> String
 showSubjectWithoutClasses d = show (code d) ++ "\t - " ++ showsSubjectName (name d)

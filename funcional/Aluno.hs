@@ -9,6 +9,9 @@ data Aluno = Aluno
     enrolledSubjects :: [Int]
   }
 
+notFound :: Aluno
+notFound = Aluno 0 "not found" []
+
 newStudent :: Int -> String -> [Int] -> Aluno
 newStudent = Aluno
 
