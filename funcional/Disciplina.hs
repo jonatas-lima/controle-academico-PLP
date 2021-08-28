@@ -7,6 +7,9 @@ data Disciplina = Disciplina
     grades :: [(Int, [Double])]
   }
 
+notFound :: Disciplina
+notFound = Disciplina 0 "not found" 0 []
+
 newSubject :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
 newSubject = Disciplina
 
@@ -16,9 +19,10 @@ enrolledStudents subject = [fst student | student <- grades subject]
 -- / Calcula a média da turma
 subjectAverage :: Disciplina -> Double
 subjectAverage subject =
-  sumAverages (grades subject) / fromIntegral numStudents
+  average
   where
     numStudents = length (grades subject)
+    average = if numStudents == 0 then 0 else sumAverages (grades subject) / fromIntegral numStudents
 
 -- / Soma das médias da turma
 sumAverages :: [(Int, [Double])] -> Double
@@ -29,7 +33,7 @@ sumAverages (n : ns) =
     studentId = fst n
     studentGrades = snd n
     numGrades = length studentGrades
-    average = sum studentGrades / fromIntegral numGrades
+    average = if numGrades == 0 then 0 else sum studentGrades / fromIntegral numGrades
 
 -- / Calcula a média de um aluno a partir de sua matrícula
 studentAverage :: Int -> Disciplina -> Double
@@ -51,8 +55,11 @@ findStudentGrades studentId (x : xs) =
     id = fst x
     grades = snd x
 
+isFinished :: Disciplina -> Bool
+isFinished subject = numberClasses subject == 0
+
 showSubject :: Disciplina -> String
-showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show(numberClasses d)
+showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show (numberClasses d)
 
 showSubjectWithoutClasses :: Disciplina -> String
 showSubjectWithoutClasses d = show (code d) ++ "\t - " ++ showsSubjectName (name d)
