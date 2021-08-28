@@ -6,6 +6,9 @@ data Professor = Professor
     subjects :: [Int]
   }
 
+notFound :: Professor
+notFound = Professor 0 "not found" []
+
 newProfessor :: Int -> String -> [Int] -> Professor
 newProfessor = Professor
 

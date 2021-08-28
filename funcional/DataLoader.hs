@@ -1,9 +1,9 @@
 module DataLoader where
 
-import Aluno (Aluno (..))
+import Aluno (Aluno (..), notFound)
 import Data.List.Split (splitOn)
-import Disciplina (Disciplina (..))
-import Professor (Professor (..))
+import Disciplina (Disciplina (..), notFound)
+import Professor (Professor (..), notFound)
 import qualified System.IO.Strict as Strict
 import Usuario (Usuario (..))
 
@@ -30,6 +30,7 @@ loadProfessors :: [String] -> [Professor]
 loadProfessors lines = [parseProfessor line | line <- lines]
 
 loadProfessor :: Int -> [Professor] -> Professor
+loadProfessor _ [] = Professor.notFound
 loadProfessor id (p : ps) =
   if Professor.registration p == id
     then p
@@ -49,6 +50,7 @@ loadStudents :: [String] -> [Aluno]
 loadStudents lines = [parseStudent line | line <- lines]
 
 loadStudent :: Int -> [Aluno] -> Aluno
+loadStudent _ [] = Aluno.notFound
 loadStudent id' (a : as)
   | Aluno.registration a == id' = a
   | otherwise = loadStudent id' as
@@ -78,16 +80,26 @@ loadSubjects :: [String] -> [Disciplina]
 loadSubjects lines = [parseSubject linha | linha <- lines]
 
 loadSubject :: Int -> [Disciplina] -> Disciplina
+loadSubject _ [] = Disciplina.notFound
 loadSubject code' (d : ds) =
   if Disciplina.code d == code'
     then d
     else loadSubject code' ds
 
 loadSubjectsByCode :: [Int] -> [Disciplina] -> [Disciplina]
-loadSubjectsByCode [] _ = []
-loadSubjectsByCode (c : cs) subjects =
-  if c `elem` codesSubjects
-    then loadSubject c subjects : loadSubjectsByCode cs subjects
-    else loadSubjectsByCode cs subjects
+loadSubjectsByCode subjectCodes = loadEntityByKey subjectCodes loadSubject Disciplina.code
+
+loadStudentsByRegistration :: [Int] -> [Aluno] -> [Aluno]
+loadStudentsByRegistration studentRegistrations = loadEntityByKey studentRegistrations loadStudent Aluno.registration
+
+loadProfessorsByRegistration :: [Int] -> [Professor] -> [Professor]
+loadProfessorsByRegistration professorsRegistrations = loadEntityByKey professorsRegistrations loadProfessor Professor.registration
+
+loadEntityByKey :: [Int] -> (Int -> [t] -> t) -> (t -> Int) -> [t] -> [t]
+loadEntityByKey [] _ _ _ = []
+loadEntityByKey (k : ks) loadOne keyMap entities =
+  if k `elem` keys
+    then loadOne k entities : loadEntityByKey ks loadOne keyMap entities
+    else loadEntityByKey ks loadOne keyMap entities
   where
-    codesSubjects = map Disciplina.code subjects
+    keys = map keyMap entities
