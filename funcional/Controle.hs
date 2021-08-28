@@ -4,7 +4,7 @@ import Aluno (Aluno)
 import qualified Aluno
 import DataLoader
 import qualified DataLoader
-import DataSaver (updateProfessor, saveStudent, saveProfessor)
+import DataSaver (saveProfessor, saveStudent, updateProfessor)
 import Disciplina (Disciplina)
 import qualified Disciplina
 import Professor (Professor)
@@ -113,7 +113,7 @@ showsSubjectWithHigherAverage subjects =
 
 subjectWithHigherAverage :: [Disciplina] -> Disciplina
 subjectWithHigherAverage subjects = do
-  let subjectId = registerSubjectWithHigherAverage (subjectsAverage subjects)
+  let subjectId = subjectWithHighestAverageCode (subjectsAverage subjects)
   DataLoader.loadSubject subjectId subjects
 
 showsSubjectWithLowestAverage :: [Disciplina] -> String
@@ -122,24 +122,24 @@ showsSubjectWithLowestAverage subjects =
 
 subjectWithLowestAverage :: [Disciplina] -> Disciplina
 subjectWithLowestAverage subjects = do
-  let subjectId = registerSubjectWithLowestAverage (subjectsAverage subjects)
+  let subjectId = subjectWithLowestAverageCode (subjectsAverage subjects)
   DataLoader.loadSubject subjectId subjects
 
 subjectsAverage :: [Disciplina] -> [(Int, Double)]
 subjectsAverage subjects = [(Disciplina.code d, Disciplina.subjectAverage d) | d <- subjects]
 
-registerSubjectWithHigherAverage :: [(Int, Double)] -> Int
-registerSubjectWithHigherAverage [] = -1
-registerSubjectWithHigherAverage (d : ds) =
-  if snd d == highestGrade then fst d else registerSubjectWithHigherAverage ds
+subjectWithHighestAverageCode :: [(Int, Double)] -> Int
+subjectWithHighestAverageCode [] = -1
+subjectWithHighestAverageCode (d : ds) =
+  if snd d == highestGrade then fst d else subjectWithHighestAverageCode ds
   where
     grades = [snd m | m <- d : ds]
     highestGrade = maximum grades
 
-registerSubjectWithLowestAverage :: [(Int, Double)] -> Int
-registerSubjectWithLowestAverage [] = -1
-registerSubjectWithLowestAverage (d : ds) =
-  if snd d == lowestGrade then fst d else registerSubjectWithLowestAverage ds
+subjectWithLowestAverageCode :: [(Int, Double)] -> Int
+subjectWithLowestAverageCode [] = -1
+subjectWithLowestAverageCode (d : ds) =
+  if snd d == lowestGrade then fst d else subjectWithLowestAverageCode ds
   where
     grades = [snd m | m <- d : ds]
     lowestGrade = minimum grades
