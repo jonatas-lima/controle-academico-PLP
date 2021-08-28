@@ -75,7 +75,8 @@ listSubjectsAvailableForAssociation :: Professor -> [Disciplina] -> String
 listSubjectsAvailableForAssociation professor subjects =
   formatListSubjects $ DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
   where
-    codesSubjects = map Disciplina.code subjects
+    subjectsWithoutProfessor = filter (\subj -> not (Disciplina.hasProfessor subj)) subjects
+    codesSubjects = map Disciplina.code subjectsWithoutProfessor
     subjectsTaught = Professor.subjects professor
     codesAvailableSubjects = filter (`notElem` subjectsTaught) codesSubjects
 
@@ -97,15 +98,17 @@ formatListProfessor professor = show (Professor.registration professor) ++ "\t -
 
 associateProfessorSubject :: Professor -> Disciplina -> [Disciplina] -> IO ()
 associateProfessorSubject professor subject subjects =
-  if notElem (Disciplina.code subject) codesSubjects || Professor.hasSubject professor (Disciplina.code subject)
+  if notElem (Disciplina.code subject) codesSubjects || Professor.hasSubject professor (Disciplina.code subject) || Disciplina.hasProfessor subject
     then putStrLn "Erro ao associar professor à disciplina"
     else do
       DataSaver.updateProfessor (Professor.registration professor) updatedProfessor
+      DataSaver.updateSubject (Disciplina.code subject) updatedSubject
       putStrLn "Disciplina associada!"
   where
     codesSubjects = map Disciplina.code subjects
     subjectsTaught = Professor.subjects professor
     updatedProfessor = Professor.newProfessor (Professor.registration professor) (Professor.name professor) (Disciplina.code subject : Professor.subjects professor)
+    updatedSubject = Disciplina.newSubject (Disciplina.code subject) (Professor.registration professor) (Disciplina.name subject) (Disciplina.numberClasses subject) (Disciplina.grades subject)
 
 enrolledSubjects :: Aluno -> [Disciplina] -> [Disciplina]
 enrolledSubjects student subjects = [DataLoader.loadSubject c subjects | c <- Aluno.enrolledSubjects student]
@@ -179,7 +182,7 @@ enroll student subjects = do
       let newGrades = (studentId, []) : Disciplina.grades subject
 
       let newStudent = Aluno.newStudent studentId studentName newEnrolledSubjects
-      let newSubject = Disciplina.newSubject subjectCode subjectName numberClassesSubject newGrades
+      let newSubject = Disciplina.newSubject subjectCode (Disciplina.professorRegistration subject) subjectName numberClassesSubject newGrades
 
       -- putStrLn $ Disciplina.toString newDisciplina
 
@@ -216,7 +219,7 @@ cancelRegistration student subjects studentCodes = do
       let subject = DataLoader.loadSubject subjectCode subjects
 
       let newStudent = Aluno.newStudent studentId studentName newCodes
-      let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject) (removeEnrollment studentId (Disciplina.grades subject))
+      let newSubject = Disciplina.newSubject subjectCode (Disciplina.professorRegistration subject) (Disciplina.name subject) (Disciplina.numberClasses subject) (removeEnrollment studentId (Disciplina.grades subject))
 
       DataSaver.updateStudent studentId newStudent
       DataSaver.updateSubject subjectCode newSubject
@@ -300,7 +303,7 @@ addGrade studentRegistration grade subjectCode = do
   let subject = DataLoader.loadSubject subjectCode subjects
 
   let newGrades = replaceGrade studentRegistration grade (Disciplina.grades subject)
-  let newSubject = Disciplina.newSubject (Disciplina.code subject) (Disciplina.name subject) (Disciplina.numberClasses subject) newGrades
+  let newSubject = Disciplina.newSubject (Disciplina.code subject) (Disciplina.professorRegistration subject) (Disciplina.name subject) (Disciplina.numberClasses subject) newGrades
   DataSaver.updateSubject (Disciplina.code subject) newSubject
   putStrLn "Nota adicionada!"
 
@@ -329,7 +332,7 @@ registerClass professor subjectCode =
 
       if Disciplina.numberClasses subject > 0
         then do
-          let newSubject = Disciplina.newSubject subjectCode (Disciplina.name subject) (Disciplina.numberClasses subject - 1) (Disciplina.grades subject)
+          let newSubject = Disciplina.newSubject subjectCode (Disciplina.professorRegistration subject) (Disciplina.name subject) (Disciplina.numberClasses subject - 1) (Disciplina.grades subject)
           DataSaver.updateSubject subjectCode newSubject
         else putStrLn "A disciplina encontra-se encerrada!"
     else putStrLn "Disciplina inválida"
@@ -372,6 +375,6 @@ studentSituation student subject = do
 associateProfessor :: Professor -> Disciplina -> [Disciplina] -> IO ()
 associateProfessor professor subject subjects =
   if Disciplina.name subject /= "not found"
-    then Controle.associateProfessorSubject professor subject subjects
+    then associateProfessorSubject professor subject subjects
     else putStrLn "Disciplina inválida"
 
