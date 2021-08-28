@@ -223,7 +223,7 @@ cancelRegistration student subjects studentCodes = do
       DataSaver.updateStudent studentId newStudent
       DataSaver.updateSubject subjectCode newSubject
 
-      putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
+      putStrLn "Matricula cancelada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
 removeEnrollment :: Int -> [(Int, [Double])] -> [(Int, [Double])]
