@@ -2,16 +2,24 @@ module Disciplina where
 
 data Disciplina = Disciplina
   { code :: Int,
+    professorRegistration :: Int,
     name :: String,
     numberClasses :: Int,
+    studentLimit :: Int,
     grades :: [(Int, [Double])]
   }
 
 notFound :: Disciplina
-notFound = Disciplina 0 "not found" 0 []
+notFound = Disciplina 0 0 "not found" 0 0 []
 
-newSubject :: Int -> String -> Int -> [(Int, [Double])] -> Disciplina
+newSubject :: Int -> Int -> String -> Int -> Int -> [(Int, [Double])] -> Disciplina
 newSubject = Disciplina
+
+isFull :: Disciplina -> Bool
+isFull subject = length (grades subject) == studentLimit subject
+
+hasProfessor :: Disciplina -> Bool
+hasProfessor subject = professorRegistration subject /= 0
 
 enrolledStudents :: Disciplina -> [Int]
 enrolledStudents subject = [fst student | student <- grades subject]
@@ -71,9 +79,11 @@ showsSubjectName name
 
 toString :: Disciplina -> String
 toString subject =
-  show code' ++ ";" ++ name' ++ ";" ++ show numberClasses' ++ ";" ++ show grades'
+  show code' ++ ";" ++ show professorRegistration' ++ ";" ++ name' ++ ";" ++ show numberClasses' ++ ";" ++ show studentLimit' ++ ";" ++show grades'
   where
     code' = code subject
+    professorRegistration' = professorRegistration subject
     name' = name subject
     numberClasses' = numberClasses subject
+    studentLimit' = studentLimit subject
     grades' = grades subject

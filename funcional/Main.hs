@@ -3,7 +3,6 @@ module Main where
 import Aluno (Aluno)
 import qualified Aluno
 import Control.Concurrent (threadDelay)
-import qualified Controle
 import Data.List (delete, sort)
 import qualified DataLoader
 import qualified DataSaver
@@ -14,6 +13,7 @@ import qualified Professor
 import System.Console.ANSI (clearScreen)
 import Text.Printf
 import qualified Usuario
+import qualified UI
 
 main :: IO ()
 main = do
@@ -94,16 +94,16 @@ studentOptions id name =
 studentPanel :: Int -> String -> IO ()
 studentPanel id option
   | option == "1" = do 
-    Controle.showStudentSubjectsScreen id
+    UI.showStudentSubjectsScreen id
     waitUserResponse id studentScreen
   | option == "2" = do
-     Controle.enrollSubjectScreen id
+     UI.enrollSubjectScreen id
      waitUserResponse id studentScreen
   | option == "3" = do 
-    Controle.cancelEnrollmentScreen id
+    UI.cancelEnrollmentScreen id
     waitUserResponse id studentScreen
   | option == "4" = do
-    Controle.totalAverage id
+    UI.totalAverage id
     waitUserResponse id studentScreen
   | option == "S" = do 
     quit
@@ -133,16 +133,16 @@ professorOptions id name =
 professorPanel :: Int -> String -> IO ()
 professorPanel id option
   | option == "1" = do
-    Controle.showProfessorSubjects id
+    UI.showProfessorSubjects id
     waitUserResponse id professorScreen
   | option == "2" = do
-    Controle.classRegistrationScreen id
+    UI.classRegistrationScreen id
     waitUserResponse id professorScreen
   | option == "3" = do 
-    Controle.registerTestScreen id
+    UI.registerTestScreen id
     waitUserResponse id professorScreen
   | option == "4" = do 
-    Controle.classSituationScreen id
+    UI.classSituationScreen id
     waitUserResponse id professorScreen
   | option == "S" = do
     quit
@@ -168,33 +168,32 @@ adminOptions =
     ++ "7) Disciplina com a maior média\n"
     ++ "8) Disciplina com a menor média\n"
     ++ "(S)air do sistema\n"
-    ++ "Fazer (l)ogoff\n"
 
 adminPanel :: String -> IO ()
 adminPanel option
   | option == "1" = do 
-    Controle.registrationScreen "professor"
+    UI.registrationScreen "professor"
     waitEnterAdmin
   | option == "2" = do
-    Controle.registrationScreen "aluno"
+    UI.registrationScreen "aluno"
     waitEnterAdmin
   | option == "3" = do
-    Controle.createSubjectScreen
+    UI.createSubjectScreen
     waitEnterAdmin
   | option == "4" = do
-    Controle.associateTeacherScreen
+    UI.associateTeacherScreen
     waitEnterAdmin
   | option == "5" = do
-    Controle.listStudentsWithoutEnrollment
+    UI.listStudentsWithoutEnrollment
     waitEnterAdmin
   | option == "6" = do 
-    Controle.listProfessorWithoutEnrollment
+    UI.listProfessorWithoutEnrollment
     waitEnterAdmin
   | option == "7" = do 
-    Controle.showsSubjectHigherAverage
+    UI.showsSubjectHigherAverage
     waitEnterAdmin
   | option == "8" = do 
-    Controle.showsSubjectLowestAverage
+    UI.showsSubjectLowestAverage
     waitEnterAdmin
   | option == "S" = quit
   | otherwise = do 
