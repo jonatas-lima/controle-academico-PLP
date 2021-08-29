@@ -17,6 +17,7 @@ import qualified UI
 
 main :: IO ()
 main = do
+  clearScreen
   putStrLn ("Bem-Vindo(a)!" ++ "\nPara acessar o controle, faça login:\n")
   loginScreen
 
@@ -43,15 +44,15 @@ loginScreen = do
       screen (read userId) role
     else do
       putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
-      opcao <- getLine
-      if opcao == "s"
+      option <- getLine
+      if option == "s" || option == "S"
         then do
           clearScreen
           loginScreen
         else
-          if opcao == "n"
+          if option == "n" || option == "N"
             then do
-              putStr "\nSaindo..."
+              putStr "\nSaindo do sistema..."
               threadDelay (10 ^ 6)
             else do
               putStr "\nOpção inválida. Saindo do sistema por segurança."
@@ -105,10 +106,10 @@ studentPanel id option
   | option == "4" = do
     UI.totalAverage id
     waitUserResponse id studentScreen
-  | option == "S" = do 
+  | option == "S" || option == "s" = do 
     quit
   | otherwise = do 
-    putStrLn "opcao invalida"
+    putStrLn "\nOpção inválida! Tente novamente.\n"
     waitUserResponse id studentScreen
 
 professorScreen :: Int -> IO ()
@@ -144,10 +145,10 @@ professorPanel id option
   | option == "4" = do 
     UI.classSituationScreen id
     waitUserResponse id professorScreen
-  | option == "S" = do
+  | option == "S" || option == "s" = do
     quit
   | otherwise = do
-    putStrLn "opcao invalida"
+    putStrLn "\nOpção inválida! Tente novamente.\n"
     waitUserResponse id professorScreen
 
 adminScreen :: IO ()
@@ -201,7 +202,7 @@ adminPanel option
     waitEnterAdmin
 
 quit :: IO ()
-quit = putStrLn "Até a próxima"
+quit = putStrLn "\nAté a próxima!"
 
 waitUserResponse :: Int -> (Int -> IO()) -> IO()
 waitUserResponse id screen = do

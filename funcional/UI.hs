@@ -22,7 +22,7 @@ showStudentSubjectsScreen studentRegistration = do
   let enrolledSubjectCodes = Aluno.enrolledSubjects student
   let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectCodes subjects
 
-  putStrLn $ Controle.showStudentSubjects studentRegistration enrolledSubjects
+  putStrLn $ "\n" ++ Controle.showStudentSubjects studentRegistration enrolledSubjects
 
 enrollSubjectScreen :: Int -> IO()
 enrollSubjectScreen studentRegistration = do
@@ -34,7 +34,7 @@ enrollSubjectScreen studentRegistration = do
 
   if Aluno.numberEnrolledSubjects student < 4
     then Controle.enroll student subjects
-    else putStrLn ("O aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
+    else putStrLn ("\nO aluno [" ++ printf "%.d" (Aluno.registration student) ++ "] já possui 4 disciplinas matriculadas!\n")
 
 cancelEnrollmentScreen :: Int -> IO()
 cancelEnrollmentScreen studentRegistration = do
@@ -49,7 +49,7 @@ cancelEnrollmentScreen studentRegistration = do
 
   if Aluno.numberEnrolledSubjects student > 0
     then Controle.cancelRegistration student enrolledSubjects enrolledSubjectCodes
-    else putStrLn "O aluno não está matriculado em nenhuma disciplina!"
+    else putStrLn "\nO aluno não está matriculado em nenhuma disciplina!"
 
 showProfessorSubjects :: Int -> IO()
 showProfessorSubjects id = do
@@ -62,7 +62,7 @@ showProfessorSubjects id = do
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
-  putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ Controle.getProfessorSubjects codesProfessorSubjects professorSubjects)
+  putStrLn ("\nCódigo\t - Disciplina\t - Número de aulas restantes\n" ++ Controle.getProfessorSubjects codesProfessorSubjects professorSubjects)
 
 classRegistrationScreen :: Int -> IO()
 classRegistrationScreen id = do
@@ -75,15 +75,18 @@ classRegistrationScreen id = do
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
-  putStrLn "Essas são as disciplinas que você leciona:"
-  putStrLn ("\nCódigo\t - Disciplina\t - Numero de aulas restantes\n" ++ Controle.getProfessorSubjects codesProfessorSubjects professorSubjects)
-  putStr "Código da disciplina para qual você deseja cadastrar aula: "
+  putStrLn "\nDisciplinas lecionadas:"
+  putStrLn ("\nCódigo\t - Disciplina\t - Número de aulas restantes\n" ++ Controle.getProfessorSubjects codesProfessorSubjects professorSubjects)
+  putStr "Entre com o código da disciplina: "
+  
   code <- getLine
+  
   if Professor.hasSubject professor $ read code
     then do
       let subject = DataLoader.loadSubject (read code) professorSubjects
       Controle.registerClass professor (Disciplina.code subject)
-    else putStrLn "Disciplina inválida"
+      putStrLn"\nAula registrada com sucesso!\n"
+    else putStrLn "\nDisciplina inválida!\n"
 
 registerTestScreen :: Int -> IO()
 registerTestScreen id = do
@@ -95,6 +98,7 @@ registerTestScreen id = do
   let subjects = DataLoader.loadSubjects subjectsFile
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
+  
   Controle.registerTest professor
 
 classSituationScreen :: Int -> IO()
@@ -116,9 +120,8 @@ totalAverage studentRegistration = do
   let students = DataLoader.loadStudents studentsFile
   let student = DataLoader.loadStudent studentRegistration students
 
-  putStr "CRA: "
-  printf "%.2f" (Aluno.totalAverage student subjects)
-  putStrLn "\n"
+  putStr "\nCRA: "
+  printf "%.2f\n\n" (Aluno.totalAverage student subjects)
 
 registrationScreen :: String -> IO ()
 registrationScreen option = do
@@ -206,4 +209,4 @@ showData message filePath display loadAll = do
   entityFile <- DataLoader.readArq filePath
   let entities = loadAll entityFile
 
-  putStrLn $ display entities
+  putStrLn $ "\n" ++ display entities
