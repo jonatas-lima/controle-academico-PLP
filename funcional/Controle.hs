@@ -157,7 +157,7 @@ showStudentSubjects studentRegistration (s : sa) =
 
 enroll :: Aluno -> [Disciplina] -> IO ()
 enroll student subjects = do
-  putStrLn ("Código\t - Disciplina\n" ++ showAvailableSubjectsToStudent (Aluno.enrolledSubjects student) subjects)
+  putStrLn ("\nCódigo\t - Disciplina\n" ++ showAvailableSubjectsToStudent (Aluno.enrolledSubjects student) subjects)
 
   putStr "Entre com o código da cadeira: "
 
@@ -202,7 +202,7 @@ showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
 
 cancelRegistration :: Aluno -> [Disciplina] -> [Int] -> IO ()
 cancelRegistration student subjects studentCodes = do
-  putStrLn ("Código\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
+  putStrLn ("\nCódigo\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
   putStr "Entre com o código da cadeira: "
 
   code <- getLine
@@ -225,7 +225,7 @@ cancelRegistration student subjects studentCodes = do
       DataSaver.updateStudent studentId newStudent
       DataSaver.updateSubject subjectCode newSubject
 
-      putStrLn "Matricula cancelada...\n" -- matricular ou cancelar matricula do aluno na cadeira
+      putStrLn "Matricula cancelada com sucesso!\n" -- matricular ou cancelar matricula do aluno na cadeira
     else putStrLn "Código Inválido\n"
 
 removeEnrollment :: Int -> [(Int, [Double])] -> [(Int, [Double])]
@@ -257,10 +257,10 @@ registerTest professor = do
   let subjects = DataLoader.loadSubjects subjectsFile
   let students = DataLoader.loadStudents studentsFile
 
-  putStrLn "Disciplinas lecionadas:"
+  putStrLn "\nDisciplinas lecionadas:\n"
   putStrLn $ getProfessorSubjects (Professor.subjects professor) subjects
 
-  putStr "Qual disciplina (código) deseja registrar uma prova?\n > "
+  putStr "Entre com o código da disciplina: "
   subjectCode <- getLine
 
   if read subjectCode `elem` Professor.subjects professor
@@ -271,34 +271,34 @@ registerTest professor = do
           let grades = Disciplina.grades subject
 
           if null grades
-            then putStrLn "Não há matrículas nessa disciplina!"
+            then putStrLn "\nNão há matrículas nessa disciplina!\n"
             else do
               let enrolledStudentsCode = Disciplina.enrolledStudents subject
               let enrolledStudents = DataLoader.loadStudentsByRegistration enrolledStudentsCode students
 
               addStudentsGrades enrolledStudents subject
-        else putStrLn "A disciplina encontra-se encerrada!"
-    else putStrLn "O professor não leciona essa disciplina!"
+        else putStrLn "\nA disciplina encontra-se encerrada!\n"
+    else putStrLn "\nO professor não leciona essa disciplina!\n"
 
 addStudentsGrades :: [Aluno] -> Disciplina -> IO ()
-addStudentsGrades [] _ = putStrLn "Todas as notas cadastradas!"
+addStudentsGrades [] _ = putStrLn "\nTodas as notas cadastradas!\n"
 addStudentsGrades enrolledStudents subject = do
-  putStrLn $ "Alunos matriculados na disciplina " ++ Disciplina.name subject
-  putStr $ showStudents enrolledStudents
+  putStrLn $ "\nAlunos matriculados na disciplina [" ++ Disciplina.name subject ++ "]"
+  putStr $ "\n" ++ showStudents enrolledStudents
 
   let studentRegistration = Aluno.registration $ head enrolledStudents
 
   if studentRegistration `elem` Aluno.registrations enrolledStudents
     then do
-      putStr $ "Digite a nota do aluno " ++ show studentRegistration ++ ": "
+      putStr $ "Digite a nota do aluno [" ++ show studentRegistration ++ "]: "
       grade <- getLine
 
-      if read grade < 10.0 && read grade >= 0.0 
+      if read grade <= 10.0 && read grade >= 0.0 
         then do
           addGrade studentRegistration (read grade) (Disciplina.code subject)
           addStudentsGrades (tail enrolledStudents) subject
         else do 
-          putStrLn "Insira um valor válido para a nota"
+          putStrLn "\nErro: Insira um valor válido para a nota. ( 10 <= nota >= 0)"
           addStudentsGrades enrolledStudents subject
     else putStrLn "O aluno não está matriculado!"
 
@@ -349,17 +349,17 @@ classSituation professor subjects = do
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
-  putStrLn "Disciplinas lecionadas:"
-  putStr $ Controle.getProfessorSubjects (Professor.subjects professor) subjects
+  putStrLn "\nDisciplinas lecionadas:"
+  putStr $ "\n" ++ Controle.getProfessorSubjects (Professor.subjects professor) subjects
 
-  putStr "Disciplina (código) a ser consultada > "
+  putStr "\nEntre com o código da disciplina a ser consultada: "
   code <- getLine
   if read code `elem` codesProfessorSubjects
     then do
       let subject = DataLoader.loadSubject (read code) professorSubjects
 
       classSituation' subject
-    else putStrLn "O professor não leciona essa disciplina"
+    else putStrLn "\nO professor não leciona essa disciplina.\n"
 
 classSituation' :: Disciplina -> IO ()
 classSituation' subject = do
@@ -367,7 +367,8 @@ classSituation' subject = do
   let students = DataLoader.loadStudents studentsFile
   let subjectStudents = DataLoader.loadStudentsByRegistration (Disciplina.enrolledStudents subject) students
 
-  putStr $ "Código\t\t Disciplina\t\t Média\n" ++ studentsSituations subjectStudents subject
+  if null subjectStudents then putStrLn "\nA disciplina não possui alunos cadastrados.\n"
+  else putStr $ "\nMatrícula\t - Aluno\t - Média\n" ++ studentsSituations subjectStudents subject ++ "\n"
 
 studentsSituations :: [Aluno] -> Disciplina -> String
 studentsSituations [] _ = ""
@@ -376,7 +377,7 @@ studentsSituations (s : sa) subject =
 
 studentSituation :: Aluno -> Disciplina -> String
 studentSituation student subject = do
-  show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ printf "\t - \t %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
+  show (Aluno.registration student) ++ "\t\t - " ++ Aluno.name student ++ printf "\t - %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
 
 associateProfessor :: Professor -> Disciplina -> [Disciplina] -> IO ()
 associateProfessor professor subject subjects =
