@@ -1,8 +1,8 @@
 <!-- Controle Acadêmico or Img -->
 
 * [PROJETO](#controle-acadêmico)  
-* [FUNCIONALIDADES](#funcionalidades) 
 * [FERRAMENTAS](#ferramentas) 
+* [FUNCIONALIDADES](#funcionalidades) 
 * [TIME](#time)
 
 ## Controle Acadêmico
