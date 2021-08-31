@@ -150,10 +150,10 @@ subjectWithLowestAverageCode (d : ds) =
     grades = [snd m | m <- d : ds]
     lowestGrade = minimum grades
 
-showStudentSubjects :: Int -> [Disciplina] -> String
+showStudentSubjects :: Aluno -> [Disciplina] -> String
 showStudentSubjects _ [] = ""
-showStudentSubjects studentRegistration (s : sa) =
-  Disciplina.showSubjectWithoutClasses s ++ "\t - " ++ printf "%.2f" (Disciplina.studentAverage studentRegistration s) ++ "\n" ++ showStudentSubjects studentRegistration sa
+showStudentSubjects student (s : sa) =
+  Disciplina.showSubjectWithoutClasses s ++ "\t - " ++ printf "%.2f" (Disciplina.studentAverage (Aluno.registration student) s) ++ " " ++ (Aluno.situation student s) ++ "\n" ++ showStudentSubjects student sa
 
 enroll :: Aluno -> [Disciplina] -> IO ()
 enroll student subjects = do

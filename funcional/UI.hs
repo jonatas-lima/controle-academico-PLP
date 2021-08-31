@@ -22,7 +22,7 @@ showStudentSubjectsScreen studentRegistration = do
   let enrolledSubjectCodes = Aluno.enrolledSubjects student
   let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectCodes subjects
 
-  putStrLn $ "\n" ++ Controle.showStudentSubjects studentRegistration enrolledSubjects
+  putStrLn $ "\nCódigo\t - Disciplina\t - Média atual/Status\n" ++ Controle.showStudentSubjects student enrolledSubjects
 
 enrollSubjectScreen :: Int -> IO()
 enrollSubjectScreen studentRegistration = do
@@ -86,7 +86,7 @@ classRegistrationScreen id = do
       let subject = DataLoader.loadSubject (read code) professorSubjects
       Controle.registerClass professor (Disciplina.code subject)
       putStrLn"\nAula registrada com sucesso!\n"
-    else putStrLn "\nDisciplina inválida!\n"
+    else putStrLn "\O profesor não leciona essa disciplina!\n"
 
 registerTestScreen :: Int -> IO()
 registerTestScreen id = do
