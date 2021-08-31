@@ -6,7 +6,8 @@
 * [TIME](#time)
 
 ## Controle Acadêmico
-<p><!-- Text 1 --></p>
+<p> O sistema simula o funcionamento do controle academico, contendo as funcionalidades e restrições típicas de um CRUD. As três entidades chave do projeto são aluno, professor e admin, são eles três os possíveis usuários do sistema.
+Professor e aluno se relacionam através das disciplinas e o admin é o responsável por ter o controle geral sobre as demais entidades do sistema.</p>
 
 ## Ferramentas
 <p>Para compilar o programa algumas ferramentas precisam ser instaladas com antecedência, seguem abaixo os comandos para instalação das ferramentas necessárias.</p>
