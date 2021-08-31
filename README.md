@@ -1,8 +1,8 @@
 <!-- Controle Acadêmico or Img -->
 
 * [PROJETO](#controle-acadêmico)  
-* [FERRAMENTAS](#ferramentas) 
 * [FUNCIONALIDADES](#funcionalidades) 
+* [FERRAMENTAS](#ferramentas) 
 * [TIME](#time)
 
 ## Controle Acadêmico
@@ -10,9 +10,12 @@
 
 ## Ferramentas
 <p>Para compilar o programa algumas ferramentas precisam ser instaladas com antecedência, seguem abaixo os comandos para instalação das ferramentas necessárias.</p>
-`cabal install split`
-`cabal install strict`
-`cabal install ansi-terminal`
+
+```
+cabal install split
+cabal install strict
+cabal install ansi-terminal
+```
 
 ## Funcionalidades
 * **Aluno**
