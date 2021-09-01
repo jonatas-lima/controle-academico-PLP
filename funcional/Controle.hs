@@ -183,7 +183,7 @@ enroll student subjects = do
   let subjectCode = read code :: Int
   let subject = DataLoader.loadSubject subjectCode subjects
   -- verificar codigo da cadeira --
-  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student)
+  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student) && (Disciplina.hasProfessor subject)
     then do
       let newEnrolledSubjects = sort (subjectCode : Aluno.enrolledSubjects student)
 
@@ -211,7 +211,7 @@ enroll student subjects = do
 showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
 showAvailableSubjectsToStudent _ [] = ""
 showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
-  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s) && not (Disciplina.isFull s)
+  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s) && not (Disciplina.isFull s) && (Disciplina.hasProfessor s)
     then Disciplina.showSubjectWithoutClasses s ++ "\n" ++ showAvailableSubjectsToStudent enrolledSubjectCodes sa
     else showAvailableSubjectsToStudent enrolledSubjectCodes sa
 
