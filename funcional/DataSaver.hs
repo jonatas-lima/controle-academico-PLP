@@ -1,44 +1,44 @@
 module DataSaver where
 
-import Aluno (Aluno (registration), toString)
+import Student (Student (registration), toString)
 import Data.List.Split (splitOn)
 import Data.Text (replace, unpack)
 import qualified DataLoader
-import Disciplina (Disciplina, toString)
+import Subject (Subject, toString)
 import Professor (Professor (Professor, registration), toString)
 import qualified System.IO.Strict as Strict
-import Usuario (Usuario (Usuario), toString)
+import User (User (User), toString)
 
 append :: String -> String -> IO ()
 append line arq = appendFile arq (line ++ "\n")
 
-saveUser :: Usuario -> IO ()
-saveUser user = append (Usuario.toString user) "./data/usuarios.csv"
+saveUser :: User -> IO ()
+saveUser user = append (User.toString user) "./data/usuarios.csv"
 
 saveProfessor :: Professor -> String -> IO ()
 saveProfessor professor password = do
   append (Professor.toString professor) "./data/professores.csv"
   append (show (Professor.registration professor) ++ "," ++ password ++ "," ++ "prof") "./data/usuarios.csv"
 
-saveStudent :: Aluno -> String -> IO ()
+saveStudent :: Student -> String -> IO ()
 saveStudent student password = do
-  append (Aluno.toString student) "./data/alunos.csv"
-  append (show (Aluno.registration student) ++ "," ++ password ++ "," ++ "aluno") "./data/usuarios.csv"
+  append (Student.toString student) "./data/alunos.csv"
+  append (show (Student.registration student) ++ "," ++ password ++ "," ++ "aluno") "./data/usuarios.csv"
 
-saveSubject :: Disciplina -> IO ()
-saveSubject subject = append (Disciplina.toString subject) "./data/disciplinas.csv"
+saveSubject :: Subject -> IO ()
+saveSubject subject = append (Subject.toString subject) "./data/disciplinas.csv"
 
 updateProfessor :: Int -> Professor -> IO ()
 updateProfessor registration =
   updateEntity registration "./data/professores.csv" Professor.toString DataLoader.loadProfessors DataLoader.loadProfessor
 
-updateStudent :: Int -> Aluno -> IO ()
+updateStudent :: Int -> Student -> IO ()
 updateStudent registration =
-  updateEntity registration "./data/alunos.csv" Aluno.toString DataLoader.loadStudents DataLoader.loadStudent
+  updateEntity registration "./data/alunos.csv" Student.toString DataLoader.loadStudents DataLoader.loadStudent
 
-updateSubject :: Int -> Disciplina -> IO ()
+updateSubject :: Int -> Subject -> IO ()
 updateSubject codigo =
-  updateEntity codigo "./data/disciplinas.csv" Disciplina.toString DataLoader.loadSubjects DataLoader.loadSubject
+  updateEntity codigo "./data/disciplinas.csv" Subject.toString DataLoader.loadSubjects DataLoader.loadSubject
 
 updateEntity :: Int -> String -> (t -> String) -> ([String] -> [t]) -> (Int -> [t] -> t) -> t -> IO ()
 updateEntity registration filePath toString loadAll loadOne entity = do

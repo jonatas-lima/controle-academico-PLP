@@ -1,6 +1,6 @@
-module Disciplina where
+module Subject where
 
-data Disciplina = Disciplina
+data Subject = Subject
   { code :: Int,
     professorRegistration :: Int,
     name :: String,
@@ -9,23 +9,23 @@ data Disciplina = Disciplina
     grades :: [(Int, [Double])]
   }
 
-notFound :: Disciplina
-notFound = Disciplina 0 0 "not found" 0 0 []
+notFound :: Subject
+notFound = Subject 0 0 "not found" 0 0 []
 
-newSubject :: Int -> Int -> String -> Int -> Int -> [(Int, [Double])] -> Disciplina
-newSubject = Disciplina
+newSubject :: Int -> Int -> String -> Int -> Int -> [(Int, [Double])] -> Subject
+newSubject = Subject
 
-isFull :: Disciplina -> Bool
+isFull :: Subject -> Bool
 isFull subject = length (grades subject) == studentLimit subject
 
-hasProfessor :: Disciplina -> Bool
+hasProfessor :: Subject -> Bool
 hasProfessor subject = professorRegistration subject /= 0
 
-enrolledStudents :: Disciplina -> [Int]
+enrolledStudents :: Subject -> [Int]
 enrolledStudents subject = [fst student | student <- grades subject]
 
 -- / Calcula a média da turma
-subjectAverage :: Disciplina -> Double
+subjectAverage :: Subject -> Double
 subjectAverage subject =
   average
   where
@@ -44,7 +44,7 @@ sumAverages (n : ns) =
     average = if numGrades == 0 then 0 else sum studentGrades / fromIntegral numGrades
 
 -- / Calcula a média de um aluno a partir de sua matrícula
-studentAverage :: Int -> Disciplina -> Double
+studentAverage :: Int -> Subject -> Double
 studentAverage studentId subject =
   average
   where
@@ -63,13 +63,13 @@ findStudentGrades studentId (x : xs) =
     id = fst x
     grades = snd x
 
-isFinished :: Disciplina -> Bool
+isFinished :: Subject -> Bool
 isFinished subject = numberClasses subject == 0
 
-showSubject :: Disciplina -> String
+showSubject :: Subject -> String
 showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show (numberClasses d)
 
-showSubjectWithoutClasses :: Disciplina -> String
+showSubjectWithoutClasses :: Subject -> String
 showSubjectWithoutClasses d = show (code d) ++ "\t - " ++ showsSubjectName (name d)
 
 showsSubjectName :: String -> String
@@ -77,7 +77,7 @@ showsSubjectName name
   | length name < 6 = showsSubjectName (name ++ " ")
   | otherwise = name
 
-toString :: Disciplina -> String
+toString :: Subject -> String
 toString subject =
   show code' ++ ";" ++ show professorRegistration' ++ ";" ++ name' ++ ";" ++ show numberClasses' ++ ";" ++ show studentLimit' ++ ";" ++show grades'
   where

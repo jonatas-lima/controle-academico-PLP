@@ -1,18 +1,18 @@
 module Main where
 
-import Aluno (Aluno)
-import qualified Aluno
+import Student (Student)
+import qualified Student
 import Control.Concurrent (threadDelay)
 import Data.List (delete, sort)
 import qualified DataLoader
 import qualified DataSaver
-import Disciplina (Disciplina)
-import qualified Disciplina
+import Subject (Subject)
+import qualified Subject
 import Professor (Professor)
 import qualified Professor
 import System.Console.ANSI (clearScreen)
 import Text.Printf
-import qualified Usuario
+import qualified User
 import qualified UI
 
 main :: IO ()
@@ -32,7 +32,7 @@ loginScreen = do
   usersFile <- DataLoader.readArq "./data/usuarios.csv"
   let availableUsers = DataLoader.loadUsers usersFile
 
-  let authentication = Usuario.authenticates userId password availableUsers
+  let authentication = User.authenticates userId password availableUsers
   let authenticated = fst authentication
   let role = snd authentication
 
@@ -43,7 +43,7 @@ loginScreen = do
       clearScreen
       screen (read userId) role
     else do
-      putStr "\nUsuario ou senha invalido! Deseja tentar novamente? (s/n) "
+      putStr "\nUser ou senha invalido! Deseja tentar novamente? (s/n) "
       option <- getLine
       if option == "s" || option == "S"
         then do
@@ -79,7 +79,7 @@ studentScreen id = do
   let students = DataLoader.loadStudents studentsFile
   let student = DataLoader.loadStudent id students
 
-  putStr (studentOptions id (Aluno.name student) ++ "> ")
+  putStr (studentOptions id (Student.name student) ++ "> ")
   option <- getLine
   studentPanel id option
 
@@ -166,8 +166,8 @@ adminOptions =
     ++ "4) Associar professor à disciplina\n"
     ++ "5) Listar alunos sem matrículas\n"
     ++ "6) Listar professores sem disciplinas\n"
-    ++ "7) Disciplina com a maior média\n"
-    ++ "8) Disciplina com a menor média\n"
+    ++ "7) Subject com a maior média\n"
+    ++ "8) Subject com a menor média\n"
     ++ "9) Consultar aluno com a maior média\n"
     ++ "(S)air do sistema\n"
 
