@@ -68,6 +68,36 @@ listAvailableProfessors (p : ps) =
     then formatListProfessor p ++ "\n" ++ listAvailableProfessors ps
     else listAvailableProfessors ps
 
+-- formatStudents :: [Aluno] -> String
+-- formatStudents [] = ""
+-- formatStudents (s : sa) =
+--   formatStudent s ++ "\n" ++ formatStudents sa
+
+formatStudent :: Aluno -> [Disciplina] -> String
+formatStudent student subjects = 
+  show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ "\t - \t" ++ printf "%.2f" (Aluno.totalAverage student subjects)
+
+showStudentWithHighestAverage :: [Aluno] -> [Disciplina] -> String
+showStudentWithHighestAverage students subjects =
+  formatStudent (highestAverageStudent students subjects) subjects
+
+highestAverageStudent :: [Aluno] -> [Disciplina] -> Aluno
+highestAverageStudent students subjects = do
+  let studentsAverage' = studentsAverage students subjects
+  let grades = map snd studentsAverage'
+  let studentRegistration = highestAverageStudentCode studentsAverage' grades
+  DataLoader.loadStudent studentRegistration students
+
+studentsAverage :: [Aluno] -> [Disciplina] -> [(Int, Double)]
+studentsAverage students subjects = [(Aluno.registration s, Aluno.totalAverage s subjects) | s <- students]
+
+highestAverageStudentCode :: [(Int, Double)] -> [Double] -> Int
+highestAverageStudentCode [] _ = -1
+highestAverageStudentCode (s : sa) grades =
+  if snd s == highestGrade then fst s else highestAverageStudentCode sa grades
+  where
+    highestGrade = maximum grades
+
 availableSubjectsForAssociation :: Professor -> [Disciplina] -> [Disciplina]
 availableSubjectsForAssociation professor subjects = 
   DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
