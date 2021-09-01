@@ -10,7 +10,7 @@
 Professor e aluno se relacionam através das disciplinas e o admin é o responsável por ter o controle geral sobre as demais entidades do sistema.</p>
 
 ## Ferramentas
-<p>Para compilar o programa algumas ferramentas precisam ser instaladas com antecedência, seguem abaixo os comandos para instalação das ferramentas necessárias.</p>
+<p>Para compilar e rodar o programa algumas bibliotecas precisam ser instaladas com antecedência. Seguem abaixo os comandos para instalação dessas bibliotecas.</p>
 
 ```
 cabal install split
