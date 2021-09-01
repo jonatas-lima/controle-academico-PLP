@@ -198,6 +198,15 @@ showsSubjectLowestAverage :: IO ()
 showsSubjectLowestAverage = do
   showData "Disciplina com menor média:" "./data/disciplinas.csv" Controle.showsSubjectWithLowestAverage DataLoader.loadSubjects
 
+showStudentWithHighestAverage :: IO()
+showStudentWithHighestAverage = do
+  studentsFile <- DataLoader.readArq "./data/alunos.csv"
+  subjectsFile <- DataLoader.readArq "./data/disciplinas.csv"
+  let students = DataLoader.loadStudents studentsFile
+  let subjects = DataLoader.loadSubjects subjectsFile
+
+  putStrLn $ "Aluno com a maior média geral:\n" ++ Controle.showStudentWithHighestAverage students subjects
+
 showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
 showData message filePath display loadAll = do
   entityFile <- DataLoader.readArq filePath

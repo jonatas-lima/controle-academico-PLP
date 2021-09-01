@@ -168,6 +168,7 @@ adminOptions =
     ++ "6) Listar professores sem disciplinas\n"
     ++ "7) Disciplina com a maior média\n"
     ++ "8) Disciplina com a menor média\n"
+    ++ "9) Consultar aluno com a maior média\n"
     ++ "(S)air do sistema\n"
 
 adminPanel :: String -> IO ()
@@ -195,6 +196,9 @@ adminPanel option
     waitEnterAdmin
   | option == "8" = do 
     UI.showsSubjectLowestAverage
+    waitEnterAdmin
+  | option == "9" = do
+    UI.showStudentWithHighestAverage
     waitEnterAdmin
   | option == "S" = quit
   | otherwise = do 

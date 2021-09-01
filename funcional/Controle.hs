@@ -68,6 +68,36 @@ listAvailableProfessors (p : ps) =
     then formatListProfessor p ++ "\n" ++ listAvailableProfessors ps
     else listAvailableProfessors ps
 
+-- formatStudents :: [Aluno] -> String
+-- formatStudents [] = ""
+-- formatStudents (s : sa) =
+--   formatStudent s ++ "\n" ++ formatStudents sa
+
+formatStudent :: Aluno -> [Disciplina] -> String
+formatStudent student subjects = 
+  show (Aluno.registration student) ++ "\t - \t" ++ Aluno.name student ++ "\t - \t" ++ printf "%.2f" (Aluno.totalAverage student subjects)
+
+showStudentWithHighestAverage :: [Aluno] -> [Disciplina] -> String
+showStudentWithHighestAverage students subjects =
+  formatStudent (highestAverageStudent students subjects) subjects
+
+highestAverageStudent :: [Aluno] -> [Disciplina] -> Aluno
+highestAverageStudent students subjects = do
+  let studentsAverage' = studentsAverage students subjects
+  let grades = map snd studentsAverage'
+  let studentRegistration = highestAverageStudentCode studentsAverage' grades
+  DataLoader.loadStudent studentRegistration students
+
+studentsAverage :: [Aluno] -> [Disciplina] -> [(Int, Double)]
+studentsAverage students subjects = [(Aluno.registration s, Aluno.totalAverage s subjects) | s <- students]
+
+highestAverageStudentCode :: [(Int, Double)] -> [Double] -> Int
+highestAverageStudentCode [] _ = -1
+highestAverageStudentCode (s : sa) grades =
+  if snd s == highestGrade then fst s else highestAverageStudentCode sa grades
+  where
+    highestGrade = maximum grades
+
 availableSubjectsForAssociation :: Professor -> [Disciplina] -> [Disciplina]
 availableSubjectsForAssociation professor subjects = 
   DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
@@ -183,7 +213,7 @@ enroll student subjects = do
   let subjectCode = read code :: Int
   let subject = DataLoader.loadSubject subjectCode subjects
   -- verificar codigo da cadeira --
-  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student)
+  if subjectCode `elem` map Disciplina.code subjects && notElem subjectCode (Aluno.enrolledSubjects student) && (Disciplina.hasProfessor subject)
     then do
       let newEnrolledSubjects = sort (subjectCode : Aluno.enrolledSubjects student)
 
@@ -211,7 +241,7 @@ enroll student subjects = do
 showAvailableSubjectsToStudent :: [Int] -> [Disciplina] -> String
 showAvailableSubjectsToStudent _ [] = ""
 showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
-  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s) && not (Disciplina.isFull s)
+  if Disciplina.code s `notElem` enrolledSubjectCodes && not (Disciplina.isFinished s) && not (Disciplina.isFull s) && (Disciplina.hasProfessor s)
     then Disciplina.showSubjectWithoutClasses s ++ "\n" ++ showAvailableSubjectsToStudent enrolledSubjectCodes sa
     else showAvailableSubjectsToStudent enrolledSubjectCodes sa
 
