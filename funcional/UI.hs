@@ -86,7 +86,7 @@ classRegistrationScreen id = do
       let subject = DataLoader.loadSubject (read code) professorSubjects
       Controle.registerClass professor (Disciplina.code subject)
       putStrLn"\nAula registrada com sucesso!\n"
-    else putStrLn "\O profesor não leciona essa disciplina!\n"
+    else putStrLn "O profesor não leciona essa disciplina!\n"
 
 registerTestScreen :: Int -> IO()
 registerTestScreen id = do
@@ -179,13 +179,7 @@ associateTeacherScreen = do
   let professor = DataLoader.loadProfessor (read id) professors
   if Professor.name professor /= "not found"
     then do
-      putStr $ Controle.listSubjectsAvailableForAssociation professor subjects
-      putStrLn "Disciplinas disponíveis"
-
-      putStr "Código da disciplina a ser associada > "
-      subjectCode <- getLine
-      let subject = DataLoader.loadSubject (read subjectCode) subjects
-      Controle.associateProfessor professor subject subjects
+      Controle.associateProfessor professor subjects
     else putStrLn "Professor inexistente"
 
 listStudentsWithoutEnrollment :: IO ()

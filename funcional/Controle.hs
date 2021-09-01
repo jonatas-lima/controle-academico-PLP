@@ -44,9 +44,6 @@ registerStudent studentId studentName password = do
 isThereRegristration :: Int -> [Int] -> Bool
 isThereRegristration id ids = id `elem` ids
 
-studentRegistration :: Aluno -> Disciplina -> Bool
-studentRegistration student subjects = True
-
 listStudentsWithoutRegistration :: [Aluno] -> String
 listStudentsWithoutRegistration [] = ""
 listStudentsWithoutRegistration (a : as) =
@@ -71,14 +68,46 @@ listAvailableProfessors (p : ps) =
     then formatListProfessor p ++ "\n" ++ listAvailableProfessors ps
     else listAvailableProfessors ps
 
-listSubjectsAvailableForAssociation :: Professor -> [Disciplina] -> String
-listSubjectsAvailableForAssociation professor subjects =
-  formatListSubjects $ DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
+availableSubjectsForAssociation :: Professor -> [Disciplina] -> [Disciplina]
+availableSubjectsForAssociation professor subjects = 
+  DataLoader.loadSubjectsByCode codesAvailableSubjects subjects
   where
     subjectsWithoutProfessor = filter (\subj -> not (Disciplina.hasProfessor subj)) subjects
     codesSubjects = map Disciplina.code subjectsWithoutProfessor
     subjectsTaught = Professor.subjects professor
     codesAvailableSubjects = filter (`notElem` subjectsTaught) codesSubjects
+
+associateProfessor :: Professor -> [Disciplina] -> IO ()
+associateProfessor professor subjects = do
+  if null availableSubjects
+    then putStrLn "Não há disciplinas disponíveis para esse professor!" 
+    else do 
+      putStrLn "Disciplinas disponíveis"
+      putStr $ Controle.formatListSubjects availableSubjects
+
+      putStr "Código da disciplina a ser associada > "
+      subjectCode <- getLine
+      let subject = DataLoader.loadSubject (read subjectCode) subjects
+
+      if Disciplina.name subject /= "not found"
+        then associateProfessorSubject professor subject subjects
+        else putStrLn "Disciplina inválida"
+  where 
+    availableSubjects = availableSubjectsForAssociation professor subjects
+
+associateProfessorSubject :: Professor -> Disciplina -> [Disciplina] -> IO ()
+associateProfessorSubject professor subject subjects =
+  if notElem (Disciplina.code subject) codesSubjects || Professor.hasSubject professor (Disciplina.code subject) || Disciplina.hasProfessor subject
+    then putStrLn "Erro ao associar professor à disciplina"
+    else do
+      DataSaver.updateProfessor (Professor.registration professor) updatedProfessor
+      DataSaver.updateSubject (Disciplina.code subject) updatedSubject
+      putStrLn "Disciplina associada!"
+  where
+    codesSubjects = map Disciplina.code subjects
+    subjectsTaught = Professor.subjects professor
+    updatedProfessor = Professor.newProfessor (Professor.registration professor) (Professor.name professor) (Disciplina.code subject : Professor.subjects professor)
+    updatedSubject = Disciplina.newSubject (Disciplina.code subject) (Professor.registration professor) (Disciplina.name subject) (Disciplina.numberClasses subject) (Disciplina.studentLimit subject) (Disciplina.grades subject)
 
 formatListSubjects :: [Disciplina] -> String
 formatListSubjects [] = ""
@@ -95,20 +124,6 @@ formatListSubjectAverage subject =
 
 formatListProfessor :: Professor -> String
 formatListProfessor professor = show (Professor.registration professor) ++ "\t - \t" ++ Professor.name professor
-
-associateProfessorSubject :: Professor -> Disciplina -> [Disciplina] -> IO ()
-associateProfessorSubject professor subject subjects =
-  if notElem (Disciplina.code subject) codesSubjects || Professor.hasSubject professor (Disciplina.code subject) || Disciplina.hasProfessor subject
-    then putStrLn "Erro ao associar professor à disciplina"
-    else do
-      DataSaver.updateProfessor (Professor.registration professor) updatedProfessor
-      DataSaver.updateSubject (Disciplina.code subject) updatedSubject
-      putStrLn "Disciplina associada!"
-  where
-    codesSubjects = map Disciplina.code subjects
-    subjectsTaught = Professor.subjects professor
-    updatedProfessor = Professor.newProfessor (Professor.registration professor) (Professor.name professor) (Disciplina.code subject : Professor.subjects professor)
-    updatedSubject = Disciplina.newSubject (Disciplina.code subject) (Professor.registration professor) (Disciplina.name subject) (Disciplina.numberClasses subject) (Disciplina.studentLimit subject) (Disciplina.grades subject)
 
 enrolledSubjects :: Aluno -> [Disciplina] -> [Disciplina]
 enrolledSubjects student subjects = [DataLoader.loadSubject c subjects | c <- Aluno.enrolledSubjects student]
@@ -378,9 +393,3 @@ studentsSituations (s : sa) subject =
 studentSituation :: Aluno -> Disciplina -> String
 studentSituation student subject = do
   show (Aluno.registration student) ++ "\t\t - " ++ Aluno.name student ++ printf "\t - %.2f" (Aluno.subjectAverage student subject) ++ " " ++ Aluno.situation student subject
-
-associateProfessor :: Professor -> Disciplina -> [Disciplina] -> IO ()
-associateProfessor professor subject subjects =
-  if Disciplina.name subject /= "not found"
-    then associateProfessorSubject professor subject subjects
-    else putStrLn "Disciplina inválida"
