@@ -1,11 +1,11 @@
 module DataLoader where
 
-import Aluno (Aluno (..), notFound)
+import Student (Student (..), notFound)
 import Data.List.Split (splitOn)
-import Disciplina (Disciplina (..), notFound)
+import Subject (Subject (..), notFound)
 import Professor (Professor (..), notFound)
 import qualified System.IO.Strict as Strict
-import Usuario (Usuario (..))
+import User (User (..))
 
 readArq :: String -> IO [String]
 readArq path = do
@@ -13,15 +13,15 @@ readArq path = do
   let list = lines arq
   return list
 
-loadUsers :: [String] -> [Usuario]
+loadUsers :: [String] -> [User]
 loadUsers lines = [parseUser line | line <- lines]
 
-parseUser :: String -> Usuario
+parseUser :: String -> User
 parseUser line =
-  Usuario
-    { Usuario.name = head data',
-      Usuario.password = data' !! 1,
-      Usuario.role = data' !! 2
+  User
+    { User.name = head data',
+      User.password = data' !! 1,
+      User.role = data' !! 2
     }
   where
     data' = splitOn "," line
@@ -46,53 +46,53 @@ parseProfessor line =
   where
     data' = splitOn ";" line
 
-loadStudents :: [String] -> [Aluno]
+loadStudents :: [String] -> [Student]
 loadStudents lines = [parseStudent line | line <- lines]
 
-loadStudent :: Int -> [Aluno] -> Aluno
-loadStudent _ [] = Aluno.notFound
+loadStudent :: Int -> [Student] -> Student
+loadStudent _ [] = Student.notFound
 loadStudent id' (a : as)
-  | Aluno.registration a == id' = a
+  | Student.registration a == id' = a
   | otherwise = loadStudent id' as
 
-parseStudent :: String -> Aluno
+parseStudent :: String -> Student
 parseStudent line =
-  Aluno
-    { Aluno.registration = read (head data') :: Int,
-      Aluno.name = data' !! 1,
-      Aluno.enrolledSubjects = read (data' !! 2) :: [Int]
+  Student
+    { Student.registration = read (head data') :: Int,
+      Student.name = data' !! 1,
+      Student.enrolledSubjects = read (data' !! 2) :: [Int]
     }
   where
     data' = splitOn ";" line
 
-parseSubject :: String -> Disciplina
+parseSubject :: String -> Subject
 parseSubject lines =
-  Disciplina
-    { Disciplina.code = read (head data') :: Int,
-      Disciplina.professorRegistration = read (data' !! 1) :: Int,
-      Disciplina.name = data' !! 2,
-      Disciplina.numberClasses = read (data' !! 3) :: Int,
-      Disciplina.studentLimit = read (data' !! 4) :: Int,
-      Disciplina.grades = read (data' !! 5) :: [(Int, [Double])]
+  Subject
+    { Subject.code = read (head data') :: Int,
+      Subject.professorRegistration = read (data' !! 1) :: Int,
+      Subject.name = data' !! 2,
+      Subject.numberClasses = read (data' !! 3) :: Int,
+      Subject.studentLimit = read (data' !! 4) :: Int,
+      Subject.grades = read (data' !! 5) :: [(Int, [Double])]
     }
   where
     data' = splitOn ";" lines
 
-loadSubjects :: [String] -> [Disciplina]
+loadSubjects :: [String] -> [Subject]
 loadSubjects lines = [parseSubject linha | linha <- lines]
 
-loadSubject :: Int -> [Disciplina] -> Disciplina
-loadSubject _ [] = Disciplina.notFound
+loadSubject :: Int -> [Subject] -> Subject
+loadSubject _ [] = Subject.notFound
 loadSubject code' (d : ds) =
-  if Disciplina.code d == code'
+  if Subject.code d == code'
     then d
     else loadSubject code' ds
 
-loadSubjectsByCode :: [Int] -> [Disciplina] -> [Disciplina]
-loadSubjectsByCode subjectCodes = loadEntityByKey subjectCodes loadSubject Disciplina.code
+loadSubjectsByCode :: [Int] -> [Subject] -> [Subject]
+loadSubjectsByCode subjectCodes = loadEntityByKey subjectCodes loadSubject Subject.code
 
-loadStudentsByRegistration :: [Int] -> [Aluno] -> [Aluno]
-loadStudentsByRegistration studentRegistrations = loadEntityByKey studentRegistrations loadStudent Aluno.registration
+loadStudentsByRegistration :: [Int] -> [Student] -> [Student]
+loadStudentsByRegistration studentRegistrations = loadEntityByKey studentRegistrations loadStudent Student.registration
 
 loadProfessorsByRegistration :: [Int] -> [Professor] -> [Professor]
 loadProfessorsByRegistration professorsRegistrations = loadEntityByKey professorsRegistrations loadProfessor Professor.registration
