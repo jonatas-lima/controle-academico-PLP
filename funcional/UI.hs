@@ -22,7 +22,7 @@ showStudentSubjectsScreen studentRegistration = do
   let enrolledSubjectCodes = Student.enrolledSubjects student
   let enrolledSubjects = DataLoader.loadSubjectsByCode enrolledSubjectCodes subjects
 
-  putStrLn $ "\nCódigo\t - Subject\t - Média atual/Status\n" ++ Controller.showStudentSubjects student enrolledSubjects
+  putStrLn $ "\nCódigo\t - Disciplina\t - Média atual/Status\n" ++ Controller.showStudentSubjects student enrolledSubjects
 
 enrollSubjectScreen :: Int -> IO()
 enrollSubjectScreen studentRegistration = do
@@ -62,7 +62,7 @@ showProfessorSubjects id = do
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
-  putStrLn ("\nCódigo\t - Subject\t - Número de aulas restantes\n" ++ Controller.getProfessorSubjects codesProfessorSubjects professorSubjects)
+  putStrLn ("\nCódigo\t - Disciplina\t - Número de aulas restantes\n" ++ Controller.getProfessorSubjects codesProfessorSubjects professorSubjects)
 
 classRegistrationScreen :: Int -> IO()
 classRegistrationScreen id = do
@@ -76,7 +76,7 @@ classRegistrationScreen id = do
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
   putStrLn "\nSubjects lecionadas:"
-  putStrLn ("\nCódigo\t - Subject\t - Número de aulas restantes\n" ++ Controller.getProfessorSubjects codesProfessorSubjects professorSubjects)
+  putStrLn ("\nCódigo\t - Disciplina\t - Número de aulas restantes\n" ++ Controller.getProfessorSubjects codesProfessorSubjects professorSubjects)
   putStr "Entre com o código da disciplina: "
   
   code <- getLine

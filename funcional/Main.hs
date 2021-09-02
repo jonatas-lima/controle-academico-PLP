@@ -166,8 +166,8 @@ adminOptions =
     ++ "4) Associar professor à disciplina\n"
     ++ "5) Listar alunos sem matrículas\n"
     ++ "6) Listar professores sem disciplinas\n"
-    ++ "7) Subject com a maior média\n"
-    ++ "8) Subject com a menor média\n"
+    ++ "7) Disciplina com a maior média\n"
+    ++ "8) Disciplina com a menor média\n"
     ++ "9) Consultar aluno com a maior média\n"
     ++ "(S)air do sistema\n"
 
@@ -202,7 +202,7 @@ adminPanel option
     waitEnterAdmin
   | option == "S" = quit
   | otherwise = do 
-    putStrLn "opcao invalida"
+    putStrLn "Opção inválida!"
     waitEnterAdmin
 
 quit :: IO ()
