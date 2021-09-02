@@ -161,7 +161,7 @@ createSubjectScreen = do
     else do
       let newSubject = Subject.newSubject (read subjectCode) 0 subjectName (read numberClasses) (read studentLimit) []
       DataSaver.saveSubject newSubject
-      putStrLn "Subject cadastrada com sucesso!"
+      putStrLn "Disciplina cadastrada com sucesso!"
 
 associateTeacherScreen :: IO ()
 associateTeacherScreen = do
@@ -184,7 +184,7 @@ associateTeacherScreen = do
 
 listStudentsWithoutEnrollment :: IO ()
 listStudentsWithoutEnrollment = do
-  showData "Students sem matrículas:" "./data/alunos.csv" Controller.listStudentsWithoutRegistration DataLoader.loadStudents
+  showData "Estudantes sem matrículas:" "./data/alunos.csv" Controller.listStudentsWithoutRegistration DataLoader.loadStudents
 
 listProfessorWithoutEnrollment :: IO ()
 listProfessorWithoutEnrollment = do
@@ -192,11 +192,11 @@ listProfessorWithoutEnrollment = do
 
 showsSubjectHigherAverage :: IO ()
 showsSubjectHigherAverage = do
-  showData "Subject com maior média:" "./data/disciplinas.csv" Controller.showsSubjectWithHigherAverage DataLoader.loadSubjects
+  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controller.showsSubjectWithHigherAverage DataLoader.loadSubjects
 
 showsSubjectLowestAverage :: IO ()
 showsSubjectLowestAverage = do
-  showData "Subject com menor média:" "./data/disciplinas.csv" Controller.showsSubjectWithLowestAverage DataLoader.loadSubjects
+  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controller.showsSubjectWithLowestAverage DataLoader.loadSubjects
 
 showStudentWithHighestAverage :: IO()
 showStudentWithHighestAverage = do
@@ -205,7 +205,7 @@ showStudentWithHighestAverage = do
   let students = DataLoader.loadStudents studentsFile
   let subjects = DataLoader.loadSubjects subjectsFile
 
-  putStrLn $ "Student com a maior média geral:\n" ++ Controller.showStudentWithHighestAverage students subjects
+  putStrLn $ "Estudante com a maior média geral:\n" ++ Controller.showStudentWithHighestAverage students subjects
 
 showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
 showData message filePath display loadAll = do

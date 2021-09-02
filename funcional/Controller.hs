@@ -45,21 +45,39 @@ isThereRegristration :: Int -> [Int] -> Bool
 isThereRegristration id ids = id `elem` ids
 
 listStudentsWithoutRegistration :: [Student] -> String
-listStudentsWithoutRegistration [] = ""
-listStudentsWithoutRegistration (a : as) =
-  if null $ Student.enrolledSubjects a
-    then listFormatStudent a ++ "\n" ++ listStudentsWithoutRegistration as
-    else listStudentsWithoutRegistration as
+listStudentsWithoutRegistration students =
+  if null studentsWithoutEnrollment'
+    then "Não há estudantes sem matrículas!"
+    else "Estudantes sem disciplinas matriculadas:" ++ "\n" ++ (listStudentsWithoutRegistration' $ studentsWithoutEnrollment')
+  where 
+    studentsWithoutEnrollment' = studentsWithoutEnrollment students
+
+listStudentsWithoutRegistration' :: [Student] -> String
+listStudentsWithoutRegistration' [] = ""
+listStudentsWithoutRegistration' (s : sa) = 
+  listFormatStudent s ++ "\n" ++ listStudentsWithoutRegistration' sa
+
+studentsWithoutEnrollment :: [Student] -> [Student]
+studentsWithoutEnrollment students = filter (\s -> Student.numberEnrolledSubjects s == 0) students
 
 listFormatStudent :: Student -> String
 listFormatStudent student = show (Student.registration student) ++ "\t - \t" ++ Student.name student
 
 listProfessorsWithoutRegistration :: [Professor] -> String
-listProfessorsWithoutRegistration [] = ""
-listProfessorsWithoutRegistration (p : ps) =
-  if null $ Professor.subjects p
-    then formatListProfessor p ++ "\n" ++ listProfessorsWithoutRegistration ps
-    else listProfessorsWithoutRegistration ps
+listProfessorsWithoutRegistration professors =
+  if null professorsWithoutRegistration'
+    then "Não há professores sem disciplinas lecionadas!"
+    else "Professores sem disciplinas:" ++ "\n" ++ listProfessorsWithoutRegistration' professorsWithoutRegistration'
+  where 
+    professorsWithoutRegistration' = professorsWithoutRegistration professors
+
+listProfessorsWithoutRegistration' :: [Professor] -> String
+listProfessorsWithoutRegistration' [] = ""
+listProfessorsWithoutRegistration' (p : ps) =
+  formatListProfessor p ++ "\n" ++ listProfessorsWithoutRegistration' ps
+
+professorsWithoutRegistration :: [Professor] -> [Professor]
+professorsWithoutRegistration professors = filter (\prof -> Professor.numberOfSubjects prof == 0) professors
 
 listAvailableProfessors :: [Professor] -> String
 listAvailableProfessors [] = ""
