@@ -68,11 +68,6 @@ listAvailableProfessors (p : ps) =
     then formatListProfessor p ++ "\n" ++ listAvailableProfessors ps
     else listAvailableProfessors ps
 
--- formatStudents :: [Student] -> String
--- formatStudents [] = ""
--- formatStudents (s : sa) =
---   formatStudent s ++ "\n" ++ formatStudents sa
-
 formatStudent :: Student -> [Subject] -> String
 formatStudent student subjects = 
   show (Student.registration student) ++ "\t - \t" ++ Student.name student ++ "\t - \t" ++ printf "%.2f" (Student.totalAverage student subjects)
@@ -112,7 +107,7 @@ associateProfessor professor subjects = do
   if null availableSubjects
     then putStrLn "Não há disciplinas disponíveis para esse professor!" 
     else do 
-      putStrLn "Subjects disponíveis"
+      putStrLn "Disciplinas disponíveis"
       putStr $ Controller.formatListSubjects availableSubjects
 
       putStr "Código da disciplina a ser associada > "
@@ -121,7 +116,7 @@ associateProfessor professor subjects = do
 
       if Subject.name subject /= "not found"
         then associateProfessorSubject professor subject subjects
-        else putStrLn "Subject inválida"
+        else putStrLn "Disciplina inválida"
   where 
     availableSubjects = availableSubjectsForAssociation professor subjects
 
@@ -132,7 +127,7 @@ associateProfessorSubject professor subject subjects =
     else do
       DataSaver.updateProfessor (Professor.registration professor) updatedProfessor
       DataSaver.updateSubject (Subject.code subject) updatedSubject
-      putStrLn "Subject associada!"
+      putStrLn "Disciplina associada!"
   where
     codesSubjects = map Subject.code subjects
     subjectsTaught = Professor.subjects professor
@@ -202,7 +197,7 @@ showStudentSubjects student (s : sa) =
 
 enroll :: Student -> [Subject] -> IO ()
 enroll student subjects = do
-  putStrLn ("\nCódigo\t - Subject\n" ++ showAvailableSubjectsToStudent (Student.enrolledSubjects student) subjects)
+  putStrLn ("\nCódigo\t - Disciplina\n" ++ showAvailableSubjectsToStudent (Student.enrolledSubjects student) subjects)
 
   putStr "Entre com o código da cadeira: "
 
@@ -247,7 +242,7 @@ showAvailableSubjectsToStudent enrolledSubjectCodes (s : sa) =
 
 cancelRegistration :: Student -> [Subject] -> [Int] -> IO ()
 cancelRegistration student subjects studentCodes = do
-  putStrLn ("\nCódigo\t - Subject\n" ++ showSubjectsWithoutClasses subjects)
+  putStrLn ("\nCódigo\t - Disciplina\n" ++ showSubjectsWithoutClasses subjects)
   putStr "Entre com o código da cadeira: "
 
   code <- getLine
@@ -302,7 +297,7 @@ registerTest professor = do
   let subjects = DataLoader.loadSubjects subjectsFile
   let students = DataLoader.loadStudents studentsFile
 
-  putStrLn "\nSubjects lecionadas:\n"
+  putStrLn "\nDisciplinas lecionadas:\n"
   putStrLn $ getProfessorSubjects (Professor.subjects professor) subjects
 
   putStr "Entre com o código da disciplina: "
@@ -328,7 +323,7 @@ registerTest professor = do
 addStudentsGrades :: [Student] -> Subject -> IO ()
 addStudentsGrades [] _ = putStrLn "\nTodas as notas cadastradas!\n"
 addStudentsGrades enrolledStudents subject = do
-  putStrLn $ "\nStudents matriculados na disciplina [" ++ Subject.name subject ++ "]"
+  putStrLn $ "\nEstudantes matriculados na disciplina [" ++ Subject.name subject ++ "]"
   putStr $ "\n" ++ showStudents enrolledStudents
 
   let studentRegistration = Student.registration $ head enrolledStudents
@@ -386,7 +381,7 @@ registerClass professor subjectCode =
           let newSubject = Subject.newSubject subjectCode (Subject.professorRegistration subject) (Subject.name subject) (Subject.numberClasses subject - 1) (Subject.studentLimit subject) (Subject.grades subject)
           DataSaver.updateSubject subjectCode newSubject
         else putStrLn "A disciplina encontra-se encerrada!"
-    else putStrLn "Subject inválida"
+    else putStrLn "Disciplina inválida"
 
 classSituation :: Professor -> [Subject] -> IO()
 classSituation professor subjects = do
@@ -394,7 +389,7 @@ classSituation professor subjects = do
   let codesProfessorSubjects = Professor.subjects professor
   let professorSubjects = DataLoader.loadSubjectsByCode codesProfessorSubjects subjects
 
-  putStrLn "\nSubjects lecionadas:"
+  putStrLn "\nDisciplinas lecionadas:"
   putStr $ "\n" ++ Controller.getProfessorSubjects (Professor.subjects professor) subjects
 
   putStr "\nEntre com o código da disciplina a ser consultada: "
@@ -413,7 +408,7 @@ classSituation' subject = do
   let subjectStudents = DataLoader.loadStudentsByRegistration (Subject.enrolledStudents subject) students
 
   if null subjectStudents then putStrLn "\nA disciplina não possui alunos cadastrados.\n"
-  else putStr $ "\nMatrícula\t - Student\t - Média\n" ++ studentsSituations subjectStudents subject ++ "\n"
+  else putStr $ "\nMatrícula\t - Aluno\t - Média\n" ++ studentsSituations subjectStudents subject ++ "\n"
 
 studentsSituations :: [Student] -> Subject -> String
 studentsSituations [] _ = ""
