@@ -7,15 +7,18 @@ import Professor (Professor (..), notFound)
 import qualified System.IO.Strict as Strict
 import User (User (..))
 
+-- / Lê um arquivo, sendo passado o 'path' no parâmetro
 readArq :: String -> IO [String]
 readArq path = do
   arq <- Strict.readFile path
   let list = lines arq
   return list
 
+-- / Carrega todos os usuários, passando as linhas do arquivo como parâmetro
 loadUsers :: [String] -> [User]
 loadUsers lines = [parseUser line | line <- lines]
 
+-- / Faz o parsing de uma linha do arquivo para um User
 parseUser :: String -> User
 parseUser line =
   User
@@ -26,9 +29,11 @@ parseUser line =
   where
     data' = splitOn "," line
 
+-- / Carrega todos os usuários, passando as linhas do arquivo como parâmetro
 loadProfessors :: [String] -> [Professor]
 loadProfessors lines = [parseProfessor line | line <- lines]
 
+-- / Carrega um único professor, através da matrícula, passando uma lista de professores como parâmetro
 loadProfessor :: Int -> [Professor] -> Professor
 loadProfessor _ [] = Professor.notFound
 loadProfessor id (p : ps) =
@@ -36,6 +41,7 @@ loadProfessor id (p : ps) =
     then p
     else loadProfessor id ps
 
+-- / Faz o parsing de uma linha do arquivo para um Professor
 parseProfessor :: String -> Professor
 parseProfessor line =
   Professor
@@ -46,15 +52,18 @@ parseProfessor line =
   where
     data' = splitOn ";" line
 
+-- / Carrega todos os alunos, passando as linhas do arquivo como parâmetro
 loadStudents :: [String] -> [Student]
 loadStudents lines = [parseStudent line | line <- lines]
 
+-- / Carrega um único aluno, através da matrícula, passando uma lista de alunos como parâmetro
 loadStudent :: Int -> [Student] -> Student
 loadStudent _ [] = Student.notFound
 loadStudent id' (a : as)
   | Student.registration a == id' = a
   | otherwise = loadStudent id' as
 
+-- / Faz o parsing de uma linha do arquivo para um Student
 parseStudent :: String -> Student
 parseStudent line =
   Student
@@ -65,6 +74,7 @@ parseStudent line =
   where
     data' = splitOn ";" line
 
+-- / Faz o parsing de uma linha do arquivo para uma Subject
 parseSubject :: String -> Subject
 parseSubject lines =
   Subject
@@ -78,9 +88,11 @@ parseSubject lines =
   where
     data' = splitOn ";" lines
 
+-- / Carrega todas as disciplinas, passando as linhas do arquivo como parâmetro
 loadSubjects :: [String] -> [Subject]
 loadSubjects lines = [parseSubject linha | linha <- lines]
 
+-- / Carrega uma única disciplina, através do seu código, passando uma lista de disciplinas como parâmetro
 loadSubject :: Int -> [Subject] -> Subject
 loadSubject _ [] = Subject.notFound
 loadSubject code' (d : ds) =
@@ -88,15 +100,19 @@ loadSubject code' (d : ds) =
     then d
     else loadSubject code' ds
 
+-- / Carrega disciplinas a partir do seu código
 loadSubjectsByCode :: [Int] -> [Subject] -> [Subject]
 loadSubjectsByCode subjectCodes = loadEntityByKey subjectCodes loadSubject Subject.code
 
+-- / Carrega alunos a partir de sua matrícula
 loadStudentsByRegistration :: [Int] -> [Student] -> [Student]
 loadStudentsByRegistration studentRegistrations = loadEntityByKey studentRegistrations loadStudent Student.registration
 
+-- / Carrega professores a partir de sua matrícula
 loadProfessorsByRegistration :: [Int] -> [Professor] -> [Professor]
 loadProfessorsByRegistration professorsRegistrations = loadEntityByKey professorsRegistrations loadProfessor Professor.registration
 
+-- / Função genérica que carrega uma lista de entidades a partir de uma chave
 loadEntityByKey :: [Int] -> (Int -> [t] -> t) -> (t -> Int) -> [t] -> [t]
 loadEntityByKey [] _ _ _ = []
 loadEntityByKey (k : ks) loadOne keyMap entities =

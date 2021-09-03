@@ -1,17 +1,11 @@
 module Main where
 
-import Student (Student)
-import qualified Student
 import Control.Concurrent (threadDelay)
-import Data.List (delete, sort)
+import qualified Student
+import qualified Professor
 import qualified DataLoader
 import qualified DataSaver
-import Subject (Subject)
-import qualified Subject
-import Professor (Professor)
-import qualified Professor
 import System.Console.ANSI (clearScreen)
-import Text.Printf
 import qualified User
 import qualified UI
 

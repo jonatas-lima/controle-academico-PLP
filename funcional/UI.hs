@@ -184,19 +184,19 @@ associateTeacherScreen = do
 
 listStudentsWithoutEnrollment :: IO ()
 listStudentsWithoutEnrollment = do
-  showData "Estudantes sem matrículas:" "./data/alunos.csv" Controller.listStudentsWithoutRegistration DataLoader.loadStudents
+  showData "./data/alunos.csv" Controller.listStudentsWithoutRegistration DataLoader.loadStudents
 
 listProfessorWithoutEnrollment :: IO ()
 listProfessorWithoutEnrollment = do
-  showData "Professores sem disciplinas:" "./data/professores.csv" Controller.listProfessorsWithoutRegistration DataLoader.loadProfessors
+  showData "./data/professores.csv" Controller.listProfessorsWithoutRegistration DataLoader.loadProfessors
 
 showsSubjectHigherAverage :: IO ()
 showsSubjectHigherAverage = do
-  showData "Disciplina com maior média:" "./data/disciplinas.csv" Controller.showsSubjectWithHigherAverage DataLoader.loadSubjects
+  showData "./data/disciplinas.csv" Controller.showSubjectWithHigherAverage DataLoader.loadSubjects
 
 showsSubjectLowestAverage :: IO ()
 showsSubjectLowestAverage = do
-  showData "Disciplina com menor média:" "./data/disciplinas.csv" Controller.showsSubjectWithLowestAverage DataLoader.loadSubjects
+  showData "./data/disciplinas.csv" Controller.showSubjectWithLowestAverage DataLoader.loadSubjects
 
 showStudentWithHighestAverage :: IO()
 showStudentWithHighestAverage = do
@@ -207,8 +207,8 @@ showStudentWithHighestAverage = do
 
   putStrLn $ "Estudante com a maior média geral:\n" ++ Controller.showStudentWithHighestAverage students subjects
 
-showData :: String -> String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
-showData message filePath display loadAll = do
+showData :: String -> ([t] -> String) -> ([String] -> [t]) -> IO ()
+showData filePath display loadAll = do
   entityFile <- DataLoader.readArq filePath
   let entities = loadAll entityFile
 

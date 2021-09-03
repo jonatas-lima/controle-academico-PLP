@@ -9,24 +9,34 @@ data Student = Student
     enrolledSubjects :: [Int]
   }
 
+-- / Representação de um aluno inexistente
 notFound :: Student
 notFound = Student 0 "not found" []
 
 newStudent :: Int -> String -> [Int] -> Student
 newStudent = Student
 
+-- / Retorna o número de disciplina matriculadas
 numberEnrolledSubjects :: Student -> Int
 numberEnrolledSubjects student = length (enrolledSubjects student)
 
+-- / Dada uma lista de estudantes, retorna suas respectivas matrículas
 registrations :: [Student] -> [Int]
 registrations students = [registration student | student <- students]
 
+-- / Verifica se um estudante está aprovado em uma disciplina
 approved :: Student -> Subject -> Bool
 approved student subject = Subject.studentAverage (registration student) subject >= 7
 
+-- / Verifica se um estudante está na final em uma disciplina
 final :: Student -> Subject -> Bool
 final student subject = not (approved student subject) && Subject.studentAverage (registration student) subject >= 5
 
+-- / Verifica se um estudante está reprovado em uma disciplina
+reproved :: Student -> Subject -> Bool
+reproved student subject = not (final student subject) && not (approved student subject)
+
+-- / Representação em string da situação de um aluno em uma disciplina
 situation :: Student -> Subject -> String
 situation student subject
   | approved student subject = "(APROVADO)"
@@ -34,12 +44,11 @@ situation student subject
   | reproved student subject = "(REPROVADO)"
   | otherwise = "(EM ANDAMENTO)"
 
-reproved :: Student -> Subject -> Bool
-reproved student subject = not (final student subject) && not (approved student subject)
-
+-- / Retorna a média de um estudante em uma disciplina
 subjectAverage :: Student -> Subject -> Double
 subjectAverage student = Subject.studentAverage (registration student)
 
+-- / Retorna a média geral (CRA) de um estudante
 totalAverage :: Student -> [Subject] -> Double
 totalAverage student subjects =
   sumAllAverage / fromIntegral (length averages)
@@ -47,29 +56,18 @@ totalAverage student subjects =
     averages = allAverages student subjects
     sumAllAverage = sum averages
 
+-- / Retorna todas as médias do aluno
 allAverages :: Student -> [Subject] -> [Double]
 allAverages student subjects =
   [Subject.studentAverage (registration student) d | d <- getEnrolledSubjects (enrolledSubjects student) subjects]
 
+-- / Retorna as disciplinas matrículadas pelo aluno
 getEnrolledSubjects :: [Int] -> [Subject] -> [Subject]
 getEnrolledSubjects [] _ = []
 getEnrolledSubjects (c : cs) subjects =
   filter (\disc -> Subject.code disc == c) subjects ++ getEnrolledSubjects cs subjects
 
-getNotEnrolledSubjects :: [Int] -> [Subject] -> [Subject]
-getNotEnrolledSubjects [] _ = []
-getNotEnrolledSubjects (c : cs) subjects =
-  filter (\disc -> Subject.code disc /= c) subjects ++ getEnrolledSubjects cs subjects
-
-availableOptions :: String
-availableOptions =
-  "\n\n1) Visualizar disciplinas\n"
-    ++ "2) Realizar matrícula\n"
-    ++ "3) Cancelar matrícula\n"
-    ++ "4) Visualizar média geral\n"
-    ++ "5) Sair do sistema\n"
-    ++ "6) Logout\n"
-
+-- / Formato de salvamento no arquivo
 toString :: Student -> String
 toString aluno =
   show registration' ++ ";" ++ name' ++ ";" ++ show enrolledSubjects'

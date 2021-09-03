@@ -9,18 +9,23 @@ data Subject = Subject
     grades :: [(Int, [Double])]
   }
 
+-- / Função usada para representar uma disciplina inexistente
 notFound :: Subject
 notFound = Subject 0 0 "not found" 0 0 []
 
+-- / Cria uma nova disciplina
 newSubject :: Int -> Int -> String -> Int -> Int -> [(Int, [Double])] -> Subject
 newSubject = Subject
 
+-- / Verifica se as vagas para estudantes se esgotaram
 isFull :: Subject -> Bool
 isFull subject = length (grades subject) == studentLimit subject
 
+-- / Verifica se um professor está alocado à disciplina
 hasProfessor :: Subject -> Bool
 hasProfessor subject = professorRegistration subject /= 0
 
+-- / Matrícula dos estudantes matriculados na disciplina
 enrolledStudents :: Subject -> [Int]
 enrolledStudents subject = [fst student | student <- grades subject]
 
@@ -63,12 +68,15 @@ findStudentGrades studentId (x : xs) =
     id = fst x
     grades = snd x
 
+-- / Verifica se a disciplina encontra-se encerrada
 isFinished :: Subject -> Bool
 isFinished subject = numberClasses subject == 0
 
+-- / Representação em string da disciplina
 showSubject :: Subject -> String
 showSubject d = show (code d) ++ "\t - " ++ showsSubjectName (name d) ++ "\t - " ++ show (numberClasses d)
 
+-- / Representação em string da disciplina sem o número de aulas restantes
 showSubjectWithoutClasses :: Subject -> String
 showSubjectWithoutClasses d = show (code d) ++ "\t - " ++ showsSubjectName (name d)
 
@@ -77,6 +85,7 @@ showsSubjectName name
   | length name < 6 = showsSubjectName (name ++ " ")
   | otherwise = name
 
+-- / Formato no qual a disciplina será salva no arquivo csv
 toString :: Subject -> String
 toString subject =
   show code' ++ ";" ++ show professorRegistration' ++ ";" ++ name' ++ ";" ++ show numberClasses' ++ ";" ++ show studentLimit' ++ ";" ++show grades'
