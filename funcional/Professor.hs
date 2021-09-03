@@ -6,30 +6,26 @@ data Professor = Professor
     subjects :: [Int]
   }
 
+-- / Representação de um professor inexistente
 notFound :: Professor
 notFound = Professor 0 "not found" []
 
 newProfessor :: Int -> String -> [Int] -> Professor
 newProfessor = Professor
 
+-- / Dada uma lista de professores, retorna suas respectivas matrículas
 registrations :: [Professor] -> [Int]
 registrations professors = [registration prof | prof <- professors]
 
+-- / Retorna o número de disciplinas lecionadas pelo professor
 numberOfSubjects :: Professor -> Int
 numberOfSubjects professor = length (subjects professor)
 
-availableOptions :: String
-availableOptions =
-  "\n\n1) Visualizar disciplinas\n"
-    ++ "2) Registrar aula\n"
-    ++ "3) Cadastrar prova\n"
-    ++ "4) Situação da classe\n"
-    ++ "5) Sair do sistema\n"
-    ++ "6) Logout\n"
-
+-- / Verifica se um professor possui uma determinada disciplina
 hasSubject :: Professor -> Int -> Bool
 hasSubject professor codeSubject = codeSubject `elem` subjects professor
 
+-- / Formato de salvamento no arquivo
 toString :: Professor -> String
 toString professor =
   show id' ++ ";" ++ name' ++ ";" ++ show subjects'

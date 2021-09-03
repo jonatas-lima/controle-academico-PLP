@@ -171,8 +171,8 @@ formatListProfessor professor = show (Professor.registration professor) ++ "\t -
 enrolledSubjects :: Student -> [Subject] -> [Subject]
 enrolledSubjects student subjects = [DataLoader.loadSubject c subjects | c <- Student.enrolledSubjects student]
 
-showsSubjectWithHigherAverage :: [Subject] -> String
-showsSubjectWithHigherAverage subjects =
+showSubjectWithHigherAverage :: [Subject] -> String
+showSubjectWithHigherAverage subjects =
   formatListSubjectAverage $ subjectWithHigherAverage subjects
 
 subjectWithHigherAverage :: [Subject] -> Subject
@@ -180,8 +180,8 @@ subjectWithHigherAverage subjects = do
   let subjectId = subjectWithHighestAverageCode (subjectsAverage subjects)
   DataLoader.loadSubject subjectId subjects
 
-showsSubjectWithLowestAverage :: [Subject] -> String
-showsSubjectWithLowestAverage subjects =
+showSubjectWithLowestAverage :: [Subject] -> String
+showSubjectWithLowestAverage subjects =
   formatListSubjectAverage $ subjectWithLowestAverage subjects
 
 subjectWithLowestAverage :: [Subject] -> Subject
