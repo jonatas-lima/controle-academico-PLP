@@ -4,5 +4,5 @@ main:-
     halt.
 
 login:-
-    write("Digite sua matrícula: "),
+    write("Digite sua matrícula:"),
     read(Matricula).
