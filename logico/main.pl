@@ -162,7 +162,7 @@ adminPanel("s"):-
     %sair do sistema
 
 adminPanel(_):-
-    write("Opção invalida, tente novamente"),
+    write("Opção invalida, tente novamente "),
     read(Inp),
     adminPanel(Inp).
 
