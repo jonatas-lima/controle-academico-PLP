@@ -25,12 +25,19 @@ find_student(Registration, Result) :-
   load_all_students(Students),
   find_student_aux(Registration, Students, Result).
 
-find_student_aux(_, [], false).
+find_students([], []).
+find_students(Registrations, Result).
+
+find_students_aux([], _, []).
+find_students_aux([Registrations|T1], [Student|T2], Result).
+
+find_student_aux(_, [end_of_file], false).
 find_student_aux(Registration, [Student|T], Result) :-
   term_to_atom(Student, AtomStudent),
   split_string(AtomStudent, ';', '', SplitedStudent),
   nth0(0, SplitedStudent, StudentRegistration),
   nth0(1, SplitedStudent, StudentName),
   nth0(2, SplitedStudent, StudentSubjects),
-  StudentRegistration =@= Registration -> Result = format_student(StudentRegistration, StudentName, StudentSubjects);
+  StudentRegistration =@= Registration -> format_student(Registration, StudentName, StudentSubjects, R),
+  Result = R;
   find_student_aux(Registration, T, Result).
