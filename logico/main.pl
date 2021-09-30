@@ -9,12 +9,10 @@ login:-
     read(Matricula),
     write("Digite sua senha:"),
     read(Senha).
-    %autenticar(Matricula,Senha).
-
 
 %essa funcao deve verificar com os arquivos se matricula e senha batem e caso sim abrir a função screen e caso nao ele volta para o login
 %id é o id de identificação do UserId dele
-autenticar(Matricula,Senha) :-
+autenticar(Matricula, Senha) :-
     verificadoComSucesso , screen(UserId) ; login().
 
 screen("prof"):- 
@@ -25,6 +23,9 @@ screen("admin"):-
 
 screen("aluno"):- 
     studentScreen(ID).
+
+screen:-
+    write("Role invalido").
 
 studentScreen(ID):-
     %ler arquivos e pegar nome do aluno e printar
@@ -63,11 +64,9 @@ studentPanel(_,ID):-
     read(Inp),
     studentPanel(Inp,ID).
 
-
 professorScreen(ID):-
     %ler arquivos e pegar nome do professor e printar
     professorOptions(ID).
-
     
 professorOptions(ID):-
     nl,nl,
@@ -79,7 +78,6 @@ professorOptions(ID):-
     read(Inp),
     professorPanel(Inp,ID).
 
-    
 professorPanel(1,ID).
     %UI visualizar disciplinas
 
@@ -103,7 +101,6 @@ professorPanel(_,ID):-
     read(Inp),
     professorPanel(Inp,ID).
 
-
 adminScreen():-
     write("Bem vindo, Adm"),
     adminOptions().
@@ -122,7 +119,6 @@ adminOptions():-
     write("(S)air do sistema"),nl,
     read(Inp),
     adminPanel(Inp).
-
 
 adminPanel(1).
     %UI opção 1
