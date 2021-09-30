@@ -1,3 +1,4 @@
+
 main:- 
     write("Bem-Vindo(a)!\nPara acessar o controle, faça login:\n\n"),
     login(),
@@ -7,15 +8,12 @@ login:-
     write("Digite sua matrícula:"),
     read(Matricula),
     write("Digite sua senha:"),
-    read(Senha),
-    %autenticar(Matricula,Senha).
-
+    read(Senha).
 
 %essa funcao deve verificar com os arquivos se matricula e senha batem e caso sim abrir a função screen e caso nao ele volta para o login
 %id é o id de identificação do UserId dele
-autenticar(Matricula,Senha):-
+autenticar(Matricula, Senha) :-
     verificadoComSucesso , screen(UserId) ; login().
-
 
 screen("prof"):- 
     professorScreen(ID).
@@ -28,7 +26,6 @@ screen("aluno"):-
 
 screen:-
     write("Role invalido").
-
 
 studentScreen(ID):-
     %ler arquivos e pegar nome do aluno e printar
@@ -44,22 +41,22 @@ studentOptions(ID):-
     read(Inp),
     studentPanel(Inp,ID).
 
-studentPanel(1,ID):-
+studentPanel(1,ID).
     %UI visualizar disciplinas
 
-studentPanel(2,ID):-
+studentPanel(2,ID).
     %UI Realizar matrícula
 
-studentPanel(3,ID):-
+studentPanel(3,ID).
     %UI Cancelar matrícula
 
-studentPanel(4,ID):-
+studentPanel(4,ID).
     %UI visualizar media geral
 
-studentPanel("S",ID):-
+studentPanel("S",ID).
     %sair do sistema
 
-studentPanel("s",ID):-
+studentPanel("s",ID).
     %sair do sistema
 
 studentPanel(_,ID):-
@@ -67,11 +64,9 @@ studentPanel(_,ID):-
     read(Inp),
     studentPanel(Inp,ID).
 
-
 professorScreen(ID):-
     %ler arquivos e pegar nome do professor e printar
     professorOptions(ID).
-
     
 professorOptions(ID):-
     nl,nl,
@@ -83,30 +78,28 @@ professorOptions(ID):-
     read(Inp),
     professorPanel(Inp,ID).
 
-    
-professorPanel(1,ID):-
+professorPanel(1,ID).
     %UI visualizar disciplinas
 
-professorPanel(2,ID):-
+professorPanel(2,ID).
     %UI Registrar aula
 
-professorPanel(3,ID):-
+professorPanel(3,ID).
     %UI Cadastrar prova
 
-professorPanel(4,ID):-
+professorPanel(4,ID).
     %UI Situação da classe
 
-professorPanel("S",ID):-
+professorPanel("S",ID).
     %sair do sistema
 
-professorPanel("s",ID):-
+professorPanel("s",ID).
     %sair do sistema
 
 professorPanel(_,ID):-
     write("Opção invalida, tente novamente"),
     read(Inp),
     professorPanel(Inp,ID).
-
 
 adminScreen():-
     write("Bem vindo, Adm"),
@@ -127,65 +120,40 @@ adminOptions():-
     read(Inp),
     adminPanel(Inp).
 
-
-adminPanel(1):-
+adminPanel(1).
     %UI opção 1
 
-adminPanel(2):-
+adminPanel(2).
     %UI opção 2
 
-adminPanel(3):-
+adminPanel(3).
     %UI opção 3
 
-adminPanel(4):-
+adminPanel(4).
     %UI opção 4
 
-adminPanel(5):-
+adminPanel(5).
     %UI opção 5
 
-adminPanel(6):-
+adminPanel(6).
     %UI opção 6
 
-adminPanel(7):-
+adminPanel(7).
     %UI opção 7
 
-adminPanel(8):-
+adminPanel(8). 
     %UI opção 8
 
-adminPanel(9):-
+adminPanel(9).
     %UI opção 9
 
-adminPanel("S"):-
+adminPanel('S'). 
     %sair do sistema
 
-adminPanel("s"):-
+adminPanel('s'). 
     %sair do sistema
 
 adminPanel(_):-
     write("Opção invalida, tente novamente "),
     read(Inp),
     adminPanel(Inp).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-    
-
