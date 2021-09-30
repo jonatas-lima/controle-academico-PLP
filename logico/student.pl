@@ -1,4 +1,3 @@
-% :-include('data_saver.pl').
 :-include('data_loader.pl').
 
 save_student(Registration, Name, Subjects) :- 
@@ -25,19 +24,10 @@ find_student(Registration, Result) :-
   load_all_students(Students),
   find_student_aux(Registration, Students, Result).
 
-find_students([], []).
-find_students(Registrations, Result).
-
-find_students_aux([], _, []).
-find_students_aux([Registrations|T1], [Student|T2], Result).
-
 find_student_aux(_, [end_of_file], false).
 find_student_aux(Registration, [Student|T], Result) :-
-  term_to_atom(Student, AtomStudent),
-  split_string(AtomStudent, ';', '', SplitedStudent),
-  nth0(0, SplitedStudent, StudentRegistration),
-  nth0(1, SplitedStudent, StudentName),
-  nth0(2, SplitedStudent, StudentSubjects),
-  StudentRegistration =@= Registration -> format_student(Registration, StudentName, StudentSubjects, R),
-  Result = R;
+  nth0(0, Student, StudentRegistration),
+  nth0(1, Student, StudentName),
+  nth0(2, Student, StudentSubjects),
+  StudentRegistration =@= Registration -> Result = Student ;
   find_student_aux(Registration, T, Result).
