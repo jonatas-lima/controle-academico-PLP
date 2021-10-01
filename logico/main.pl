@@ -1,19 +1,19 @@
+:- include('./controller.pl').
 
 main:- 
     write("Bem-Vindo(a)!\nPara acessar o controle, faça login:\n\n"),
-    login(),
+    login,
     halt.
 
 login:-
-    write("Digite sua matrícula:"),
-    read(Matricula),
-    write("Digite sua senha:"),
-    read(Senha).
-
-%essa funcao deve verificar com os arquivos se matricula e senha batem e caso sim abrir a função screen e caso nao ele volta para o login
-%id é o id de identificação do UserId dele
-autenticar(Matricula, Senha) :-
-    verificadoComSucesso , screen(UserId) ; login().
+    write("Digite sua matrícula: "),
+    read(Registration),
+    write("Digite sua senha: "),
+    read(Password),
+    authenticate(Registration, Password, Role),
+    screen(Role) ;
+    writeln("Usuario ou senha invalido! Tente novamente..."),
+    login.
 
 screen("prof"):- 
     professorScreen(ID).
