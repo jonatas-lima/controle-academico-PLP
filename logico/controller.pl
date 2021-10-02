@@ -14,13 +14,18 @@ students_without_enrollment(Result) :-
   students_without_enrollment_aux(Students, Result).
 
 students_without_enrollment_aux([], []).
-
 students_without_enrollment_aux([H|T], [X|Y]) :-
   nth0(0, H, Registration),
   nth0(2, H, Enrollments),
   (Enrollments =@= '' -> X = H, students_without_enrollment_aux(T, Y) ; students_without_enrollment_aux(T, Y)).
 
-professors_without_subjects(ProfessorsWithoutSubjects).
+professors_without_subjects(Result) :-
+  load_all_professors(Professors),
+  professors_without_subjects_aux(Professors, Result).
+
+professors_without_subjects_aux([], []).
+professors_without_subjects_aux([H|T], [X|Y]) :-
+  students_without_enrollment_aux([H|T], [X|Y]).
 
 available_professors(AvailableProfessors).
 
