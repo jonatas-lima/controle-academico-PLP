@@ -13,6 +13,7 @@ login:-
     authenticate(Registration, Password, Role),
     screen(Role) ;
     writeln("Usuario ou senha invalido! Tente novamente..."),
+    nl,
     login.
 
 screen("prof"):- 

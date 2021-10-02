@@ -5,11 +5,20 @@ authenticate(Username, Password, Role) :-
   nth0(1, User, UserPassword),
   term_string(UserPassword, UserPassword),
   term_string(Password, Password),
-  UserPassword == Password,
+  UserPassword =@= Password,
   nth0(2, User, Role).
 
 % consultas
-students_without_enrollment(StudentsWithoutEnrollment).
+students_without_enrollment(Result) :-
+  load_all_students(Students),
+  students_without_enrollment_aux(Students, Result).
+
+students_without_enrollment_aux([], []).
+
+students_without_enrollment_aux([H|T], [X|Y]) :-
+  nth0(0, H, Registration),
+  nth0(2, H, Enrollments),
+  (Enrollments =@= '' -> X = H, students_without_enrollment_aux(T, Y) ; students_without_enrollment_aux(T, Y)).
 
 professors_without_subjects(ProfessorsWithoutSubjects).
 
@@ -29,7 +38,7 @@ class_situation(ProfessorRegistration, SubjectCode).
 
 student_situation(StudentRegistration, SubjectCode).
 
-% associacoes / criacoes / delecoes
+% associacoes / delecoes
 enroll_student(StudentRegistration, SubjectCode).
 
 associate_professor(ProfessorRegistration, SubjectCode).
