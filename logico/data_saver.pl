@@ -1,6 +1,7 @@
-create_professor(Registration, Name) :- 
+create_professor(Registration, Name, Password) :- 
   format_new_professor(Registration, Name, R),
-  create_entity('./data/professores.csv', R).
+  create_entity('./data/professores.csv', R),
+  create_user(Registration, Password, 'prof').
 
 create_user(Username, Password, Role) :- 
   format_new_user(Username, Password, Role, R),
@@ -10,9 +11,12 @@ create_enrollment(SubjectCode) :-
   string_concat(SubjectCode, ',', R),
   create_entity('./data/matriculas.csv', R).
 
-create_student(Registration, Name) :- 
+create_student(Registration, Name, Password) :- 
   format_new_student(Registration, Name, R),
-  create_entity('./data/alunos.csv', R).
+  create_entity('./data/alunos.csv', R),
+  create_user(Registration, Password, 'aluno').
+
+create_subject(Code, Name, Credits, Classes).
 
 create_entity(FilePath, Entity) :- 
   open(FilePath, append, File),

@@ -1,5 +1,3 @@
-:- module(data_saver, [load_all_students/1, load_all_subjects/1, load_all_professors/1, load_all_users/1]).
-
 load_all_students(Students) :-
   load_file('./data/alunos.csv', Students).
 
