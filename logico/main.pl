@@ -132,8 +132,8 @@ admin_panel("1") :-
     read_string(Password),
     (find_user(Registration, R), R -> writeln("Professor ja existe!");
     save_professor(Registration, Name, Password), writeln("Professor cadastrado!")),
+    press_to_continue,
     admin_options.
-    %UI opção 1
 
 admin_panel("2") :- 
     write("Digite a matrícula do aluno: "),
@@ -144,6 +144,7 @@ admin_panel("2") :-
     read_string(Password),
     (find_user(Registration, R), R -> writeln("Aluno ja existe!");
     save_student(Registration, Name, Password), writeln("Aluno cadastrado!")),
+    press_to_continue,
     admin_options.
 
 admin_panel("3").
@@ -155,16 +156,18 @@ admin_panel("3").
     read_string(Classes),
     write("Digite o número de vagas da disciplina: "),
     read_string(MaxEnrollments),
-    (find_user(Registration, _) -> writeln("Professor ja existe!");
-    save_enrollment(Registration, Name, "123"), writeln("Professor cadastrado!")),
+    (find_user(Code, _) -> writeln("Disciplina ja existe!");
+    save_enrollment(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrado!")),
     press_to_continue,
     admin_options.
 
 admin_panel("4").
-    %UI opção 4
 
 admin_panel("5").
-    %UI opção 5
+    writeln("entrei"),
+    students_without_enrollment(Students),
+    nl,
+    show_students_without_enrollments(Students).
 
 admin_panel("6") :- 
     professors_without_subjects(Professors),
@@ -197,18 +200,25 @@ press_to_continue :-
 show_professors_without_subjects([]) :- writeln("Todos os professores possuem pelo menos uma disciplina!").
 show_professors_without_subjects(Professors) :-
     writeln("Professores sem disciplinas:"),
-    show_professors_without_subjects_aux(Professors),
+    show_users(Professors),
     press_to_continue,
     admin_options.
 
-show_professors_without_subjects_aux([]).
-show_professors_without_subjects_aux([P|T]) :- 
-    nth0(0, P, Registration),
-    nth0(1, P, Name),
+show_students_without_enrollments([]) :- writeln("Todos os alunos estão matriculados em pelo menos uma disciplina!").
+show_students_without_enrollments(Students) :-
+    writeln("Alunos sem matrículas:"),
+    show_users(Students),
+    press_to_continue,
+    admin_options.
+
+show_users([]).
+show_users([U|T]) :- 
+    nth0(0, U, Registration),
+    nth0(1, U, Name),
     string_concat(Registration, "\t - \t", S1),
     string_concat(S1, Name, R),
     writeln(R),
-    show_professors_without_subjects_aux(T).
+    show_users(T).
 
 quit :- 
     writeln("Até a próxima!"),

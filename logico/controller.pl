@@ -61,5 +61,5 @@ save_professor(Registration, Name, Password) :-
 save_student(Registration, Name, Password) :- 
   create_student(Registration, Name, Password).
 
-save_subject(Code, Name, Credits, Classes) :- 
-  create_subject(Code, Name, Credits, Classes).
+save_subject(Code, Name, Classes, MaxEnrollments) :- 
+  create_subject(Code, Name, Classes, MaxEnrollments).
