@@ -4,7 +4,7 @@ find_professor(Code, Professor) :-
   load_all_professors(Professors),
   find_professor_aux(Code, Professors, Professor).
 
-find_professor_aux(_, [end_of_file], false).
+find_professor_aux(_, [end_of_file], _).
 find_professor_aux(Code, [Professor|T], Result) :- 
   nth0(0, Professor, ProfessorCode),
   ProfessorCode =@= Code -> Result = Professor;

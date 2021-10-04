@@ -1,23 +1,20 @@
 :- include('./user.pl').
+:- include('./data_saver.pl').
 
-authenticate(Username, Password, Role) :-
+authenticate(Username, Role) :-
   find_user(Username, User),
-  nth0(1, User, UserPassword),
-  term_string(UserPassword, UserPassword),
-  term_string(Password, Password),
-  UserPassword =@= Password,
   nth0(2, User, Role).
 
 % consultas
 students_without_enrollment(Result) :-
   load_all_students(Students),
-  students_without_enrollment_aux(Students, Result).
+  users_without_enrollment_aux(Students, Result).
 
-students_without_enrollment_aux([], []).
-students_without_enrollment_aux([H|T], [X|Y]) :-
+users_without_enrollment_aux([], []).
+users_without_enrollment_aux([H|T], [X|Y]) :-
   nth0(0, H, Registration),
   nth0(2, H, Enrollments),
-  (Enrollments =@= '' -> X = H, students_without_enrollment_aux(T, Y) ; students_without_enrollment_aux(T, Y)).
+  (Enrollments =@= '' -> X = H, users_without_enrollment_aux(T, Y) ; users_without_enrollment_aux(T, Y)).
 
 professors_without_subjects(Result) :-
   load_all_professors(Professors),
@@ -25,7 +22,7 @@ professors_without_subjects(Result) :-
 
 professors_without_subjects_aux([], []).
 professors_without_subjects_aux([H|T], [X|Y]) :-
-  students_without_enrollment_aux([H|T], [X|Y]).
+  users_without_enrollment_aux([H|T], [X|Y]).
 
 available_professors(AvailableProfessors).
 
@@ -55,8 +52,11 @@ register_class(ProfessorRegistration, SubjectCode).
 register_test(ProfessorRegistration, SubjectCode).
 
 % criacoes
-save_professor(Registration, Name).
+save_professor(Registration, Name, Password) :- 
+  create_professor(Registration, Name, Password).
 
-save_student(Registration, Name).
+save_student(Registration, Name, Password) :- 
+  create_student(Registration, Name, Password).
 
-save_subject(Code, Name, Credits, Classes).
+save_subject(Code, Name, Credits, Classes) :- 
+  create_subject(Code, Name, Credits, Classes).

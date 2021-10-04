@@ -7,9 +7,8 @@ find_user(Nickname, User) :-
 find_user_aux(_, [], false).
 find_user_aux(Nickname, [User|T], Result) :- 
   nth0(0, User, Username),
-  term_string(Nickname, NicknameString),
-  term_string(Username, UsernameString),
-  UsernameString =@= NicknameString -> Result = User;
+  atom_string(Username, UsernameString),
+  UsernameString == Nickname -> Result = User;
   find_user_aux(Nickname, T, Result).
 
 get_user_subjects(Nickname, Subjects) :-

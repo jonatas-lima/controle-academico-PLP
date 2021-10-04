@@ -1,5 +1,8 @@
 :- include('./controller.pl').
 
+read_string(X) :- read_line_to_codes(user_input, I), atom_string(I, X).
+read_number(N) :- read_string(X), atom_number(X, N).
+
 main:- 
     write("Bem-Vindo(a)!\nPara acessar o controle, faça login:\n\n"),
     login,
@@ -7,22 +10,21 @@ main:-
 
 login:-
     write("Digite sua matrícula: "),
-    read(Registration),
-    write("Digite sua senha: "),
-    read(Password),
-    authenticate(Registration, Password, Role),
-    screen(Role) ;
+    read_string(Registration),
+    authenticate(Registration, Role),
+    writeln(Role),
+    screen(Role, Registration) ;
     writeln("Usuario ou senha invalido! Tente novamente..."),
     nl,
     login.
 
-screen("prof"):- 
+screen(prof, ID):- 
     professorScreen(ID).
 
-screen("admin"):- 
-    adminScreen().
+screen(admin):- 
+    adminScreen.
 
-screen("aluno"):- 
+screen(aluno, ID):- 
     studentScreen(ID).
 
 screen:-
@@ -39,8 +41,8 @@ studentOptions(ID):-
     write("3) Cancelar matrícula"),nl,
     write("4) Visualizar média geral"),nl,
     write("(S)air do sistema"),nl,
-    read(Inp),
-    studentPanel(Inp,ID).
+    read_string(Inp),
+    studentPanel(Inp, ID).
 
 studentPanel(1,ID).
     %UI visualizar disciplinas
@@ -62,7 +64,7 @@ studentPanel("s",ID).
 
 studentPanel(_,ID):-
     write("Opção invalida, tente novamente"),
-    read(Inp),
+    read_string(Inp),
     studentPanel(Inp,ID).
 
 professorScreen(ID):-
@@ -76,7 +78,7 @@ professorOptions(ID):-
     write("3) Cadastrar prova"),nl,
     write("4) Situação da classe"),nl,
     write("(S)air do sistema"),nl,
-    read(Inp),
+    read_string(Inp),
     professorPanel(Inp,ID).
 
 professorPanel(1,ID).
@@ -99,7 +101,7 @@ professorPanel("s",ID).
 
 professorPanel(_,ID):-
     write("Opção invalida, tente novamente"),
-    read(Inp),
+    read_string(Inp),
     professorPanel(Inp,ID).
 
 adminScreen():-
@@ -118,16 +120,28 @@ adminOptions():-
     write("8) Disciplina com a menor média"),nl,
     write("9) Consultar aluno com a maior média"),nl,
     write("(S)air do sistema"),nl,
-    read(Inp),
+    read_string(Inp),
     adminPanel(Inp).
 
-adminPanel(1).
+adminPanel(1) :- 
+    write("Digite a matrícula do professor: "),
+    read_string(Registration),
+    write("Digite o nome do professor: "),
+    read_string(Name),
+    create_professor(Registration, Name, Password).
     %UI opção 1
 
-adminPanel(2).
+adminPanel(2) :- 
+    write("Digite a matrícula do aluno: "),
+    read_string(Registration),
+    write("Digite o nome do aluno: "),
+    read_string(Name),
+    write("Digite a senha do aluno: "),
+    read_string(Password),
+    create_student(Registration, Name, Password).
     %UI opção 2
 
-adminPanel(3).
+adminPanel(3) :- 
     %UI opção 3
 
 adminPanel(4).
@@ -158,3 +172,5 @@ adminPanel(_):-
     write("Opção invalida, tente novamente "),
     read(Inp),
     adminPanel(Inp).
+
+press_to_continue.
