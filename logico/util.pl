@@ -35,3 +35,9 @@ map_to_number([], []).
 map_to_number([H|T], [X|Y]) :-
   atom_number(H, X),
   map_to_number(T, Y).
+
+first(List, Element) :-
+  nth0(0, List, Element).
+
+second(List, Element) :-
+  nth0(1, List, Element).
