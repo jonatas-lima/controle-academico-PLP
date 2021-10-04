@@ -1,4 +1,8 @@
 :- include('./user.pl').
+:- include('./util.pl').
+:- include('./subject.pl').
+:- include('./student.pl').
+:- include('./professor.pl').
 :- include('./data_saver.pl').
 
 authenticate(Username, Password, Role) :-
@@ -10,23 +14,20 @@ authenticate(Username, Password, Role) :-
 % consultas
 students_without_enrollment(Result) :-
   load_all_students(Students),
-  users_without_enrollment_aux(Students, Result).
-
-users_without_enrollment_aux([], []).
-users_without_enrollment_aux([H|T], [X|Y]) :-
-  nth0(0, H, Registration),
-  nth0(2, H, Enrollments),
-  (Enrollments =@= '' -> X = H, users_without_enrollment_aux(T, Y) ; users_without_enrollment_aux(T, Y)).
+  include(without_enrollment, Students, Result).
 
 professors_without_subjects(Result) :-
   load_all_professors(Professors),
-  professors_without_subjects_aux(Professors, Result).
+  include(without_enrollment, Professors, Result).
 
-professors_without_subjects_aux([], []).
-professors_without_subjects_aux([H|T], [X|Y]) :-
-  users_without_enrollment_aux([H|T], [X|Y]).
+available_professors(AvailableProfessors) :- 
+  load_all_professors(Professors),
+  available_professors_aux(Professors, AvailableProfessors).
 
-available_professors(AvailableProfessors).
+available_professors_aux(Professors, Result) :- 
+  professors_without_subjects(ProfWithoutSubjects),
+  include(is_available, Professors, AvailableProfessors),
+  union(ProfWithoutSubjects, AvailableProfessors, Result).
 
 student_with_highest_average(Student).
 
@@ -62,7 +63,3 @@ save_student(Registration, Name, Password) :-
 
 save_subject(Code, Name, Credits, Classes) :- 
   create_subject(Code, Name, Credits, Classes).
-
-empty("").
-empty('').
-empty([]).

@@ -1,14 +1,9 @@
 :- include('./data_loader.pl').
+:- include('./util.pl').
 
 find_subject(Code, Subject) :-
   load_all_subjects(Subjects),
-  find_subject_aux(Code, Subjects, Subject).
-
-find_subject_aux(_, [end_of_file], false).
-find_subject_aux(Code, [Subject|T], Result) :- 
-  nth0(0, Subject, SubjectCode),
-  SubjectCode =@= Code -> Result = Subject;
-  find_subject_aux(Code, T, Result).
+  find(Subjects, Code, Subject).
 
 find_subject_enrollments(Code, SubjectEnrollments) :-
   load_all_enrollments(Enrollments),
@@ -18,7 +13,8 @@ find_subject_enrollments_aux(_, [end_of_file], _).
 find_subject_enrollments_aux(Code, [SubjectEnrollment|T], Result) :-
   nth0(0, SubjectEnrollment, SubjectCode),
   nth0(1, SubjectEnrollment, SubjectEnrollments),
-  SubjectCode =@= Code -> split_string(SubjectEnrollments, ';', '', Result);
+  term_string(SubjectCode, CodeString),
+  CodeString =@= Code -> split_string(SubjectEnrollments, ";", "", Result);
   find_subject_enrollments_aux(Code, T, Result).
 
 get_subject_average(Code, Result) :-
