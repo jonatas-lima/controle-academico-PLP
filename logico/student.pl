@@ -1,21 +1,12 @@
 :-include('data_loader.pl').
 
-save_student(Registration, Name, Subjects) :- 
-  open('./data/alunos.csv', append, Stream),
-  format_student(Registration, Name, Subjects, Result),
-  writeln(Stream, Result),
-  close(Stream).
-
-format_student(Registration, Name, Subjects, Result) :-
-  string_concat(Registration, ';', S1),
-  string_concat(S1, Name, S2),
-  string_concat(S2, ';', S3),
-  string_concat(S3, Subjects, S4),
-  string_concat(S4, '.\n', Result).
-
 show_student().
 
 show_students().
+
+have_max_enrollments(Registration) :-
+  num_enrolled_subjects(Registration, Num),
+  Num >= 3.
 
 num_enrolled_subjects(Registration, Num) :-
   find_student(Registration, Result).
