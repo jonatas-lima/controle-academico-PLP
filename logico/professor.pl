@@ -1,4 +1,5 @@
 :- include('./data_loader.pl').
+:- include('./util.pl').
 
 find_professor(Registration, Professor) :-
   load_all_professors(Professors),
@@ -16,3 +17,11 @@ get_professor_subjects(Registration, Subjects) :-
   nth0(2, Professor, ProfessorSubjects).
   term_string(ProfessorSubjects, SubjectsString),
   split_string(SubjectsString, ";", "", Subjects).
+
+is_available(Professor) :-
+  nth0(2, Professor, Subjects),
+  term_string(Subjects, SubjectsString),
+  split_string(SubjectsString, ";", "", SubjectsList),
+  length(SubjectsList, L),
+  writeln(L),
+  L < 3.
