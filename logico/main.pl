@@ -14,7 +14,7 @@ login:-
     write("Digite sua senha: "),
     read_string(Password),
     authenticate(Registration, Password, Role),
-    writeln(Role),
+    tty_clear,
     screen(Role, Registration) ;
     writeln("Usuario ou senha invalido! Tente novamente..."),
     nl,
@@ -27,47 +27,44 @@ screen(admin, _):-
     admin_screen.
 
 screen(aluno, ID):- 
-    studentScreen(ID).
+    students_screen(ID).
 
 screen:-
     write("Role invalido").
 
-studentScreen(ID):-
-    %ler arquivos e pegar nome do aluno e printar
-    studentOptions(ID).
+students_screen(ID):-
+    student_options(ID).
 
-studentOptions(ID):-
+student_options(ID):-
     nl,nl,
-    write("1) Visualizar disciplinas"),nl,
-    write("2) Realizar matrícula"),nl,
-    write("3) Cancelar matrícula"),nl,
-    write("4) Visualizar média geral"),nl,
-    write("(S)air do sistema"),nl,
+    writeln("1) Visualizar disciplinas"),
+    writeln("2) Realizar matrícula"),
+    writeln("3) Cancelar matrícula"),
+    writeln("4) Visualizar média geral"),
+    writeln("(S)air do sistema"),
     read_string(Inp),
     student_panel(Inp, ID).
 
-student_panel(1,ID).
-    %UI visualizar disciplinas
+student_panel("1", ID).
+    student_subjects(ID, Subjects),
+    show_student_subjects(ID, Subjects).
 
-student_panel(2,ID).
+student_panel("2", ID).
     %UI Realizar matrícula
 
-student_panel(3,ID).
+student_panel("3", ID).
     %UI Cancelar matrícula
 
-student_panel(4,ID).
+student_panel("4", ID).
     %UI visualizar media geral
 
-student_panel("S",ID).
-    %sair do sistema
+student_panel("S", ID) :- quit.
+student_panel("s", ID) :- quit.
 
-student_panel("s",ID).
-    %sair do sistema
-
-student_panel(_,ID):-
+student_panel(_, ID):-
     write("Opção invalida, tente novamente"),
-    read_string(Inp),
-    student_panel(Inp,ID).
+    press_to_continue,
+    student_panel(Inp, ID).
 
 professor_screen(ID):-
     %ler arquivos e pegar nome do professor e printar
@@ -95,14 +92,14 @@ professor_panel(3, ID).
 professor_panel(4, ID).
     %UI Situação da classe
 
-professor_panel("S", ID) :- quit.
+professor_panel("S", _) :- quit.
 
-professor_panel("s", ID) :- quit.
+professor_panel("s", _) :- quit.
 
-professor_panel(_,ID):-
+professor_panel(_, ID):-
     write("Opção invalida, tente novamente"),
     read_string(Inp),
-    professor_panel(Inp,ID).
+    professor_panel(Inp, ID).
 
 admin_screen:-
     write("Bem vindo, Adm"),
@@ -164,7 +161,6 @@ admin_panel("3").
 admin_panel("4").
 
 admin_panel("5").
-    writeln("entrei"),
     students_without_enrollment(Students),
     nl,
     show_students_without_enrollments(Students).
@@ -189,7 +185,7 @@ admin_panel("s") :- quit.
 
 admin_panel(_):-
     write("Opção invalida, tente novamente "),
-    read(Inp),
+    press_to_continue,
     admin_panel(Inp).
 
 press_to_continue :- 
@@ -200,25 +196,33 @@ press_to_continue :-
 show_professors_without_subjects([]) :- writeln("Todos os professores possuem pelo menos uma disciplina!").
 show_professors_without_subjects(Professors) :-
     writeln("Professores sem disciplinas:"),
-    show_users(Professors),
+    show_entities(Professors),
     press_to_continue,
     admin_options.
 
 show_students_without_enrollments([]) :- writeln("Todos os alunos estão matriculados em pelo menos uma disciplina!").
 show_students_without_enrollments(Students) :-
     writeln("Alunos sem matrículas:"),
-    show_users(Students),
+    show_entities(Students),
     press_to_continue,
     admin_options.
 
-show_users([]).
-show_users([U|T]) :- 
-    nth0(0, U, Registration),
-    nth0(1, U, Name),
+show_entities([]).
+show_entities([E|T]) :- 
+    nth0(0, E, Registration),
+    nth0(1, E, Name),
     string_concat(Registration, "\t - \t", S1),
     string_concat(S1, Name, R),
     writeln(R),
-    show_users(T).
+    show_entities(T).
+
+show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhuma disciplina!").
+show_student_subjects(ID, Subjects) :-
+    writeln("Disciplinas matriculadas:"),
+    writeln("Código \t - \t Nome"),
+    show_entities(Subjects),
+    press_to_continue,
+    student_options(ID).
 
 quit :- 
     writeln("Até a próxima!"),

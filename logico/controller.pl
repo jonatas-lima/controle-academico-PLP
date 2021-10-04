@@ -31,6 +31,19 @@ available_professors_aux(Professors, Result) :-
 
 student_with_highest_average(Student).
 
+student_subjects(Registration, Result) :-
+  get_student_subjects(Registration, SubjectCodes),
+  find_subjects(SubjectCodes, Result).
+
+find_subjects([], []).
+find_subjects([C|T], [X|Y]) :-
+  find_subject(C, X),
+  find_subjects(T, Y).
+
+professor_subjects(Registration, Result) :-
+  get_professor_subjects(Registration, SubjectCodes),
+  find_subjects(SubjectCodes, Result).
+
 available_subjects_for_association(AvailableSubjects).
 
 subject_with_highest_average(Subject).
