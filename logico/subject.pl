@@ -18,17 +18,24 @@ find_subject_enrollments_aux(Code, [SubjectEnrollment|T], Result) :-
   find_subject_enrollments_aux(Code, T, Result).
 
 get_subject_average(Code, Result) :-
-  find_subject_enrollments(Code, Enrollments),
-  writeln(Enrollments).
+  get_subject_grades(Code, Grades),
+  get_subject_average_aux(Grades, Result).
+  % writeln(Grades).
+
+get_subject_average_aux([], _).
+get_subject_average_aux([G|T], Result) :-
+  map_to_number(G, Grades),
+  sum_list(Grades, Sum),
+  get_subject_average_aux(T, Sum),
+  Result is G + Sum.
 
 get_subject_grades(Code, Result) :-
   find_subject_enrollments(Code, Enrollments),
   get_subject_grades_aux(Enrollments, Result).
 
 get_subject_grades_aux([], []).
-get_subject_grades([Enrollment|T], [X|Y]) :-
-  writeln(Enrollment),
+get_subject_grades_aux([Enrollment|T], [X|Y]) :-
   split_string(Enrollment, "|", "", EnrollmentData),
   nth0(1, EnrollmentData, GradesString),
-  (GradesString =@= "[]" -> X = [] ; split_string(GradesString, "-", "", Grades), X = Grades),
-  get_subject_grades(T, Y).
+  (empty(GradesString) -> X = [] ; split_string(GradesString, "-", "", Grades), X = Grades),
+  get_subject_grades_aux(T, Y).

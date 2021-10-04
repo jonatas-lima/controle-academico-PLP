@@ -21,5 +21,4 @@ is_available(Professor) :-
   term_string(Subjects, SubjectsString),
   split_string(SubjectsString, ";", "", SubjectsList),
   length(SubjectsList, L),
-  writeln(L),
   L < 3.
