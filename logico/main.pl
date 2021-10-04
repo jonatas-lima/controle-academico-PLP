@@ -11,7 +11,9 @@ main:-
 login:-
     write("Digite sua matrícula: "),
     read_string(Registration),
-    authenticate(Registration, Role),
+    write("Digite sua senha: "),
+    read_string(Password),
+    authenticate(Registration, Password, Role),
     writeln(Role),
     screen(Role, Registration) ;
     writeln("Usuario ou senha invalido! Tente novamente..."),
@@ -21,7 +23,7 @@ login:-
 screen(prof, ID):- 
     professorScreen(ID).
 
-screen(admin):- 
+screen(admin, _):- 
     adminScreen.
 
 screen(aluno, ID):- 
@@ -106,9 +108,9 @@ professorPanel(_,ID):-
 
 adminScreen():-
     write("Bem vindo, Adm"),
-    adminOptions().
+    admin_options.
 
-adminOptions():-
+admin_options:-
     nl,nl,
     write("1) Cadastrar professor"),nl,
     write("2) Cadastrar aluno"),nl,
@@ -121,56 +123,71 @@ adminOptions():-
     write("9) Consultar aluno com a maior média"),nl,
     write("(S)air do sistema"),nl,
     read_string(Inp),
-    adminPanel(Inp).
+    admin_panel(Inp).
 
-adminPanel(1) :- 
+admin_panel("1") :- 
     write("Digite a matrícula do professor: "),
     read_string(Registration),
     write("Digite o nome do professor: "),
     read_string(Name),
-    create_professor(Registration, Name, Password).
+    write("Digite a senha do professor: "),
+    read_string(Password),
+    (find_user(Registration, R), R -> writeln("Professor ja existe!");
+    save_professor(Registration, Name, Password), writeln("Professor cadastrado!")),
+    admin_options.
     %UI opção 1
 
-adminPanel(2) :- 
+admin_panel("2") :- 
     write("Digite a matrícula do aluno: "),
     read_string(Registration),
     write("Digite o nome do aluno: "),
     read_string(Name),
     write("Digite a senha do aluno: "),
     read_string(Password),
-    create_student(Registration, Name, Password).
-    %UI opção 2
+    (find_user(Registration, R), R -> writeln("Aluno ja existe!");
+    save_student(Registration, Name, Password), writeln("Aluno cadastrado!")),
+    admin_options.
 
-adminPanel(3) :- 
-    %UI opção 3
+admin_panel("3").
+    write("Digite o código da disciplina: "),
+    read_string(Code),
+    write("Digite o nome da disciplina: "),
+    read_string(Name),
+    write("Digite o número de aulas da disciplina: "),
+    read_string(Classes),
+    write("Digite o número de vagas da disciplina: "),
+    read_string(MaxEnrollments),
+    (find_user(Registration, _) -> writeln("Professor ja existe!");
+    save_enrollment(Registration, Name, "123"), writeln("Professor cadastrado!")),
+    admin_options.
 
-adminPanel(4).
+admin_panel("4").
     %UI opção 4
 
-adminPanel(5).
+admin_panel("5").
     %UI opção 5
 
-adminPanel(6).
+admin_panel("6").
     %UI opção 6
 
-adminPanel(7).
+admin_panel("7").
     %UI opção 7
 
-adminPanel(8). 
+admin_panel("8"). 
     %UI opção 8
 
-adminPanel(9).
+admin_panel("9").
     %UI opção 9
 
-adminPanel('S'). 
+admin_panel("S"). 
     %sair do sistema
 
-adminPanel('s'). 
+admin_panel("s"). 
     %sair do sistema
 
-adminPanel(_):-
+admin_panel(_):-
     write("Opção invalida, tente novamente "),
     read(Inp),
-    adminPanel(Inp).
+    admin_panel(Inp).
 
 press_to_continue.

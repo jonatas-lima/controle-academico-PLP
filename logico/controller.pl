@@ -1,9 +1,11 @@
 :- include('./user.pl').
 :- include('./data_saver.pl').
 
-authenticate(Username, Role) :-
+authenticate(Username, Password, Role) :-
   find_user(Username, User),
-  nth0(2, User, Role).
+  nth0(1, User, Pass),
+  atom_string(Pass, PassString),
+  PassString =@= Password -> nth0(2, User, Role) ; false.
 
 % consultas
 students_without_enrollment(Result) :-
@@ -60,3 +62,7 @@ save_student(Registration, Name, Password) :-
 
 save_subject(Code, Name, Credits, Classes) :- 
   create_subject(Code, Name, Credits, Classes).
+
+empty("").
+empty('').
+empty([]).

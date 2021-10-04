@@ -4,7 +4,7 @@ find_subject(Code, Subject) :-
   load_all_subjects(Subjects),
   find_subject_aux(Code, Subjects, Subject).
 
-find_subject_aux(_, [end_of_file], _).
+find_subject_aux(_, [end_of_file], false).
 find_subject_aux(Code, [Subject|T], Result) :- 
   nth0(0, Subject, SubjectCode),
   SubjectCode =@= Code -> Result = Subject;
