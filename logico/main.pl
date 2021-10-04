@@ -14,7 +14,7 @@ login:-
     write("Digite sua senha: "),
     read_string(Password),
     authenticate(Registration, Password, Role),
-    writeln(Role),
+    tty_clear,
     screen(Role, Registration) ;
     writeln("Usuario ou senha invalido! Tente novamente..."),
     nl,
@@ -27,53 +27,50 @@ screen(admin, _):-
     admin_screen.
 
 screen(aluno, ID):- 
-    studentScreen(ID).
+    students_screen(ID).
 
 screen:-
     write("Role invalido").
 
-studentScreen(ID):-
-    %ler arquivos e pegar nome do aluno e printar
-    studentOptions(ID).
+students_screen(ID) :-
+    student_options(ID).
 
-studentOptions(ID):-
+student_options(ID) :-
     nl,nl,
-    write("1) Visualizar disciplinas"),nl,
-    write("2) Realizar matrícula"),nl,
-    write("3) Cancelar matrícula"),nl,
-    write("4) Visualizar média geral"),nl,
-    write("(S)air do sistema"),nl,
+    writeln("1) Visualizar disciplinas"),
+    writeln("2) Realizar matrícula"),
+    writeln("3) Cancelar matrícula"),
+    writeln("4) Visualizar média geral"),
+    writeln("(S)air do sistema"),
     read_string(Inp),
     student_panel(Inp, ID).
 
-student_panel(1,ID).
-    %UI visualizar disciplinas
+student_panel("1", ID) :- 
+    student_subjects(ID, Subjects),
+    show_student_subjects(ID, Subjects).
 
-student_panel(2,ID).
+student_panel("2", ID).
     %UI Realizar matrícula
 
-student_panel(3,ID).
+student_panel("3", ID).
     %UI Cancelar matrícula
 
-student_panel(4,ID).
+student_panel("4", ID).
     %UI visualizar media geral
 
-student_panel("S",ID).
-    %sair do sistema
+student_panel("S", ID) :- quit.
+student_panel("s", ID) :- quit.
 
-student_panel("s",ID).
-    %sair do sistema
-
-student_panel(_,ID):-
+student_panel(_, ID) :-
     write("Opção invalida, tente novamente"),
-    read_string(Inp),
-    student_panel(Inp,ID).
+    press_to_continue,
+    student_panel(Inp, ID).
 
-professor_screen(ID):-
+professor_screen(ID) :-
     %ler arquivos e pegar nome do professor e printar
     professor_options(ID).
     
-professor_options(ID):-
+professor_options(ID) :-
     nl,nl,
     write("1) Visualizar disciplinas"),nl,
     write("2) Registrar aula"),nl,
@@ -95,14 +92,14 @@ professor_panel(3, ID).
 professor_panel(4, ID).
     %UI Situação da classe
 
-professor_panel("S", ID) :- quit.
+professor_panel("S", _) :- quit.
 
-professor_panel("s", ID) :- quit.
+professor_panel("s", _) :- quit.
 
-professor_panel(_,ID):-
+professor_panel(_, ID):-
     write("Opção invalida, tente novamente"),
     read_string(Inp),
-    professor_panel(Inp,ID).
+    professor_panel(Inp, ID).
 
 admin_screen:-
     write("Bem vindo, Adm"),
@@ -110,16 +107,16 @@ admin_screen:-
 
 admin_options:-
     nl,nl,
-    write("1) Cadastrar professor"),nl,
-    write("2) Cadastrar aluno"),nl,
-    write("3) Cadastrar disciplina"),nl,
-    write("4) Associar professor à disciplina"),nl,
-    write("5) Listar alunos sem matrículas"),nl,
-    write("6) Listar professores sem disciplinas"),nl,
-    write("7) Disciplina com a maior média"),nl,
-    write("8) Disciplina com a menor média"),nl,
-    write("9) Consultar aluno com a maior média"),nl,
-    write("(S)air do sistema"),nl,
+    writeln("1) Cadastrar professor"),
+    writeln("2) Cadastrar aluno"),
+    writeln("3) Cadastrar disciplina"),
+    writeln("4) Associar professor à disciplina"),
+    writeln("5) Listar alunos sem matrículas"),
+    writeln("6) Listar professores sem disciplinas"),
+    writeln("7) Disciplina com a maior média"),
+    writeln("8) Disciplina com a menor média"),
+    writeln("9) Consultar aluno com a maior média"),
+    writeln("(S)air do sistema"),
     read_string(Inp),
     admin_panel(Inp).
 
@@ -132,8 +129,8 @@ admin_panel("1") :-
     read_string(Password),
     (find_user(Registration, R), R -> writeln("Professor ja existe!");
     save_professor(Registration, Name, Password), writeln("Professor cadastrado!")),
+    press_to_continue,
     admin_options.
-    %UI opção 1
 
 admin_panel("2") :- 
     write("Digite a matrícula do aluno: "),
@@ -144,9 +141,10 @@ admin_panel("2") :-
     read_string(Password),
     (find_user(Registration, R), R -> writeln("Aluno ja existe!");
     save_student(Registration, Name, Password), writeln("Aluno cadastrado!")),
+    press_to_continue,
     admin_options.
 
-admin_panel("3").
+admin_panel("3") :-
     write("Digite o código da disciplina: "),
     read_string(Code),
     write("Digite o nome da disciplina: "),
@@ -155,16 +153,22 @@ admin_panel("3").
     read_string(Classes),
     write("Digite o número de vagas da disciplina: "),
     read_string(MaxEnrollments),
-    (find_user(Registration, _) -> writeln("Professor ja existe!");
-    save_enrollment(Registration, Name, "123"), writeln("Professor cadastrado!")),
+    (find_user(Code, _) -> writeln("Disciplina ja existe!");
+    save_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrado!")),
     press_to_continue,
     admin_options.
 
-admin_panel("4").
-    %UI opção 4
+admin_panel("4") :- 
+    show_available_professors,
+    write("Matrícula do professor: "),
+    read_string(Registration),
+    press_to_continue,
+    admin_options.
 
-admin_panel("5").
-    %UI opção 5
+admin_panel("5") :-
+    students_without_enrollment(Students),
+    nl,
+    show_students_without_enrollments(Students).
 
 admin_panel("6") :- 
     professors_without_subjects(Professors),
@@ -186,7 +190,7 @@ admin_panel("s") :- quit.
 
 admin_panel(_):-
     write("Opção invalida, tente novamente "),
-    read(Inp),
+    press_to_continue,
     admin_panel(Inp).
 
 press_to_continue :- 
@@ -197,18 +201,46 @@ press_to_continue :-
 show_professors_without_subjects([]) :- writeln("Todos os professores possuem pelo menos uma disciplina!").
 show_professors_without_subjects(Professors) :-
     writeln("Professores sem disciplinas:"),
-    show_professors_without_subjects_aux(Professors),
+    show_entities(Professors),
     press_to_continue,
     admin_options.
 
-show_professors_without_subjects_aux([]).
-show_professors_without_subjects_aux([P|T]) :- 
-    nth0(0, P, Registration),
-    nth0(1, P, Name),
+show_students_without_enrollments([]) :- writeln("Todos os alunos estão matriculados em pelo menos uma disciplina!").
+show_students_without_enrollments(Students) :-
+    writeln("Alunos sem matrículas:"),
+    show_entities(Students),
+    press_to_continue,
+    admin_options.
+
+show_entities([]).
+show_entities([E|T]) :- 
+    nth0(0, E, Registration),
+    nth0(1, E, Name),
     string_concat(Registration, "\t - \t", S1),
     string_concat(S1, Name, R),
     writeln(R),
-    show_professors_without_subjects_aux(T).
+    show_entities(T).
+
+show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhuma disciplina!").
+show_student_subjects(ID, Subjects) :-
+    writeln("Disciplinas matriculadas:"),
+    writeln("Código \t - \t Nome"),
+    show_subjects(Subjects),
+    press_to_continue,
+    student_options(ID).
+
+show_available_professors :-
+    available_professors(Professors),
+   (empty(Professors) -> writeln("Não há professores disponiveis!") ; show_entities(Professors)).
+
+show_subjects([]).
+show_subjects([S|T]) :-
+    nth0(0, S, Code),
+    nth0(2, S, Name),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, R),
+    writeln(R),
+    show_subjects(T).
 
 quit :- 
     writeln("Até a próxima!"),

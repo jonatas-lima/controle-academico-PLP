@@ -14,14 +14,11 @@ find_professor_aux(Registration, [Professor|T], Result) :-
 
 get_professor_subjects(Registration, Subjects) :-
   find_professor(Registration, Professor),
-  nth0(2, Professor, ProfessorSubjects).
-  term_string(ProfessorSubjects, SubjectsString),
-  split_string(SubjectsString, ";", "", Subjects).
+  get_user_subjects(Professor, Subjects).
 
 is_available(Professor) :-
   nth0(2, Professor, Subjects),
   term_string(Subjects, SubjectsString),
   split_string(SubjectsString, ";", "", SubjectsList),
   length(SubjectsList, L),
-  writeln(L),
   L < 3.
