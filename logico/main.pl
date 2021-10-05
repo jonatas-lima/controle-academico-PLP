@@ -93,16 +93,16 @@ professor_options(ID) :-
     read_string(Inp),
     professor_panel(Inp, ID).
 
-professor_panel(1, ID).
+professor_panel("1", ID).
     %UI visualizar disciplinas
 
-professor_panel(2, ID).
+professor_panel("2", ID).
     %UI Registrar aula
 
-professor_panel(3, ID).
+professor_panel("3", ID).
     %UI Cadastrar prova
 
-professor_panel(4, ID).
+professor_panel("4", ID).
     %UI Situação da classe
 
 professor_panel("S", _) :- quit.
@@ -111,7 +111,7 @@ professor_panel("s", _) :- quit.
 
 professor_panel(_, ID):-
     write("Opção invalida, tente novamente"),
-    read_string(Inp),
+    press_to_continue,
     professor_panel(Inp, ID).
 
 admin_screen:-
@@ -188,8 +188,10 @@ admin_panel("6") :-
     nl,
     show_professors_without_subjects(Professors).
 
-admin_panel("7").
-    %UI opção 7
+admin_panel("7") :-
+    subject_with_highest_average(Subject, Average),
+    nl,
+    show_subject_with_highest_average(Subject, Average).
 
 admin_panel("8"). 
     %UI opção 8
@@ -259,6 +261,17 @@ show_student_subjects(ID, Subjects) :-
 show_available_professors :-
     available_professors(Professors),
    (empty(Professors) -> writeln("Não há professores disponiveis!") ; show_entities(Professors)).
+
+show_subject_with_highest_average(Subject, Average) :-
+    nth0(0, Subject, Code),
+    nth0(2, Subject, Name),
+    writeln("Disciplina com maior média:"),
+    writeln("Código \t - \t Nome \t - \t Média Geral"),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, R),
+    writeln(R),
+    press_to_continue,
+    admin_options.
 
 show_subjects([]).
 show_subjects([S|T]) :-

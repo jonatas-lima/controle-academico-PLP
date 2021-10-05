@@ -3,6 +3,8 @@ empty("").
 empty('').
 empty('""').
 empty("''").
+empty([""]).
+empty(['']).
 
 find([], _, false).
 find([end_of_file], _, false).
