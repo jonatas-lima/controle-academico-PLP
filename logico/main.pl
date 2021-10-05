@@ -93,16 +93,16 @@ professor_options(ID) :-
     read_string(Inp),
     professor_panel(Inp, ID).
 
-professor_panel(1, ID).
+professor_panel("1", ID).
     %UI visualizar disciplinas
 
-professor_panel(2, ID).
+professor_panel("2", ID).
     %UI Registrar aula
 
-professor_panel(3, ID).
+professor_panel("3", ID).
     %UI Cadastrar prova
 
-professor_panel(4, ID).
+professor_panel("4", ID).
     %UI Situação da classe
 
 professor_panel("S", _) :- quit.
@@ -111,7 +111,7 @@ professor_panel("s", _) :- quit.
 
 professor_panel(_, ID):-
     write("Opção invalida, tente novamente"),
-    read_string(Inp),
+    press_to_continue,
     professor_panel(Inp, ID).
 
 admin_screen:-
@@ -188,28 +188,21 @@ admin_panel("6") :-
     nl,
     show_professors_without_subjects(Professors).
 
-admin_panel("7").
-    %UI opção 7
+admin_panel("7") :-
+    subject_with_highest_average(Subject, Average),
+    nl,
+    writeln("Disciplina com maior média:"),
+    show_subject_with_average(Subject, Average).
 
-admin_panel("8"). 
-    %UI opção 8
+admin_panel("8") :-
+    subject_with_lowest_average(Subject, Average),
+    nl,
+    writeln("Disciplina com menor média"),
+    show_subject_with_average(Subject, Average).
 
 admin_panel("9"):-
-    student_with_highest_average(Student),
-    get_student_registration(Student, Registration),
-    term_string(Registration, RegistrationString),
-    get_student_name(RegistrationString, Name),
-    get_student_average(RegistrationString, Average),
-    nl,
-    write("O aluno com a maior média é ["),
-    write(RegistrationString),
-    write(" - "),
-    write(Name),
-    write("] com uma média de: "),
-    format("~2f!\n", [Average]),
-    nl,
-    press_to_continue,
-    admin_options.
+    student_with_highest_average(Student, Average),
+    show_student_with_highest_average(Student, Average).
 
 admin_panel("S") :- quit.
 
@@ -260,6 +253,21 @@ show_available_professors :-
     available_professors(Professors),
    (empty(Professors) -> writeln("Não há professores disponiveis!") ; show_entities(Professors)).
 
+show_subject_with_average(Subject, Average) :-
+    nth0(0, Subject, Code),
+    nth0(2, Subject, Name),
+    writeln("Código \t - \t Nome \t - \t Média Geral"),
+    show_subject_with_grade(Code, Name, Average),
+    press_to_continue,
+    admin_options.
+
+show_subject_with_grade(Code, Name, Average) :-
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    write(S3),
+    format("~2f\n", [Average]).
+
 show_subjects([]).
 show_subjects([S|T]) :-
     nth0(0, S, Code),
@@ -268,6 +276,20 @@ show_subjects([S|T]) :-
     string_concat(S1, Name, R),
     writeln(R),
     show_subjects(T).
+
+show_student_with_highest_average(Student, Average) :-
+    get_student_registration(Student, Registration),
+    nth0(1, Student, Name),
+    nl,
+    write("O aluno com a maior média é ["),
+    write(Registration),
+    write(" - "),
+    write(Name),
+    write("] com uma média de: "),
+    format("~2f!\n", [Average]),
+    nl,
+    press_to_continue,
+    admin_options.
 
 quit :- 
     writeln("Até a próxima!"),

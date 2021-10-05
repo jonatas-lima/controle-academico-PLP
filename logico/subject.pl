@@ -10,21 +10,19 @@ find_subject_enrollments(Code, SubjectEnrollments) :-
   find_subject_enrollments_aux(Code, Enrollments, SubjectEnrollments).
 
 find_subject_enrollments_aux(_, [end_of_file], _).
-find_subject_enrollments_aux(Code, [SubjectEnrollment|T], Result) :-
-  nth0(0, SubjectEnrollment, SubjectCode),
-  nth0(1, SubjectEnrollment, SubjectEnrollments),
+find_subject_enrollments_aux(Code, [Enrollment|T], Result) :-
+  nth0(0, Enrollment, SubjectCode),
+  nth0(1, Enrollment, SubjectEnrollments),
   term_string(SubjectCode, CodeString),
-  CodeString =@= Code -> split_string(SubjectEnrollments, ";", "", Result);
+  (CodeString =@= Code -> parse_enrollments(SubjectEnrollments, Result));
   find_subject_enrollments_aux(Code, T, Result).
 
 get_subject_average(Code, Result) :-
   get_subject_grades(Code, Grades),
-  get_subject_grades_sum_list(Grades, S),
+  get_subject_grades_sum_list(Grades, Sum),
   sum_list(Sum, Total),
-  writeln(Total),
-  length(Sum, L),
-  writeln(L),
-  Result is Total / L.
+  get_total_tests(Code, Tests),
+  (Tests =:= 0 -> Result is 0 ; Result is Total / Tests).
 
 get_total_tests(Code, Total) :-
   get_enrolled_students(Code, StudentCodes),
@@ -65,8 +63,7 @@ find_student_grades(Registration, [E|T], Result) :-
 
 get_subject_grades_sum_list([], []).
 get_subject_grades_sum_list([G|T], [X|Y]) :-
-  map_to_number(G, Grades),
-  sum_list(Grades, SumList),
+  sum_list(G, SumList),
   X = SumList,
   get_subject_grades_sum_list(T, Y).
 
@@ -86,3 +83,7 @@ parse_grades(Grades, []) :-
 parse_grades(Grades, Result) :-
   split_string(Grades, "-", "", G),
   map_to_number(G, Result).
+
+parse_enrollments(Enrollments, []) :- empty(Enrollments).
+parse_enrollments(Enrollments, Result) :-
+  split_string(Enrollments, ";", "", Result).
