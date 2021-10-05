@@ -49,9 +49,12 @@ get_enrolled_students_aux([E|T], [X|Y]) :-
   X = Registration,
   get_enrolled_students_aux(T, Y).
 
-get_student_average(Registration, SubjectCode, Result) :-
+get_student_average_subject(Registration, SubjectCode, Result) :-
   find_subject_enrollments(SubjectCode, Enrollments),
-  find_student_grades(Registration, Enrollments, Result).
+  find_student_grades(Registration, Enrollments, Grades),
+  length(Grades, Length),
+  sum_list(Grades, Sum),
+  (Length =:= 0 -> Result = 0 ; Result is Sum / Length). 
 
 find_student_grades(_, [], false).
 find_student_grades(Registration, [E|T], Result) :-
@@ -78,6 +81,8 @@ get_subject_grades_aux([Enrollment|T], [X|Y]) :-
   (empty(GradesString) -> X = [] ; parse_grades(GradesString, Grades), X = Grades),
   get_subject_grades_aux(T, Y).
 
+parse_grades(Grades, []) :-
+  empty(Grades).
 parse_grades(Grades, Result) :-
   split_string(Grades, "-", "", G),
   map_to_number(G, Result).
