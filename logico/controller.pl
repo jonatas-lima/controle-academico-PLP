@@ -29,19 +29,17 @@ available_professors_aux(Professors, Result) :-
   include(is_available, Professors, AvailableProfessors),
   union(ProfWithoutSubjects, AvailableProfessors, Result).
 
-student_with_highest_average(Student):-
+student_with_highest_average(Student, Average):-
   load_all_students(Students),
   get_registrations_list(Students, RegistrationsList),
   get_averages_list(RegistrationsList, AveragesList),
-  max_list(AveragesList, MaxAverage),
-  student_with_max_average(RegistrationsList, MaxAverage, Registration),
-  term_string(Registration, String),
-  find_student(String, Student).
+  max_list(AveragesList, Average),
+  student_with_max_average(RegistrationsList, Average, Registration),
+  find_student(Registration, Student).
 
 student_with_max_average([H|T], Average, Registration):-
-  term_string(H, String),
-  get_student_average(String, StudentAverage),
-  (StudentAverage == Average -> Registration = H ; student_with_max_average(T, Average, Registration)).
+  get_student_average(H, StudentAverage),
+  (StudentAverage =:= Average -> Registration = H ; student_with_max_average(T, Average, Registration)).
 
 get_registrations_list([], []).
 get_registrations_list([H|T], [X|Y]):- 
@@ -51,8 +49,7 @@ get_registrations_list([H|T], [X|Y]):-
 
 get_averages_list([], []).
 get_averages_list([H|T], [X|Y]):-
-  term_string(H, String),
-  get_student_average(String, StudentAverage),
+  get_student_average(H, StudentAverage),
   X = StudentAverage,
   get_averages_list(T, Y).
 
@@ -76,12 +73,12 @@ subject_with_highest_average(Subject, Average):-
   get_registrations_list(Subjects, RegistrationsList),
   get_averages_list_subjects(RegistrationsList, AveragesList),
   max_list(AveragesList, Average),
-  subject_with_max_average(RegistrationsList, Average, SubjectCode),
+  subject_with_average(RegistrationsList, Average, SubjectCode),
   find_subject(SubjectCode, Subject).
 
-subject_with_max_average([H|T], Average, Result):-
+subject_with_average([H|T], Average, Result):-
   get_subject_average(H, SubjectAverage),
-  (SubjectAverage =:= Average -> Result = H ; subject_with_max_average(T, Average, Result)).
+  (SubjectAverage =:= Average -> Result = H ; subject_with_average(T, Average, Result)).
 
 get_averages_list_subjects([], []).
 get_averages_list_subjects([H|T], [X|Y]) :-
@@ -89,7 +86,13 @@ get_averages_list_subjects([H|T], [X|Y]) :-
   X = SubjectAverage,
   get_averages_list_subjects(T, Y).
 
-subject_with_lowest_average(Subject).
+subject_with_lowest_average(Subject, Average) :-
+  load_all_subjects(Subjects),
+  get_registrations_list(Subjects, RegistrationsList),
+  get_averages_list_subjects(RegistrationsList, AveragesList),
+  min_list(AveragesList, Average),
+  subject_with_average(RegistrationsList, Average, SubjectCode),
+  find_subject(SubjectCode, Subject).
 
 available_subjects_for_enrollment(StudentCode, AvailableSubjects).
 

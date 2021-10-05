@@ -191,27 +191,18 @@ admin_panel("6") :-
 admin_panel("7") :-
     subject_with_highest_average(Subject, Average),
     nl,
-    show_subject_with_highest_average(Subject, Average).
+    writeln("Disciplina com maior média:"),
+    show_subject_with_average(Subject, Average).
 
-admin_panel("8"). 
-    %UI opção 8
+admin_panel("8") :-
+    subject_with_lowest_average(Subject, Average),
+    nl,
+    writeln("Disciplina com menor média"),
+    show_subject_with_average(Subject, Average).
 
 admin_panel("9"):-
-    student_with_highest_average(Student),
-    get_student_registration(Student, Registration),
-    term_string(Registration, RegistrationString),
-    get_student_name(RegistrationString, Name),
-    get_student_average(RegistrationString, Average),
-    nl,
-    write("O aluno com a maior média é ["),
-    write(RegistrationString),
-    write(" - "),
-    write(Name),
-    write("] com uma média de: "),
-    format("~2f!\n", [Average]),
-    nl,
-    press_to_continue,
-    admin_options.
+    student_with_highest_average(Student, Average),
+    show_student_with_highest_average(Student, Average).
 
 admin_panel("S") :- quit.
 
@@ -262,10 +253,9 @@ show_available_professors :-
     available_professors(Professors),
    (empty(Professors) -> writeln("Não há professores disponiveis!") ; show_entities(Professors)).
 
-show_subject_with_highest_average(Subject, Average) :-
+show_subject_with_average(Subject, Average) :-
     nth0(0, Subject, Code),
     nth0(2, Subject, Name),
-    writeln("Disciplina com maior média:"),
     writeln("Código \t - \t Nome \t - \t Média Geral"),
     show_subject_with_grade(Code, Name, Average),
     press_to_continue,
@@ -286,6 +276,20 @@ show_subjects([S|T]) :-
     string_concat(S1, Name, R),
     writeln(R),
     show_subjects(T).
+
+show_student_with_highest_average(Student, Average) :-
+    get_student_registration(Student, Registration),
+    nth0(1, Student, Name),
+    nl,
+    write("O aluno com a maior média é ["),
+    write(Registration),
+    write(" - "),
+    write(Name),
+    write("] com uma média de: "),
+    format("~2f!\n", [Average]),
+    nl,
+    press_to_continue,
+    admin_options.
 
 quit :- 
     writeln("Até a próxima!"),
