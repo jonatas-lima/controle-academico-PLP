@@ -63,7 +63,31 @@ associate_professor(ProfessorRegistration, SubjectCode).
 
 cancel_enrollment(StudentCode, SubjectCode).
 
-register_class(ProfessorRegistration, SubjectCode).
+register_class(ProfessorRegistration, SubjectCode):-
+  term_string(ProfessorRegistration, ProfRegistStr),
+  term_string(SubjectCode, SubCodetStr),
+  get_professor_subjects(ProfRegistStr, [H|T]),
+  (H =@= SubCodetStr -> class_registration(SubCodetStr);
+  register_class_aux(T, SubCodetStr)).
+
+class_registration(SubjectCode):-
+find_subject(SubjectCode, Subject),
+nth0(1, Subject, Professor),
+nth0(2, Subject, Name),
+nth0(3, Subject, NumClasses),
+nth0(4, Subject, MaxEnrollments),
+NewNumClasses is NumClasses - 1,
+save_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
+writeln("Registro de aula realizado").
+
+
+register_class_aux([], _):-
+writeln("Disciplina não encontrada.").
+  
+register_class_aux([H|T], SubjectCode):- 
+  (H =@= SubjectCode -> class_registration(SubjectCode);
+  register_class_aux(T, SubjectCode)).
+
 
 register_test(ProfessorRegistration, SubjectCode).
 
@@ -74,5 +98,5 @@ save_professor(Registration, Name, Password) :-
 save_student(Registration, Name, Password) :- 
   create_student(Registration, Name, Password).
 
-save_subject(Code, Name, Classes, MaxEnrollments) :- 
-  create_subject(Code, Name, Classes, MaxEnrollments).
+save_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :- 
+  create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments).
