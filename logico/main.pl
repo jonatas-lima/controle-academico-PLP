@@ -1,4 +1,6 @@
 :- include('./controller.pl').
+:- include('./student.pl').
+:- include('./professor.pl').
 
 read_string(X) :- read_line_to_codes(user_input, I), atom_string(I, X).
 read_number(N) :- read_string(X), atom_number(X, N).
@@ -37,6 +39,11 @@ students_screen(ID) :-
 
 student_options(ID) :-
     nl,nl,
+    get_student_name(ID, StudentName),
+    write("Bem vindo, "),
+    write(StudentName),
+    writeln("!"),
+    writeln(""),
     writeln("1) Visualizar disciplinas"),
     writeln("2) Realizar matrícula"),
     writeln("3) Cancelar matrícula"),
@@ -55,8 +62,12 @@ student_panel("2", ID).
 student_panel("3", ID).
     %UI Cancelar matrícula
 
-student_panel("4", ID).
-    %UI visualizar media geral
+student_panel("4", ID):-
+    get_student_average(ID, Average),
+    write("\nCRA: "),
+    format("~2f\n", [Average]),
+    press_to_continue,
+    student_options(ID).
 
 student_panel("S", ID) :- quit.
 student_panel("s", ID) :- quit.
@@ -67,12 +78,14 @@ student_panel(_, ID) :-
     student_panel(Inp, ID).
 
 professor_screen(ID) :-
-    %ler arquivos e pegar nome do professor e printar
     professor_options(ID).
     
 professor_options(ID) :-
     nl,nl,
-    write("1) Visualizar disciplinas"),nl,
+    get_professor_name(ID, ProfessorName),
+    write("Bem vindo, "),
+    writeln(ProfessorName),
+    write("\n1) Visualizar disciplinas"),nl,
     write("2) Registrar aula"),nl,
     write("3) Cadastrar prova"),nl,
     write("4) Situação da classe"),nl,
@@ -181,8 +194,22 @@ admin_panel("7").
 admin_panel("8"). 
     %UI opção 8
 
-admin_panel("9").
-    %UI opção 9
+admin_panel("9"):-
+    student_with_highest_average(Student),
+    get_student_registration(Student, Registration),
+    term_string(Registration, RegistrationString),
+    get_student_name(RegistrationString, Name),
+    get_student_average(RegistrationString, Average),
+    nl,
+    write("O aluno com a maior média é ["),
+    write(RegistrationString),
+    write(" - "),
+    write(Name),
+    write("] com uma média de: "),
+    format("~2f!\n", [Average]),
+    nl,
+    press_to_continue,
+    admin_options.
 
 admin_panel("S") :- quit.
 

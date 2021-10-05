@@ -3,18 +3,15 @@
 
 find_professor(Registration, Professor) :-
   load_all_professors(Professors),
-  find_professor_aux(Registration, Professors, Professor).
-
-find_professor_aux(_, [end_of_file], false).
-find_professor_aux(Registration, [Professor|T], Result) :- 
-  nth0(0, Professor, ProfessorRegistration),
-  term_string(ProfessorRegistration, RegistrationString),
-  RegistrationString =@= Registration -> Result = Professor;
-  find_professor_aux(Registration, T, Result).
+  find(Professors, Registration, Professor).
 
 get_professor_subjects(Registration, Subjects) :-
   find_professor(Registration, Professor),
   get_user_subjects(Professor, Subjects).
+
+get_professor_name(Registration, Name) :-
+  find_professor(Registration, Professor),
+  nth0(1, Professor, Name).
 
 is_available(Professor) :-
   nth0(2, Professor, Subjects),

@@ -29,7 +29,32 @@ available_professors_aux(Professors, Result) :-
   include(is_available, Professors, AvailableProfessors),
   union(ProfWithoutSubjects, AvailableProfessors, Result).
 
-student_with_highest_average(Student).
+student_with_highest_average(Student):-
+  load_all_students(Students),
+  get_registrations_list(Students, RegistrationsList),
+  get_averages_list(RegistrationsList, AveragesList),
+  max_list(AveragesList, MaxAverage),
+  student_with_max_average(RegistrationsList, MaxAverage, Registration),
+  term_string(Registration, String),
+  find_student(String, Student).
+
+student_with_max_average([H|T], Average, Registration):-
+  term_string(H, String),
+  get_student_average(String, StudentAverage),
+  (StudentAverage == Average -> Registration = H ; student_with_max_average(T, Average, Registration)).
+
+get_registrations_list([], []).
+get_registrations_list([H|T], [X|Y]):- 
+  nth0(0, H, Registration),
+  X = Registration,
+  get_registrations_list(T, Y).
+
+get_averages_list([], []).
+get_averages_list([H|T], [X|Y]):-
+  term_string(H, String),
+  get_student_average(String, StudentAverage),
+  X = StudentAverage,
+  get_averages_list(T, Y).
 
 student_subjects(Registration, Result) :-
   get_student_subjects(Registration, SubjectCodes),
@@ -46,7 +71,26 @@ professor_subjects(Registration, Result) :-
 
 available_subjects_for_association(AvailableSubjects).
 
-subject_with_highest_average(Subject).
+% subject_with_highest_average(Subject):-
+%   load_all_subjects(Subjects),
+%   get_registrations_list(Subjects, RegistrationsList),
+%   get_averages_list_subjects(RegistrationsList, AveragesList),
+%   max_list(AveragesList, MaxAverage),
+%   subject_with_max_average(RegistrationsList, MaxAverage, Registration),
+%   term_string(Registration, String),
+%   find_subject(String, Student).
+
+% subject_with_max_average([H|T], Average, Registration):-
+%   term_string(H, String),
+%   get_subject_average(String, SubjectAverage),
+%   (SubjectAverage == Average -> Registration = H ; subject_with_max_average(T, Average, Registration)).
+
+% get_averages_list_subjects([], []).
+% get_averages_list_subjects([H|T], [X|Y]):-
+%   term_string(H, String),
+%   get_subject_average(String, SubjectAverage),
+%   X = SubjectAverage,
+%   get_averages_list(T, Y).
 
 subject_with_lowest_average(Subject).
 
