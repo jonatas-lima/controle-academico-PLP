@@ -267,11 +267,16 @@ show_subject_with_highest_average(Subject, Average) :-
     nth0(2, Subject, Name),
     writeln("Disciplina com maior média:"),
     writeln("Código \t - \t Nome \t - \t Média Geral"),
-    string_concat(Code, "\t - \t", S1),
-    string_concat(S1, Name, R),
-    writeln(R),
+    show_subject_with_grade(Code, Name, Average),
     press_to_continue,
     admin_options.
+
+show_subject_with_grade(Code, Name, Average) :-
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    write(S3),
+    format("~2f\n", [Average]).
 
 show_subjects([]).
 show_subjects([S|T]) :-
