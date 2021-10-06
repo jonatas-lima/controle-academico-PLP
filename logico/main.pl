@@ -252,7 +252,7 @@ show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhu
 show_student_subjects(ID, Subjects) :-
     writeln("Disciplinas matriculadas:"),
     writeln("Código \t - \t Nome"),
-    show_subjects(Subjects),
+    show_subjects(ID, Subjects),
     press_to_continue,
     student_options(ID).
 
@@ -260,14 +260,18 @@ show_available_professors :-
     available_professors(Professors),
    (empty(Professors) -> writeln("Não há professores disponiveis!") ; show_entities(Professors)).
 
-show_subjects([]).
-show_subjects([S|T]) :-
+show_subjects(_, []).
+show_subjects(ID, [S|T]) :-
     nth0(0, S, Code),
     nth0(2, S, Name),
+    term_string(Code, CodeString),
+    get_student_average_subject(ID, CodeString, Average),
     string_concat(Code, "\t - \t", S1),
-    string_concat(S1, Name, R),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    string_concat(S3, Average, R),
     writeln(R),
-    show_subjects(T).
+    show_subjects(ID, T).
 
 quit :- 
     writeln("Até a próxima!"),

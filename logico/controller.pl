@@ -124,14 +124,12 @@ NewNumClasses is NumClasses - 1,
 save_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
 writeln("Registro de aula realizado").
 
-
 register_class_aux([], _):-
 writeln("Disciplina não encontrada.").
   
 register_class_aux([H|T], SubjectCode):- 
   (H =@= SubjectCode -> class_registration(SubjectCode);
   register_class_aux(T, SubjectCode)).
-
 
 register_test(ProfessorRegistration, SubjectCode).
 
