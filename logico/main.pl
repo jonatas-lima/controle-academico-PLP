@@ -167,7 +167,7 @@ admin_panel("3") :-
     write("Digite o número de vagas da disciplina: "),
     read_string(MaxEnrollments),
     (find_user(Code, _) -> writeln("Disciplina ja existe!");
-    save_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrado!")),
+    save_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrada!")),
     press_to_continue,
     admin_options.
 
@@ -175,6 +175,11 @@ admin_panel("4") :-
     show_available_professors,
     write("Matrícula do professor: "),
     read_string(Registration),
+    available_subjects_for_association(Registration, AvailableSubjects),
+    show_available_subjects_for_association(AvailableSubjects),
+    write("Código da disciplina: "),
+    read_string(SubjectCode),
+    associate_professor(ProfessorCode, SubjectCode),
     press_to_continue,
     admin_options.
 
@@ -218,7 +223,7 @@ press_to_continue :-
     read_string(_),
     tty_clear.
 
-show_professors_without_subjects([]) :- writeln("Todos os professores possuem pelo menos uma disciplina!").
+show_professors_without_subjects([]) :- writeln("Todos os professores possuem pelo menos uma disciplina!"), fail.
 show_professors_without_subjects(Professors) :-
     writeln("Professores sem disciplinas:"),
     show_entities(Professors),
@@ -267,6 +272,12 @@ show_subject_with_grade(Code, Name, Average) :-
     string_concat(S2, "\t - \t", S3),
     write(S3),
     format("~2f\n", [Average]).
+
+show_available_subjects_for_association([]) :- writeln("Não há disciplinas disponíveis para associação!").
+show_available_subjects_for_association(Subjects) :-
+    writeln("Disciplinas disponíveis para associação:"),
+    nl,
+    show_subjects(Subjects).
 
 show_subjects([]).
 show_subjects([S|T]) :-
