@@ -1,6 +1,10 @@
 :- include('./data_loader.pl').
 :- include('./util.pl').
 
+is_subject_available(Subject) :-
+  nth0(1, Subject, ProfessorCode),
+  empty(ProfessorCode).
+
 find_subject(Code, Subject) :-
   load_all_subjects(Subjects),
   find(Subjects, Code, Subject).
