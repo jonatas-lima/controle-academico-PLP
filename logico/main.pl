@@ -93,17 +93,29 @@ professor_options(ID) :-
     read_string(Inp),
     professor_panel(Inp, ID).
 
-professor_panel("1", ID).
-    %UI visualizar disciplinas
+professor_panel("1", ID) :-
+    show_professor_subjects_with_classes(ID),
+    press_to_continue,
+    professor_options(ID).
 
-professor_panel("2", ID).
-    %UI Registrar aula
+professor_panel("2", ID) :-
+    show_professor_subjects_with_classes(ID),
+    write("Entre com o código da disciplina: "),
+    read_string(CodeString),
+    register_class(ID, CodeString),
+    press_to_continue,
+    professor_options(ID).
 
 professor_panel("3", ID).
     %UI Cadastrar prova
 
-professor_panel("4", ID).
-    %UI Situação da classe
+professor_panel("4", ID) :-
+    show_professor_subjects(ID),
+    write("Entre com o código da disciplina a ser executada: "),
+    read_string(CodeSubject),
+    show_class_situation(CodeSubject),
+    press_to_continue,
+    professor_options(ID).
 
 professor_panel("S", _) :- quit.
 
@@ -249,10 +261,67 @@ show_entities([E|T]) :-
 show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhuma disciplina!").
 show_student_subjects(ID, Subjects) :-
     writeln("Disciplinas matriculadas:"),
-    writeln("Código \t - \t Nome"),
-    show_subjects(Subjects),
+    writeln("Código \t -\tNome \t -\tMédia Geral"),
+    show_subjects(ID, Subjects),
     press_to_continue,
     student_options(ID).
+
+show_professor_subjects(ID) :-
+    get_professor_list_subjects(ID, Subjects),
+    writeln("Disciplinas lecionadas:"),
+    writeln("Código \t -\tNome"),
+    show_professor_subjects_aux(Subjects).
+
+show_professor_subjects_aux([]).
+show_professor_subjects_aux([H|T]) :-
+    nth0(0, H, Code),
+    nth0(2, H, Name),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, R),
+    writeln(R),
+    show_professor_subjects_aux(T).
+
+show_professor_subjects_with_classes(ID) :-
+    get_professor_list_subjects(ID, Subjects),
+    writeln("Disciplinas lecionadas:"),
+    writeln("Código \t -\tNome \t -\tAulas Restantes"),
+    show_professor_subjects_with_classes_aux(Subjects).
+
+show_professor_subjects_with_classes_aux([]).
+show_professor_subjects_with_classes_aux([H|T]) :- 
+    nth0(0, H, Code),
+    nth0(2, H, Name),
+    nth0(3, H, Classes),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    string_concat(S3, Classes, R),
+    writeln(R),
+    show_professor_subjects_with_classes_aux(T).
+
+show_class_situation(Code) :-
+    get_enrolled_students(Code, Result),
+    writeln("\nCódigo \t -\tNome \t -\tMédia Geral"),
+    show_class_situation_aux(Code, Result),
+    writeln("").
+
+show_class_situation_aux(_, []).
+show_class_situation_aux(Code, [H|T]):-
+    find_student(H, Student),
+    nth0(0, Student, Registration),
+    nth0(1, Student, Name),
+    term_string(Registration, RegistrationString),
+    get_student_average_subject(RegistrationString, Code, Average),
+    string_concat(Registration, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    write(S3),
+    format("~2f ", [Average]),
+    student_situation(Average, Result),
+    write("["),
+    write(Result),
+    writeln("]"),
+    show_class_situation_aux(Code, T).
 
 show_available_professors :-
     available_professors(Professors),
@@ -279,14 +348,22 @@ show_available_subjects_for_association(Subjects) :-
     nl,
     show_subjects(Subjects).
 
-show_subjects([]).
-show_subjects([S|T]) :-
+show_subjects(_, []).
+show_subjects(ID, [S|T]) :-
     nth0(0, S, Code),
     nth0(2, S, Name),
+    term_string(Code, CodeString),
+    get_student_average_subject(ID, CodeString, Average),
     string_concat(Code, "\t - \t", S1),
-    string_concat(S1, Name, R),
-    writeln(R),
-    show_subjects(T).
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    write(S3),
+    format("~2f ", [Average]),
+    student_situation(Average, Result),
+    write("["),
+    write(Result),
+    writeln("]"),
+    show_subjects(ID, T).
 
 show_student_with_highest_average(Student, Average) :-
     get_student_registration(Student, Registration),

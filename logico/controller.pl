@@ -105,7 +105,8 @@ available_subjects_for_enrollment(StudentCode, AvailableSubjects).
 
 class_situation(ProfessorRegistration, SubjectCode).
 
-student_situation(StudentRegistration, SubjectCode).
+student_situation(Average, Result):-
+  (Average >= 7 -> Result = "Aprovado" ; Average >= 4 -> Result = "Final" ; Result = "Reprovado").
 
 % associacoes / delecoes
 enroll_student(StudentRegistration, SubjectCode).
@@ -117,11 +118,16 @@ associate_professor(ProfessorRegistration, SubjectCode) :-
 cancel_enrollment(StudentCode, SubjectCode).
 
 register_class(ProfessorRegistration, SubjectCode):-
-  term_string(ProfessorRegistration, ProfRegistStr),
-  term_string(SubjectCode, SubCodetStr),
-  get_professor_subjects(ProfRegistStr, [H|T]),
-  (H =@= SubCodetStr -> class_registration(SubCodetStr);
-  register_class_aux(T, SubCodetStr)).
+  get_professor_subjects(ProfessorRegistration, [H|T]),
+  (H =@= SubjectCode -> class_registration(SubjectCode);
+  register_class_aux(T, SubjectCode)).
+
+register_class_aux([], _):-
+  writeln("Disciplina não encontrada.").
+  
+register_class_aux([H|T], SubjectCode):- 
+  (H =@= SubjectCode -> class_registration(SubjectCode);
+  register_class_aux(T, SubjectCode)).
 
 class_registration(SubjectCode):-
   find_subject(SubjectCode, Subject),
@@ -132,14 +138,7 @@ class_registration(SubjectCode):-
   NewNumClasses is NumClasses - 1,
   delete_subject(Subject),
   save_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
-  writeln("Registro de aula realizado").
-
-register_class_aux([], _):-
-  writeln("Disciplina não encontrada.").
-  
-register_class_aux([H|T], SubjectCode):- 
-  (H =@= SubjectCode -> class_registration(SubjectCode);
-  register_class_aux(T, SubjectCode)).
+  writeln("\nRegistro de aula realizado com sucesso!\n").
 
 register_test(ProfessorRegistration, SubjectCode).
 
