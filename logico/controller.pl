@@ -26,7 +26,7 @@ available_professors(AvailableProfessors) :-
 
 available_professors_aux(Professors, Result) :- 
   professors_without_subjects(ProfWithoutSubjects),
-  include(is_available, Professors, AvailableProfessors),
+  include(is_professor_available, Professors, AvailableProfessors),
   union(ProfWithoutSubjects, AvailableProfessors, Result).
 
 student_with_highest_average(Student, Average):-
@@ -66,7 +66,14 @@ professor_subjects(Registration, Result) :-
   get_professor_subjects(Registration, SubjectCodes),
   find_subjects(SubjectCodes, Result).
 
-available_subjects_for_association(AvailableSubjects).
+available_subjects_for_association(ProfessorCode, AvailableSubjects) :-
+  subjects_without_professors(SubjectsWithoutProfessor),
+  professor_subjects(ProfessorCode, ProfessorSubjects),
+  subtract(SubjectsWithoutProfessor, ProfessorSubjects, AvailableSubjects).
+
+subjects_without_professors(Subjects) :-
+  load_all_subjects(AllSubjects),
+  include(is_subject_available, AllSubjects, Subjects).
 
 subject_with_highest_average(Subject, Average):-
   load_all_subjects(Subjects),
@@ -104,7 +111,9 @@ student_situation(Average, Result):-
 % associacoes / delecoes
 enroll_student(StudentRegistration, SubjectCode).
 
-associate_professor(ProfessorRegistration, SubjectCode).
+associate_professor(ProfessorRegistration, SubjectCode) :- 
+  find_professor(ProfessorRegistration, Professor),
+  find_subject(SubjectCode, Subject).
 
 cancel_enrollment(StudentCode, SubjectCode).
 

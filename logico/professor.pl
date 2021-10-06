@@ -28,7 +28,7 @@ get_professor_name(Registration, Name) :-
   find_professor(Registration, Professor),
   nth0(1, Professor, Name).
 
-is_available(Professor) :-
+is_professor_available(Professor) :-
   nth0(2, Professor, Subjects),
   term_string(Subjects, SubjectsString),
   split_string(SubjectsString, ";", "", SubjectsList),
