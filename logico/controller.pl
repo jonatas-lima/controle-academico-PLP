@@ -130,6 +130,7 @@ class_registration(SubjectCode):-
   nth0(3, Subject, NumClasses),
   nth0(4, Subject, MaxEnrollments),
   NewNumClasses is NumClasses - 1,
+  delete_subject(Subject),
   save_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
   writeln("Registro de aula realizado").
 

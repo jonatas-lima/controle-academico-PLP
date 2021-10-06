@@ -1,4 +1,5 @@
 :- include('./data_loader.pl').
+:- include('./data_saver.pl').
 :- include('./util.pl').
 
 is_subject_available(Subject) :-
@@ -91,3 +92,9 @@ parse_grades(Grades, Result) :-
 parse_enrollments(Enrollments, []) :- empty(Enrollments).
 parse_enrollments(Enrollments, Result) :-
   split_string(Enrollments, ";", "", Result).
+
+delete_subject(Subject):-
+  load_all_subjects(AllSubjects),
+  delete(AllSubjects, Subject, Result),
+  update_subjects(Result, 0).
+    
