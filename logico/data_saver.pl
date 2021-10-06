@@ -51,3 +51,19 @@ format_new_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments, R) :-
   string_concat(S5, Classes, S6),
   string_concat(S6, ',', S7),
   string_concat(S7, MaxEnrollments, R).
+
+update_subjects([], _).
+
+update_subjects([H|T], Control):-
+  (Control == 0 -> open('./data/disciplinas.csv', write, File);
+  open('./data/disciplinas.csv', append, File)),
+  nth0(0, H, Code),
+  nth0(1, H, ProfessorCode),
+  nth0(2, H, Name),
+  nth0(3, H, NumClasses),
+  nth0(4, H, MaxEnrollments),
+  format_new_subject(Code, ProfessorCode, Name, NumClasses, MaxEnrollments, R),
+  writeln(File, R),
+  close(File),
+  update_subjects(T, 1).
+
