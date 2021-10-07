@@ -16,6 +16,10 @@ create_student(Registration, Name, Password) :-
   create_entity('./data/alunos.csv', R),
   create_user(Registration, Password, 'aluno').
 
+update_student(Registration, Name, Subjects) :-
+  format_student(Registration, Name, Subjects, R),
+  create_entity('./data/alunos.csv', R).
+
 create_new_subject(Code, Name, Classes, MaxEnrollments):- 
   create_subject(Code, "", Name, Classes, MaxEnrollments).
 
@@ -46,6 +50,10 @@ format_new_user(Username, Password, Role, R) :-
 
 format_new_student(Registration, Name, R) :-
   format_new_professor(Registration, Name, R).
+
+format_student(Registration, Name, Classes, R) :-
+  format_new_student(Registration, Name, S1),
+  string_concat(S1, Classes, R).
 
 format_new_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments, R) :-
   string_concat(Code, ',', S1),
@@ -95,9 +103,8 @@ update_users([H|T], Control) :-
   close(File),
   update_users(T, 1).
 
-update_student([],_).
-
-update_student([H|T], Control):-
+update_students([],_).
+update_students([H|T], Control):-
   (Control =:= 0 -> open('./data/alunos.csv', write, File);
   open('./data/alunos.csv', append, File)),
   nth0(0, H, Code),
@@ -106,4 +113,4 @@ update_student([H|T], Control):-
   format_new_professor(Code, Name, Subjects, R),
   writeln(File, R),
   close(File),
-  update_student(T, 1).
+  update_students(T, 1).

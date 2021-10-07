@@ -42,4 +42,4 @@ get_student_average_aux(Registration, [H|T], [X|Y]) :-
 delete_student(Student) :-
   load_all_students(Students),
   delete(Students, Student, Result),
-  update_student(Result, 0).
+  update_students(Result, 0).

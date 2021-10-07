@@ -68,15 +68,19 @@ student_panel("2", ID):-
     read_string(Code),
 
     find_student(ID, Student),
-    %delete_student(Student),
+    delete_student(Student),
 
-    nth0(2, Student, StringClasses),
-    string_concat(StringClasses, ";", S1),
-    string_concat(S1, Code, Classes),
-    writeln(Classes),
+    writeln(Student),
+    nth0(2, Student, EnrolledSubjects),
+    writeln(EnrolledSubjects),
 
-    get_student_name(ID, Name),
-    save_student(ID, Name, Classes)),
+    (number(EnrolledSubjects) -> term_string(EnrolledSubjects, Classes) ; Classes = EnrolledSubjects), 
+    string_concat(Classes, ";", S1),
+    string_concat(S1, Code, R),
+    writeln(R),
+
+    nth0(1, Student, Name),
+    save_student(ID, Name, R)),
     press_to_continue,
     student_options(ID).
 
@@ -199,7 +203,7 @@ admin_panel("2") :-
     read_string(Name),
     write("Digite a senha do aluno: "),
     read_string(Password),
-    (find_user(Registration, R), empty(R) -> save_student(Registration, Name, Password), writeln("Aluno cadastrado!");
+    (find_user(Registration, R), empty(R) -> save_new_student(Registration, Name, Password), writeln("Aluno cadastrado!");
     writeln("Aluno ja existe!")),
     press_to_continue,
     admin_options.
