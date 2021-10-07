@@ -16,11 +16,12 @@ create_student(Registration, Name, Password) :-
   create_entity('./data/alunos.csv', R),
   create_user(Registration, Password, 'aluno').
 
-create_subject(Code, Name, Classes, MaxEnrollments):- 
+create_new_subject(Code, Name, Classes, MaxEnrollments):- 
   create_subject(Code, "", Name, Classes, MaxEnrollments).
 
 create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :-
   format_new_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments, R),
+  create_enrollment(Code),
   create_entity('./data/disciplinas.csv', R).
 
 create_entity(FilePath, Entity) :- 

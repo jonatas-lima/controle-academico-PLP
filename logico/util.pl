@@ -6,8 +6,8 @@ empty("''").
 empty([""]).
 empty(['']).
 
-find([], _, false).
-find([end_of_file], _, false).
+find([], _, []).
+find([end_of_file], _, []).
 find([H|T], Key, Result) :-
   nth0(0, H, Code),
   term_string(Code, CodeString),

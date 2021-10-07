@@ -182,7 +182,7 @@ save_student(Registration, Name, Password) :-
   create_student(Registration, Name, Password).
 
 save_new_subject(Code, Name, Classes, MaxEnrollments) :- 
-  save_subject(Code, "", Name, Classes, MaxEnrollments).
+  create_new_subject(Code, Name, Classes, MaxEnrollments).
 
 save_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :-
   create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments).

@@ -172,8 +172,11 @@ admin_panel("1") :-
     read_string(Name),
     write("Digite a senha do professor: "),
     read_string(Password),
-    (find_user(Registration, R), R -> writeln("Professor ja existe!");
-    save_professor(Registration, Name, Password), writeln("Professor cadastrado!")),
+    writeln(Registration),
+    writeln(Name),
+    writeln(Password),
+    (find_user(Registration, R), empty(R) -> save_professor(Registration, Name, Password), writeln("Professor cadastrado!");
+    writeln("Professor ja existe!")),
     press_to_continue,
     admin_options.
 
@@ -184,8 +187,8 @@ admin_panel("2") :-
     read_string(Name),
     write("Digite a senha do aluno: "),
     read_string(Password),
-    (find_user(Registration, R), R -> writeln("Aluno ja existe!");
-    save_student(Registration, Name, Password), writeln("Aluno cadastrado!")),
+    (find_user(Registration, R), empty(R) -> save_student(Registration, Name, Password), writeln("Aluno cadastrado!");
+    writeln("Aluno ja existe!")),
     press_to_continue,
     admin_options.
 
@@ -198,8 +201,8 @@ admin_panel("3") :-
     read_string(Classes),
     write("Digite o número de vagas da disciplina: "),
     read_string(MaxEnrollments),
-    (find_subject(Code, R), R -> writeln("Disciplina ja existe!");
-    save_new_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrada!")),
+    (find_subject(Code, R), empty(R) -> save_new_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrada!");
+    writeln("Disciplina ja existe!")),
     press_to_continue,
     admin_options.
 
