@@ -102,10 +102,9 @@ subject_with_lowest_average(Subject, Average) :-
   find_subject(SubjectCode, Subject).
 
 available_subjects_for_enrollment(StudentCode, AvailableSubjects):-
-  term_string(StudentCode, CodeStr),
-  num_enrolled_subjects(CodeStr, Num),
-  (Num >= 4 -> writeln("Aluno lotado de disciplinas.");
-  get_available_subjects(CodeStr, AvailableSubjects)).
+  num_enrolled_subjects(StudentCode, Num),
+  (Num >= 4 -> AvailableSubjects = "Aluno lotado de disciplinas.";
+  get_available_subjects(StudentCode, AvailableSubjects)).
 
 get_available_subjects(StudentCode, AvailableSubjects):-
   load_all_subjects(Subjects),

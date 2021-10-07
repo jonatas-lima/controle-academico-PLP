@@ -56,11 +56,18 @@ student_panel("1", ID) :-
     student_subjects(ID, Subjects),
     show_student_subjects(ID, Subjects).
 
-student_panel("2", ID).
-    %UI Realizar matrícula
+student_panel("2", ID):- 
+    available_subjects_for_enrollment(ID, AvailableSubjects),
+    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects);
+    writeln("Codigo\t - \tDisciplina"),
+    show_available_subjects(AvailableSubjects)),
+    writeln("Entre com o código da disciplina a ser matriculada: "),
+    read_string(Code),
+    writeln(COde)
 
-student_panel("3", ID).
-    %UI Cancelar matrícula
+student_panel("3", ID):-
+    student_subjects(ID, Subjects),
+    show_available_subjects(Subjects).
 
 student_panel("4", ID):-
     get_student_average(ID, Average),
@@ -364,6 +371,15 @@ show_subjects(ID, [S|T]) :-
     write(Result),
     writeln("]"),
     show_subjects(ID, T).
+
+show_available_subjects([]).
+show_available_subjects([S|T]) :-
+    nth0(0, S, Code),
+    nth0(2, S, Name),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    writeln(S2),
+    show_available_subjects(T).
 
 show_student_with_highest_average(Student, Average) :-
     get_student_registration(Student, Registration),
