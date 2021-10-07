@@ -1,6 +1,7 @@
 :-include('data_loader.pl').
 :-include('./util.pl').
 :-include('./subject.pl').
+:- include('./data_saver.pl').
 
 have_max_enrollments(Registration) :-
   num_enrolled_subjects(Registration, Num),
@@ -37,3 +38,8 @@ get_student_average_aux(Registration, [H|T], [X|Y]) :-
   get_student_average_subject(Registration, H, SubjectAverage),
   X = SubjectAverage,
   get_student_average_aux(Registration, T, Y). 
+
+delete_student(Student) :-
+  load_all_students(Students),
+  delete(Students, Student, Result),
+  update_student(Result, 0).

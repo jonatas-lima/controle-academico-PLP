@@ -60,12 +60,24 @@ student_panel("1", ID) :-
 
 student_panel("2", ID):- 
     available_subjects_for_enrollment(ID, AvailableSubjects),
-    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue;
+    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue; 
     writeln("Codigo\t - \tDisciplina"),
     show_available_subjects(AvailableSubjects),
+
     writeln("Entre com o código da disciplina a ser matriculada: "),
     read_string(Code),
-    press_to_continue),
+
+    find_student(ID, Student),
+    %delete_student(Student),
+
+    nth0(2, Student, StringClasses),
+    string_concat(StringClasses, ";", S1),
+    string_concat(S1, Code, Classes),
+    writeln(Classes),
+
+    get_student_name(ID, Name),
+    save_student(ID, Name, Classes)),
+    press_to_continue,
     student_options(ID).
 
 student_panel("3", ID):-

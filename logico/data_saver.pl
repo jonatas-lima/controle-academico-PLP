@@ -94,3 +94,16 @@ update_users([H|T], Control) :-
   writeln(File, R),
   close(File),
   update_users(T, 1).
+
+update_student([],_).
+
+update_student([H|T], Control):-
+  (Control =:= 0 -> open('./data/alunos.csv', write, File);
+  open('./data/alunos.csv', append, File)),
+  nth0(0, H, Code),
+  nth0(1, H, Name),
+  nth0(2, H, Subjects),
+  format_new_professor(Code, Name, Subjects, R),
+  writeln(File, R),
+  close(File),
+  update_student(T, 1).
