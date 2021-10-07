@@ -102,7 +102,22 @@ subject_with_lowest_average(Subject, Average) :-
   subject_with_average(RegistrationsList, Average, SubjectCode),
   find_subject(SubjectCode, Subject).
 
-available_subjects_for_enrollment(StudentCode, AvailableSubjects).
+available_subjects_for_enrollment(StudentCode, AvailableSubjects):-
+  num_enrolled_subjects(StudentCode, Num),
+  (Num >= 4 -> AvailableSubjects = "Aluno lotado de disciplinas.";
+  get_available_subjects(StudentCode, AvailableSubjects)).
+
+get_available_subjects(StudentCode, AvailableSubjects):-
+  load_all_subjects(Subjects),
+  get_student_subjects(StudentCode, StudentSubjects),
+  remove_student_subjects(StudentSubjects, Subjects, Result),
+  AvailableSubjects = Result.
+
+remove_student_subjects([], Subjects, Result):- Result = Subjects.
+remove_student_subjects([H|T], Subjects, Result):-
+  find_subject(H, Subject),
+  delete(Subjects, Subject, ResultAux),
+  remove_student_subjects(T, ResultAux, Result).
 
 class_situation(ProfessorRegistration, SubjectCode).
 
