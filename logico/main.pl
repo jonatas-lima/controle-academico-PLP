@@ -110,10 +110,11 @@ professor_panel("3", ID).
     %UI Cadastrar prova
 
 professor_panel("4", ID) :-
-    show_professor_subjects(ID),
-    write("Entre com o código da disciplina a ser executada: "),
-    read_string(CodeSubject),
-    show_class_situation(CodeSubject),
+    get_professor_list_subjects(ID, Subjects),
+    show_professor_subjects(ID, Subjects),
+    write("Entre com o código da disciplina a ser consultada: "),
+    read_string(SubjectCode),
+    show_class_situation(SubjectCode),
     press_to_continue,
     professor_options(ID).
 
@@ -188,10 +189,7 @@ admin_panel("4") :-
     write("Matrícula do professor: "),
     read_string(Registration),
     available_subjects_for_association(Registration, AvailableSubjects),
-    show_available_subjects_for_association(AvailableSubjects),
-    write("Código da disciplina: "),
-    read_string(SubjectCode),
-    associate_professor(ProfessorCode, SubjectCode),
+    show_available_subjects_for_association(_, AvailableSubjects),
     press_to_continue,
     admin_options.
 
@@ -266,8 +264,8 @@ show_student_subjects(ID, Subjects) :-
     press_to_continue,
     student_options(ID).
 
-show_professor_subjects(ID) :-
-    get_professor_list_subjects(ID, Subjects),
+show_professor_subjects(_, []) :- writeln("O professor não leciona nenhuma disciplina!"), fail.
+show_professor_subjects(ID, Subjects) :-
     writeln("Disciplinas lecionadas:"),
     writeln("Código \t -\tNome"),
     show_professor_subjects_aux(Subjects).
@@ -299,29 +297,29 @@ show_professor_subjects_with_classes_aux([H|T]) :-
     writeln(R),
     show_professor_subjects_with_classes_aux(T).
 
-show_class_situation(Code) :-
-    get_enrolled_students(Code, Result),
+show_class_situation(SubjectCode) :-
+    get_enrolled_students(SubjectCode, Result),
     writeln("\nCódigo \t -\tNome \t -\tMédia Geral"),
-    show_class_situation_aux(Code, Result),
-    writeln("").
+    show_class_situation_aux(SubjectCode, Result),
+    nl.
 
 show_class_situation_aux(_, []).
-show_class_situation_aux(Code, [H|T]):-
+show_class_situation_aux(SubjectCode, [H|T]):-
     find_student(H, Student),
     nth0(0, Student, Registration),
     nth0(1, Student, Name),
     term_string(Registration, RegistrationString),
-    get_student_average_subject(RegistrationString, Code, Average),
+    get_student_average_subject(RegistrationString, SubjectCode, Average),
     string_concat(Registration, "\t - \t", S1),
     string_concat(S1, Name, S2),
     string_concat(S2, "\t - \t", S3),
     write(S3),
     format("~2f ", [Average]),
-    student_situation(Average, Result),
+    student_situation(Average, Situation),
     write("["),
-    write(Result),
+    write(Situation),
     writeln("]"),
-    show_class_situation_aux(Code, T).
+    show_class_situation_aux(SubjectCode, T).
 
 show_available_professors :-
     available_professors(Professors),
@@ -342,11 +340,14 @@ show_subject_with_grade(Code, Name, Average) :-
     write(S3),
     format("~2f\n", [Average]).
 
-show_available_subjects_for_association([]) :- writeln("Não há disciplinas disponíveis para associação!").
-show_available_subjects_for_association(Subjects) :-
+show_available_subjects_for_association(ID, []) :- writeln("Não há disciplinas disponíveis para associação!").
+show_available_subjects_for_association(ID, Subjects) :-
     writeln("Disciplinas disponíveis para associação:"),
     nl,
-    show_subjects(Subjects).
+    show_subjects(ID, Subjects),
+    write("Código da disciplina: "),
+    read_string(SubjectCode),
+    associate_professor(ProfessorCode, SubjectCode).
 
 show_subjects(_, []).
 show_subjects(ID, [S|T]) :-
@@ -359,9 +360,9 @@ show_subjects(ID, [S|T]) :-
     string_concat(S2, "\t - \t", S3),
     write(S3),
     format("~2f ", [Average]),
-    student_situation(Average, Result),
+    student_situation(Average, Situation),
     write("["),
-    write(Result),
+    write(Situation),
     writeln("]"),
     show_subjects(ID, T).
 
