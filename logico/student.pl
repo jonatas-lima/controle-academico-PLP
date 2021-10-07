@@ -4,10 +4,10 @@
 
 have_max_enrollments(Registration) :-
   num_enrolled_subjects(Registration, Num),
-  Num >= 3.
+  Num >= 4.
 
 num_enrolled_subjects(Registration, Num) :-
-  get_user_subjects(Registration, Subjects),
+  get_student_subjects(Registration, Subjects),
   length(Subjects, Num).
 
 find_student(Registration, Result) :-
