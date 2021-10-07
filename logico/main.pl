@@ -60,12 +60,28 @@ student_panel("1", ID) :-
 
 student_panel("2", ID):- 
     available_subjects_for_enrollment(ID, AvailableSubjects),
-    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue;
+    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue; 
     writeln("Codigo\t - \tDisciplina"),
     show_available_subjects(AvailableSubjects),
+
     writeln("Entre com o código da disciplina a ser matriculada: "),
     read_string(Code),
-    press_to_continue),
+
+    find_student(ID, Student),
+    delete_student(Student),
+
+    writeln(Student),
+    nth0(2, Student, EnrolledSubjects),
+    writeln(EnrolledSubjects),
+
+    (number(EnrolledSubjects) -> term_string(EnrolledSubjects, Classes) ; Classes = EnrolledSubjects), 
+    string_concat(Classes, ";", S1),
+    string_concat(S1, Code, R),
+    writeln(R),
+
+    nth0(1, Student, Name),
+    save_student(ID, Name, R)),
+    press_to_continue,
     student_options(ID).
 
 student_panel("3", ID):-
@@ -187,7 +203,7 @@ admin_panel("2") :-
     read_string(Name),
     write("Digite a senha do aluno: "),
     read_string(Password),
-    (find_user(Registration, R), empty(R) -> save_student(Registration, Name, Password), writeln("Aluno cadastrado!");
+    (find_user(Registration, R), empty(R) -> save_new_student(Registration, Name, Password), writeln("Aluno cadastrado!");
     writeln("Aluno ja existe!")),
     press_to_continue,
     admin_options.

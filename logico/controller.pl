@@ -178,8 +178,11 @@ register_test(ProfessorRegistration, SubjectCode).
 save_professor(Registration, Name, Password) :- 
   create_professor(Registration, Name, Password).
 
-save_student(Registration, Name, Password) :- 
+save_new_student(Registration, Name, Password) :- 
   create_student(Registration, Name, Password).
+
+save_student(Registration, Name, Subjects) :-
+  update_student(Registration, Name, Subjects).
 
 save_new_subject(Code, Name, Classes, MaxEnrollments) :- 
   create_new_subject(Code, Name, Classes, MaxEnrollments).
