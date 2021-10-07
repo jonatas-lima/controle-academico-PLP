@@ -5,27 +5,24 @@
 read_string(X) :- read_line_to_codes(user_input, I), atom_string(I, X).
 read_number(N) :- read_string(X), atom_number(X, N).
 
-main:- 
+main :- 
     write("Bem-Vindo(a)!\nPara acessar o controle, faça login:\n\n"),
     login,
     halt.
 
-login:-
+login :-
     write("Digite sua matrícula: "),
     read_string(Registration),
     write("Digite sua senha: "),
     read_string(Password),
     authenticate(Registration, Password, Role),
     tty_clear,
-    screen(Role, Registration) ;
-    writeln("Usuario ou senha invalido! Tente novamente..."),
-    nl,
-    login.
+    screen(Role, Registration).
 
-screen(prof, ID):- 
+screen(prof, ID) :- 
     professor_screen(ID).
 
-screen(admin, _):- 
+screen(admin, _) :- 
     admin_screen.
 
 screen(aluno, ID):- 
@@ -33,6 +30,11 @@ screen(aluno, ID):-
 
 screen:-
     write("Role invalido").
+
+screen(false, _) :-
+    writeln("Usuario ou senha invalido! Tente novamente..."),
+    nl,
+    login.
 
 students_screen(ID) :-
     student_options(ID).
@@ -58,12 +60,13 @@ student_panel("1", ID) :-
 
 student_panel("2", ID):- 
     available_subjects_for_enrollment(ID, AvailableSubjects),
-    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects);
+    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue;
     writeln("Codigo\t - \tDisciplina"),
-    show_available_subjects(AvailableSubjects)),
+    show_available_subjects(AvailableSubjects),
     writeln("Entre com o código da disciplina a ser matriculada: "),
     read_string(Code),
-    writeln(COde)
+    press_to_continue),
+    student_options(ID).
 
 student_panel("3", ID):-
     student_subjects(ID, Subjects),
@@ -101,28 +104,37 @@ professor_options(ID) :-
     professor_panel(Inp, ID).
 
 professor_panel("1", ID) :-
-    show_professor_subjects_with_classes(ID),
+    professor_subjects(ID, Subjects),
+    show_professor_subjects_with_classes(Subjects),
     press_to_continue,
     professor_options(ID).
 
 professor_panel("2", ID) :-
-    show_professor_subjects_with_classes(ID),
+    professor_subjects(ID, Subjects),
+    show_professor_subjects_with_classes(Subjects),
+    (empty(Subjects) -> press_to_continue ; 
     write("Entre com o código da disciplina: "),
     read_string(CodeString),
-    register_class(ID, CodeString),
-    press_to_continue,
+    register_class(ID, CodeString), press_to_continue),
     professor_options(ID).
 
-professor_panel("3", ID).
+professor_panel("3", ID) :-
+    professor_subjects(ID, Subjects),
+    show_professor_subjects(ID, Subjects),
+    (empty(Subjects) -> press_to_continue ; 
+    write("Entre com o código da disciplina: "),
+    read_string(CodeString),
+    register_test(ID, CodeString), press_to_continue),
+    professor_options(ID).
     %UI Cadastrar prova
 
 professor_panel("4", ID) :-
-    get_professor_list_subjects(ID, Subjects),
+    professor_subjects(ID, Subjects),
     show_professor_subjects(ID, Subjects),
+    (empty(Subjects) -> press_to_continue ;
     write("Entre com o código da disciplina a ser consultada: "),
     read_string(SubjectCode),
-    show_class_situation(SubjectCode),
-    press_to_continue,
+    show_class_situation(SubjectCode), press_to_continue),
     professor_options(ID).
 
 professor_panel("S", _) :- quit.
@@ -160,8 +172,11 @@ admin_panel("1") :-
     read_string(Name),
     write("Digite a senha do professor: "),
     read_string(Password),
-    (find_user(Registration, R), R -> writeln("Professor ja existe!");
-    save_professor(Registration, Name, Password), writeln("Professor cadastrado!")),
+    writeln(Registration),
+    writeln(Name),
+    writeln(Password),
+    (find_user(Registration, R), empty(R) -> save_professor(Registration, Name, Password), writeln("Professor cadastrado!");
+    writeln("Professor ja existe!")),
     press_to_continue,
     admin_options.
 
@@ -172,8 +187,8 @@ admin_panel("2") :-
     read_string(Name),
     write("Digite a senha do aluno: "),
     read_string(Password),
-    (find_user(Registration, R), R -> writeln("Aluno ja existe!");
-    save_student(Registration, Name, Password), writeln("Aluno cadastrado!")),
+    (find_user(Registration, R), empty(R) -> save_student(Registration, Name, Password), writeln("Aluno cadastrado!");
+    writeln("Aluno ja existe!")),
     press_to_continue,
     admin_options.
 
@@ -186,8 +201,8 @@ admin_panel("3") :-
     read_string(Classes),
     write("Digite o número de vagas da disciplina: "),
     read_string(MaxEnrollments),
-    (find_user(Code, _) -> writeln("Disciplina ja existe!");
-    save_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrada!")),
+    (find_subject(Code, R), empty(R) -> save_new_subject(Code, Name, Classes, MaxEnrollments), writeln("Disciplina cadastrada!");
+    writeln("Disciplina ja existe!")),
     press_to_continue,
     admin_options.
 
@@ -196,7 +211,7 @@ admin_panel("4") :-
     write("Matrícula do professor: "),
     read_string(Registration),
     available_subjects_for_association(Registration, AvailableSubjects),
-    show_available_subjects_for_association(_, AvailableSubjects),
+    show_available_subjects_for_association(Registration, AvailableSubjects),
     press_to_continue,
     admin_options.
 
@@ -267,11 +282,11 @@ show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhu
 show_student_subjects(ID, Subjects) :-
     writeln("Disciplinas matriculadas:"),
     writeln("Código \t -\tNome \t -\tMédia Geral"),
-    show_subjects(ID, Subjects),
+    show_subjects(Subjects),
     press_to_continue,
     student_options(ID).
 
-show_professor_subjects(_, []) :- writeln("O professor não leciona nenhuma disciplina!"), fail.
+show_professor_subjects(_, []) :- writeln("O professor não leciona nenhuma disciplina!").
 show_professor_subjects(ID, Subjects) :-
     writeln("Disciplinas lecionadas:"),
     writeln("Código \t -\tNome"),
@@ -286,8 +301,8 @@ show_professor_subjects_aux([H|T]) :-
     writeln(R),
     show_professor_subjects_aux(T).
 
-show_professor_subjects_with_classes(ID) :-
-    get_professor_list_subjects(ID, Subjects),
+show_professor_subjects_with_classes([]) :- writeln("O professor não leciona nenhuma disciplina!").
+show_professor_subjects_with_classes(Subjects) :-
     writeln("Disciplinas lecionadas:"),
     writeln("Código \t -\tNome \t -\tAulas Restantes"),
     show_professor_subjects_with_classes_aux(Subjects).
@@ -347,31 +362,25 @@ show_subject_with_grade(Code, Name, Average) :-
     write(S3),
     format("~2f\n", [Average]).
 
-show_available_subjects_for_association(ID, []) :- writeln("Não há disciplinas disponíveis para associação!").
-show_available_subjects_for_association(ID, Subjects) :-
+show_available_subjects_for_association(_, []) :- writeln("Não há disciplinas disponíveis para associação!").
+show_available_subjects_for_association(ProfessorCode, Subjects) :-
     writeln("Disciplinas disponíveis para associação:"),
     nl,
-    show_subjects(ID, Subjects),
+    show_subjects(Subjects),
     write("Código da disciplina: "),
     read_string(SubjectCode),
     associate_professor(ProfessorCode, SubjectCode).
 
-show_subjects(_, []).
-show_subjects(ID, [S|T]) :-
+show_subjects([]).
+show_subjects([S|T]) :-
     nth0(0, S, Code),
     nth0(2, S, Name),
     term_string(Code, CodeString),
-    get_student_average_subject(ID, CodeString, Average),
     string_concat(Code, "\t - \t", S1),
     string_concat(S1, Name, S2),
     string_concat(S2, "\t - \t", S3),
-    write(S3),
-    format("~2f ", [Average]),
-    student_situation(Average, Situation),
-    write("["),
-    write(Situation),
-    writeln("]"),
-    show_subjects(ID, T).
+    writeln(S3),
+    show_subjects(T).
 
 show_available_subjects([]).
 show_available_subjects([S|T]) :-
@@ -395,6 +404,8 @@ show_student_with_highest_average(Student, Average) :-
     nl,
     press_to_continue,
     admin_options.
+
+% new_test(ID).
 
 quit :- 
     writeln("Até a próxima!"),

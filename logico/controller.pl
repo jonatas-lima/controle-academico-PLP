@@ -4,12 +4,13 @@
 :- include('./student.pl').
 :- include('./professor.pl').
 :- include('./data_saver.pl').
+:- include('./data_loader.pl').
 
 authenticate(Username, Password, Role) :-
   find_user(Username, User),
   nth0(1, User, Pass),
-  atom_string(Pass, PassString),
-  PassString =@= Password -> nth0(2, User, Role) ; false.
+  term_string(Pass, PassString),
+  (PassString =@= Password -> nth0(2, User, Role) ; Role = false).
 
 % consultas
 students_without_enrollment(Result) :-
@@ -127,24 +128,40 @@ student_situation(Average, Result):-
 enroll_student(StudentRegistration, SubjectCode).
 
 associate_professor(ProfessorRegistration, SubjectCode) :- 
+  writeln(ProfessorRegistration),
+  writeln(SubjectCode),
   find_professor(ProfessorRegistration, Professor),
-  find_subject(SubjectCode, Subject).
+  find_subject(SubjectCode, Subject),
+  writeln(Professor),
+  writeln(Subject),
+  delete_professor(Professor),
+  delete_subject(Subjects),
+  nth0(1, Professor, ProfessorName),
+  nth0(2, Professor, ProfessorSubjects),
+  (number(ProfessorSubjects) -> term_string(ProfessorSubjects, S) ; S = ProfessorSubjects),
+  string_concat(S, ';', S1),
+  string_concat(S1, SubjectCode, NewSubjects),
+  nth0(2, Subject, SubjectName),
+  nth0(3, Subject, NumClasses),
+  nth0(4, Subject, MaxEnrollments),
+  writeln(NewSubjects),
+  save_professor(ProfessorRegistration, ProfessorName, NewSubjects),
+  save_subject(SubjectCode, ProfessorRegistration, SubjectName, NumClasses, MaxEnrollments),
+  writeln("\nProfessor associado com sucesso!") ; writeln("\nErro ao associar professor!").
 
 cancel_enrollment(StudentCode, SubjectCode).
 
-register_class(ProfessorRegistration, SubjectCode):-
+register_class(ProfessorRegistration, SubjectCode) :-
   get_professor_subjects(ProfessorRegistration, [H|T]),
   (H =@= SubjectCode -> class_registration(SubjectCode);
   register_class_aux(T, SubjectCode)).
 
-register_class_aux([], _):-
-  writeln("Disciplina não encontrada.").
-  
-register_class_aux([H|T], SubjectCode):- 
+register_class_aux([], _) :- writeln("Disciplina não encontrada.").
+register_class_aux([H|T], SubjectCode) :- 
   (H =@= SubjectCode -> class_registration(SubjectCode);
   register_class_aux(T, SubjectCode)).
 
-class_registration(SubjectCode):-
+class_registration(SubjectCode) :-
   find_subject(SubjectCode, Subject),
   nth0(1, Subject, Professor),
   nth0(2, Subject, Name),
@@ -164,8 +181,8 @@ save_professor(Registration, Name, Password) :-
 save_student(Registration, Name, Password) :- 
   create_student(Registration, Name, Password).
 
-save_subject(Code, Name, Classes, MaxEnrollments) :- 
-  save_subject(Code, "", Name, Classes, MaxEnrollments).
+save_new_subject(Code, Name, Classes, MaxEnrollments) :- 
+  create_new_subject(Code, Name, Classes, MaxEnrollments).
 
 save_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :-
   create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments).

@@ -97,4 +97,3 @@ delete_subject(Subject):-
   load_all_subjects(AllSubjects),
   delete(AllSubjects, Subject, Result),
   update_subjects(Result, 0).
-    
