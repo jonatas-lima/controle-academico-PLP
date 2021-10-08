@@ -149,7 +149,18 @@ associate_professor(ProfessorRegistration, SubjectCode) :-
   save_subject(SubjectCode, ProfessorRegistration, SubjectName, NumClasses, MaxEnrollments),
   writeln("\nProfessor associado com sucesso!") ; writeln("\nErro ao associar professor!").
 
-cancel_enrollment(StudentCode, SubjectCode).
+cancel_enrollment(StudentRegistration, SubjectCode) :- 
+  find_student(StudentRegistration, Student),
+  nth0(2, Student, EnrolledClasses),
+  (number(EnrolledClasses) -> term_string(EnrolledClasses, EnrolledClassesStr); EnrolledClassesStr = EnrolledClasses),
+  split_string(EnrolledClassesStr, ";", "", EnrolledClassesList),
+  atom_number(SubjectCode, SubjectCodeNumber),
+  delete(EnrolledClassesList, SubjectCode, NewEnrolledSubjects),
+  delete_student(Student),
+  nth0(1, Student, Name),
+  atomics_to_string(NewEnrolledSubjects, ";", NewEnrolledSubjectsStr),
+  save_student(StudentRegistration, Name, NewEnrolledSubjectsStr),
+  writeln("\nMatrícula cancelada com sucesso!").
 
 register_class(ProfessorRegistration, SubjectCode) :-
   get_professor_subjects(ProfessorRegistration, [H|T]),

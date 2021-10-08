@@ -6,6 +6,7 @@ read_string(X) :- read_line_to_codes(user_input, I), atom_string(I, X).
 read_number(N) :- read_string(X), atom_number(X, N).
 
 main :- 
+    tty_clear,
     write("Bem-Vindo(a)!\nPara acessar o controle, faça login:\n\n"),
     login,
     halt.
@@ -60,25 +61,17 @@ student_panel("1", ID) :-
 
 student_panel("2", ID):- 
     available_subjects_for_enrollment(ID, AvailableSubjects),
-    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects), press_to_continue; 
+    (AvailableSubjects =@= "Aluno lotado de disciplinas.", press_to_continue, student_options(ID) -> writeln(AvailableSubjects), press_to_continue; 
     writeln("Codigo\t - \tDisciplina"),
     show_available_subjects(AvailableSubjects),
-
     writeln("Entre com o código da disciplina a ser matriculada: "),
     read_string(Code),
-
     find_student(ID, Student),
     delete_student(Student),
-
-    writeln(Student),
     nth0(2, Student, EnrolledSubjects),
-    writeln(EnrolledSubjects),
-
     (number(EnrolledSubjects) -> term_string(EnrolledSubjects, Classes) ; Classes = EnrolledSubjects), 
     string_concat(Classes, ";", S1),
     string_concat(S1, Code, R),
-    writeln(R),
-
     nth0(1, Student, Name),
     save_student(ID, Name, R)),
     press_to_continue,
@@ -86,7 +79,12 @@ student_panel("2", ID):-
 
 student_panel("3", ID):-
     student_subjects(ID, Subjects),
-    show_available_subjects(Subjects).
+    show_available_subjects(Subjects),
+    write("Entre com o código da disciplina a ser cancelada: "),
+    read_string(SubjectCode),
+    cancel_enrollment(ID, SubjectCode),
+    press_to_continue,
+    student_options(ID).
 
 student_panel("4", ID):-
     get_student_average(ID, Average),
@@ -188,9 +186,6 @@ admin_panel("1") :-
     read_string(Name),
     write("Digite a senha do professor: "),
     read_string(Password),
-    writeln(Registration),
-    writeln(Name),
-    writeln(Password),
     (find_user(Registration, R), empty(R) -> save_professor(Registration, Name, Password), writeln("Professor cadastrado!");
     writeln("Professor ja existe!")),
     press_to_continue,
@@ -420,8 +415,6 @@ show_student_with_highest_average(Student, Average) :-
     nl,
     press_to_continue,
     admin_options.
-
-% new_test(ID).
 
 quit :- 
     writeln("Até a próxima!"),
