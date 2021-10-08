@@ -28,6 +28,14 @@ create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :-
   create_enrollment(Code),
   create_entity('./data/disciplinas.csv', R).
 
+update_subject(Code, Professor, Name, Classes, MaxEnrollments) :-
+  format_new_subject(Code, Professor, Name, Classes, MaxEnrollments, R),
+  create_entity('./data/disciplinas.csv', R).
+
+update_enrollment(SubjectCode, Grades) :-
+  format_new_enrollment(SubjectCode, Grades, R),
+  create_entity('./data/matriculas.csv', R).
+
 create_entity(FilePath, Entity) :- 
   open(FilePath, append, File),
   writeln(File, Entity),
@@ -64,6 +72,10 @@ format_new_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments, R) :-
   string_concat(S5, Classes, S6),
   string_concat(S6, ',', S7),
   string_concat(S7, MaxEnrollments, R).
+
+format_new_enrollment(SubjectCode, Grades, R) :-
+  string_concat(SubjectCode, ',', S1),
+  string_concat(S1, Grades, R).
 
 update_subjects([], _).
 update_subjects([H|T], Control):-
@@ -114,3 +126,14 @@ update_students([H|T], Control):-
   writeln(File, R),
   close(File),
   update_students(T, 1).
+
+update_enrollments([], _).
+update_enrollments([H|T], Control) :-
+  (Control =:= 0 -> open('./data/matriculas.csv', write, File);
+  open('./data/matriculas.csv', append, File)),
+  nth0(0, H, Code),
+  nth0(1, H, Grades),
+  format_new_enrollment(Code, Grades, R),
+  writeln(File, R),
+  close(File),
+  update_enrollments(T, 1).

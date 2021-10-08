@@ -121,6 +121,26 @@ remove_student_subjects([H|T], Subjects, Result):-
 
 class_situation(ProfessorRegistration, SubjectCode).
 
+enroll_student(StudentCode, SubjectCode) :- 
+  find_enrollment(SubjectCode, Enrollment),
+  find_student(ID, Student),
+  nth0(1, Enrollment, Grades),
+  delete_student(Student),
+  writeln("Deletei estudante"),
+  % delete_enrollment(Enrollment),
+  nth0(2, Student, EnrolledSubjects),
+  (empty(Grades) -> term_string(ID, GradesStr) ; GradesStr = Grades),
+  string_concat(Grades, ";", S1),
+  string_concat(S1, ID, S2),
+  string_concat(S2, "|", NewGrades),
+  (number(EnrolledSubjects) -> term_string(EnrolledSubjects, Classes) ; Classes = EnrolledSubjects), 
+  string_concat(Classes, ";", S1),
+  string_concat(S1, SubjectCode, NewClasses),
+  nth0(1, Student, Name),
+  save_student(ID, Name, R),
+  writeln("salvei student"),
+  save_enrollment(SubjectCode, NewGrades).
+
 student_situation(Average, Result):-
   (Average >= 7 -> Result = "Aprovado" ; Average >= 4 -> Result = "Final" ; Result = "Reprovado").
 
@@ -180,7 +200,7 @@ class_registration(SubjectCode) :-
   nth0(4, Subject, MaxEnrollments),
   NewNumClasses is NumClasses - 1,
   delete_subject(Subject),
-  save_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
+  update_new_subject(SubjectCode, Professor, Name, NewNumClasses, MaxEnrollments),
   writeln("\nRegistro de aula realizado com sucesso!\n").
 
 register_test(ProfessorRegistration, SubjectCode).
@@ -200,3 +220,9 @@ save_new_subject(Code, Name, Classes, MaxEnrollments) :-
 
 save_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments) :-
   create_subject(Code, ProfessorCode, Name, Classes, MaxEnrollments).
+
+update_new_subject(Code, Professor, Name, Classes, MaxEnrollments) :-
+  update_subject(Code, Professor, Name, Classes, MaxEnrollments).
+
+save_enrollment(SubjectCode, Grades) :-
+  update_enrollment(SubjectCode, Grades).

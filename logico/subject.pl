@@ -6,6 +6,10 @@ is_subject_available(Subject) :-
   nth0(1, Subject, ProfessorCode),
   empty(ProfessorCode).
 
+find_enrollment(SubjectCode, Enrollment) :-
+  load_all_enrollments(Enrollments),
+  find(Enrollments, SubjectCode, Enrollment).
+
 find_subject(Code, Subject) :-
   load_all_subjects(Subjects),
   find(Subjects, Code, Subject).
@@ -97,3 +101,8 @@ delete_subject(Subject):-
   load_all_subjects(AllSubjects),
   delete(AllSubjects, Subject, Result),
   update_subjects(Result, 0).
+
+delete_enrollment(Enrollment):-
+  load_all_enrollments(AllEnrollments),
+  delete(AllEnrollments, Enrollment, Result),
+  update_enrollments(Result, 0).

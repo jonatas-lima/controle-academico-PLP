@@ -59,21 +59,14 @@ student_panel("1", ID) :-
     student_subjects(ID, Subjects),
     show_student_subjects(ID, Subjects).
 
-student_panel("2", ID):- 
+student_panel("2", ID) :- 
     available_subjects_for_enrollment(ID, AvailableSubjects),
-    (AvailableSubjects =@= "Aluno lotado de disciplinas.", press_to_continue, student_options(ID) -> writeln(AvailableSubjects), press_to_continue; 
+    (AvailableSubjects =@= "Aluno lotado de disciplinas." -> writeln(AvailableSubjects); 
     writeln("Codigo\t - \tDisciplina"),
     show_available_subjects(AvailableSubjects),
     writeln("Entre com o código da disciplina a ser matriculada: "),
-    read_string(Code),
-    find_student(ID, Student),
-    delete_student(Student),
-    nth0(2, Student, EnrolledSubjects),
-    (number(EnrolledSubjects) -> term_string(EnrolledSubjects, Classes) ; Classes = EnrolledSubjects), 
-    string_concat(Classes, ";", S1),
-    string_concat(S1, Code, R),
-    nth0(1, Student, Name),
-    save_student(ID, Name, R)),
+    read_string(SubjectCode),
+    enroll_student(ID, SubjectCode)),
     press_to_continue,
     student_options(ID).
 
@@ -145,7 +138,7 @@ professor_panel("3", ID) :-
 professor_panel("4", ID) :-
     professor_subjects(ID, Subjects),
     show_professor_subjects(ID, Subjects),
-    (empty(Subjects) -> press_to_continue ;
+    (empty(Subjects) -> writeln("O professor não leciona nenhuma disciplina!"), press_to_continue ;
     write("Entre com o código da disciplina a ser consultada: "),
     read_string(SubjectCode),
     show_class_situation(SubjectCode), press_to_continue),
@@ -293,7 +286,7 @@ show_student_subjects(_, []) :- writeln("O aluno não está matriculado em nenhu
 show_student_subjects(ID, Subjects) :-
     writeln("Disciplinas matriculadas:"),
     writeln("Código \t -\tNome \t -\tMédia Geral"),
-    show_subjects(Subjects),
+    show_subjects(ID, Subjects),
     press_to_continue,
     student_options(ID).
 
@@ -392,6 +385,23 @@ show_subjects([S|T]) :-
     string_concat(S2, "\t - \t", S3),
     writeln(S3),
     show_subjects(T).
+
+show_subjects(ID, []).
+show_subjects(ID, [S|T]) :-
+    nth0(0, S, Code),
+    nth0(2, S, Name),
+    term_string(Code, CodeString),
+    get_student_average_subject(ID, CodeString, Average),
+    string_concat(Code, "\t - \t", S1),
+    string_concat(S1, Name, S2),
+    string_concat(S2, "\t - \t", S3),
+    write(S3),
+    format("~2f ", [Average]),
+    student_situation(Average, Result),
+    write("["),
+    write(Result),
+    writeln("]"),
+    show_subjects(ID, T).
 
 show_available_subjects([]).
 show_available_subjects([S|T]) :-
