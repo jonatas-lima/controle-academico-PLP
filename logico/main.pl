@@ -1,3 +1,5 @@
+:- style_check(-discontiguous).
+:- style_check(-singleton).
 :- include('./controller.pl').
 :- include('./student.pl').
 :- include('./professor.pl').
@@ -93,13 +95,13 @@ student_panel("4", ID):-
     press_to_continue,
     student_options(ID).
 
-student_panel("S", ID) :- quit.
-student_panel("s", ID) :- quit.
+student_panel("S", _) :- quit.
+student_panel("s", _) :- quit.
 
 student_panel(_, ID) :-
     write("Opção invalida, tente novamente"),
     press_to_continue,
-    student_panel(Inp, ID).
+    student_panel(_, ID).
 
 professor_screen(ID) :-
     professor_options(ID).
@@ -158,7 +160,7 @@ professor_panel("s", _) :- quit.
 professor_panel(_, ID):-
     write("Opção invalida, tente novamente"),
     press_to_continue,
-    professor_panel(Inp, ID).
+    professor_options(ID).
 
 admin_screen:-
     write("Bem vindo, Adm"),
@@ -259,7 +261,7 @@ admin_panel("s") :- quit.
 admin_panel(_):-
     write("Opção invalida, tente novamente "),
     press_to_continue,
-    admin_panel(Inp).
+    admin_options.
 
 press_to_continue :- 
     writeln("Pressione alguma tecla para continuar..."),
@@ -298,7 +300,7 @@ show_student_subjects(ID, Subjects) :-
     student_options(ID).
 
 show_professor_subjects(_, []) :- writeln("O professor não leciona nenhuma disciplina!").
-show_professor_subjects(ID, Subjects) :-
+show_professor_subjects(_, Subjects) :-
     writeln("Disciplinas lecionadas:"),
     writeln("Código \t -\tNome"),
     show_professor_subjects_aux(Subjects).
@@ -386,7 +388,6 @@ show_subjects([]).
 show_subjects([S|T]) :-
     nth0(0, S, Code),
     nth0(2, S, Name),
-    term_string(Code, CodeString),
     string_concat(Code, "\t - \t", S1),
     string_concat(S1, Name, S2),
     string_concat(S2, "\t - \t", S3),
